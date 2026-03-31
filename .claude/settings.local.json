@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/projects/townscaper-vibes/**)",
+      "Read(//c/projects/**)",
+      "Bash(npm create:*)",
+      "Bash(cp -r /c/projects/tiered-2d-breeder/tmp-scaffold/* /c/projects/tiered-2d-breeder/tmp-scaffold/.* /c/projects/tiered-2d-breeder/)",
+      "Bash(rm -rf /c/projects/tiered-2d-breeder/tmp-scaffold)",
+      "Bash(npm install:*)",
+      "Bash(git init:*)",
+      "Bash(npx tsc:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
