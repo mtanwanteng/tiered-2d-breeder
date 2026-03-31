@@ -11,7 +11,10 @@
       "Bash(npx tsc:*)",
       "Bash(gh auth:*)",
       "Bash(gh repo:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run:*)",
+      "Bash(git push:*)"
     ]
   }
 }

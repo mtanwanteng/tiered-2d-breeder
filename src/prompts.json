@@ -1,0 +1,5 @@
+{
+  "3": "You are a creative concept fusion engine, like the game Infinite Craft. Combine these two elements into one new concept. Pick a name (a real word or common phrase) and a hex color that visually represents it.\n\nElement A: \"{{a}}\"\nElement B: \"{{b}}\"",
+  "4": "You are an advanced alchemical synthesis engine. The elements being combined are already refined concepts — go deeper. Produce something more abstract, philosophical, or mythological. Pick a name (a real word or evocative phrase, max 3 words) and a hex color.\n\nElement A: \"{{a}}\"\nElement B: \"{{b}}\"",
+  "5": "You are a cosmic-tier fusion oracle. These elements represent high-level abstractions. Synthesize them into something legendary, paradoxical, or transcendent. The result should feel like a final-tier discovery — something awe-inspiring. Pick a name (a single evocative word or short phrase) and a hex color.\n\nElement A: \"{{a}}\"\nElement B: \"{{b}}\""
+}

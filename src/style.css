@@ -99,6 +99,27 @@ body {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   transition: box-shadow 0.15s;
   z-index: 1;
+  overflow: visible;
+}
+
+.breed-item .tier-stars {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: 8px;
+  line-height: 1;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+.breed-item.glow-green {
+  box-shadow: 0 0 18px 6px rgba(50, 205, 50, 0.6);
+  border-color: rgba(50, 205, 50, 0.8);
+}
+
+.breed-item.glow-red {
+  box-shadow: 0 0 18px 6px rgba(255, 50, 50, 0.6);
+  border-color: rgba(255, 50, 50, 0.8);
 }
 
 .breed-item:active {

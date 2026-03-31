@@ -1,11 +1,8 @@
+import type { FusionResult } from "./types.ts";
+
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
 const MODEL = "gemini-2.5-flash";
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
-
-export interface FusionResult {
-  name: string;
-  color: string;
-}
 
 const RESPONSE_SCHEMA = {
   type: "object",
@@ -23,16 +20,11 @@ const RESPONSE_SCHEMA = {
   required: ["name", "color"],
 };
 
-export async function fuseElements(a: string, b: string): Promise<FusionResult> {
+export async function fuseElements(a: string, b: string, prompt: string): Promise<FusionResult> {
   if (!API_KEY) {
     console.warn("No VITE_GEMINI_API_KEY set — returning placeholder");
     return { name: `${a}+${b}`, color: "#daa520" };
   }
-
-  const prompt = `You are a creative concept fusion engine, like the game Infinite Craft. Combine these two elements into one new concept. Pick a name (a real word or common phrase) and a hex color that visually represents it.
-
-Element A: "${a}"
-Element B: "${b}"`;
 
   const res = await fetch(`${ENDPOINT}?key=${API_KEY}`, {
     method: "POST",
