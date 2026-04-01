@@ -14,6 +14,14 @@ dist-ssr
 .env
 .env.*
 
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/*.tfplan
+terraform/service-account-key.json
+.terraform.lock.hcl
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
