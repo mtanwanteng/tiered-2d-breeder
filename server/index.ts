@@ -72,10 +72,30 @@ const MODELS: Record<string, ModelConfig> = {
   "claude-haiku-4.5": { publisher: "anthropic", vertexModel: "claude-haiku-4-5-20251001" },
 };
 
-async function getAccessToken(): Promise<string> {
+// Environment variable name for the SA key JSON
+const SA_KEY_ENV = "GOOGLE_APPLICATION_CREDENTIALS_JSON";
+
+export async function getAccessToken(): Promise<string> {
   try {
+    let auth: GoogleAuth;
+
+    if (process.env[SA_KEY_ENV]) {
+      // In Vercel or anywhere without ADC
+      const credentials = JSON.parse(process.env[SA_KEY_ENV]);
+      auth = new GoogleAuth({
+        credentials,
+        scopes: ["https://www.googleapis.com/auth/cloud-platform"],
+      });
+    } else {
+      // Local dev: use ADC
+      auth = new GoogleAuth({
+        scopes: ["https://www.googleapis.com/auth/cloud-platform"],
+      });
+    }
+
     const client = await auth.getClient();
     const token = await client.getAccessToken();
+
     if (!token.token) throw new Error("Failed to get access token");
     return token.token;
   } catch (err: unknown) {
