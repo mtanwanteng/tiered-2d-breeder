@@ -1,5 +1,5 @@
-import type { ElementData, ActionLogEntry, EraHistory, ModelId } from "./types.ts";
-import { log } from "./logger.ts";
+import type { ElementData, ActionLogEntry, EraHistory, ModelId } from "./types";
+import { log } from "./logger";
 
 const SAVE_KEY = "bari-save";
 

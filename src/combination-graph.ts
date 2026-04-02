@@ -1,4 +1,4 @@
-import type { ActionLogEntry } from "./types.ts";
+import type { ActionLogEntry } from "./types";
 
 interface GraphNode {
   name: string;

@@ -9,8 +9,8 @@ Start with 6 base elements (Fire, Water, Earth, Air, Plant, Stone) and drag them
 ## Tech Stack
 
 - **TypeScript** with strict mode
-- **Vite** for dev server and bundling
-- **Google Gemini API** (gemini-2.5-flash) for AI-powered element fusion
+- **Next.js** for the app shell and Vercel-ready API routes
+- **Vertex AI** via server-side route handlers for AI-powered element fusion and era progression
 - Vanilla DOM with Pointer Events for drag-and-drop
 
 ## Getting Started
@@ -22,8 +22,17 @@ npm install
 Create a `.env` file in the project root:
 
 ```
-VITE_GEMINI_API_KEY=your_api_key_here
+GCP_PROJECT_ID=your_gcp_project_id
+GCP_REGION=us-central1
 ```
+
+For local development, authenticate with Application Default Credentials:
+
+```bash
+gcloud auth application-default login
+```
+
+For Vercel, provide `GOOGLE_APPLICATION_CREDENTIALS_JSON` as an environment variable containing the service account JSON.
 
 Then start the dev server:
 
@@ -33,8 +42,8 @@ npm run dev
 
 ## Scripts
 
-| Command             | Description                          |
-| ------------------- | ------------------------------------ |
-| `npm run dev`       | Start Vite dev server with hot reload |
-| `npm run build`     | Type-check and build for production   |
-| `npm run preview`   | Preview the production build locally  |
+| Command         | Description                               |
+| --------------- | ----------------------------------------- |
+| `npm run dev`   | Start the Next.js development server      |
+| `npm run build` | Create the production build               |
+| `npm run start` | Run the production server locally         |

@@ -1,4 +1,4 @@
-import type { CombineResult, ModelId } from "./types.ts";
+import type { CombineResult, ModelId } from "./types";
 
 export async function combineElements(model: ModelId, prompt: string): Promise<CombineResult> {
   const res = await fetch("/api/combine", {

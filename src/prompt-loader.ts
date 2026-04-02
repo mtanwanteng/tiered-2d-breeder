@@ -1,4 +1,4 @@
-import type { PromptProvider, Tier } from "./types.ts";
+import type { PromptProvider, Tier } from "./types";
 import promptsConfig from "./prompts.json";
 
 const config = promptsConfig as {

@@ -1,5 +1,5 @@
-import type { Era, ElementData, ActionLogEntry, ModelId, EraHistory } from "./types.ts";
-import { log } from "./logger.ts";
+import type { Era, ElementData, ActionLogEntry, ModelId, EraHistory } from "./types";
+import { log } from "./logger";
 import erasData from "./eras.json";
 
 const allEras = (erasData as Era[]).sort((a, b) => a.order - b.order);

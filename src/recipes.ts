@@ -1,4 +1,4 @@
-import type { RecipeProvider, ElementData } from "./types.ts";
+import type { RecipeProvider, ElementData } from "./types";
 
 export class InMemoryRecipeStore implements RecipeProvider {
   private cache: Record<string, ElementData> = {};

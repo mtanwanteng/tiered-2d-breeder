@@ -1,5 +1,5 @@
-import { log } from "./logger.ts";
-import type { LogLevel, LogCategory, LogEntry } from "./logger.ts";
+import { log } from "./logger";
+import type { LogLevel, LogCategory, LogEntry } from "./logger";
 
 const LEVEL_COLORS: Record<LogLevel, string> = {
   debug: "#888",

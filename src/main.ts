@@ -1,15 +1,14 @@
-import "./style.css";
-import type { Tier, ElementData, ModelId, ActionLogEntry } from "./types.ts";
-import { recipeKey, MODELS } from "./types.ts";
-import { combineElements } from "./gemini.ts";
-import { InMemoryRecipeStore } from "./recipes.ts";
-import { FilePromptProvider } from "./prompt-loader.ts";
-import { EraManager } from "./era-manager.ts";
-import { log } from "./logger.ts";
-import { initDebugConsole } from "./debug-console.ts";
-import { saveGame, loadGame, clearSave } from "./save.ts";
-import type { SaveData } from "./save.ts";
-import { renderCombinationGraph } from "./combination-graph.ts";
+import type { Tier, ElementData, ModelId, ActionLogEntry } from "./types";
+import { recipeKey, MODELS } from "./types";
+import { combineElements } from "./gemini";
+import { InMemoryRecipeStore } from "./recipes";
+import { FilePromptProvider } from "./prompt-loader";
+import { EraManager } from "./era-manager";
+import { log } from "./logger";
+import { initDebugConsole } from "./debug-console";
+import { saveGame, loadGame, clearSave } from "./save";
+import type { SaveData } from "./save";
+import { renderCombinationGraph } from "./combination-graph";
 
 // --- Types ---
 interface CombineItem {
@@ -25,6 +24,7 @@ interface CombineItem {
   y: number;
 }
 
+export function mountGame(app: HTMLElement) {
 // --- Providers ---
 const recipeStore = new InMemoryRecipeStore();
 const promptProvider = new FilePromptProvider();
@@ -42,7 +42,6 @@ let dragOffsetY = 0;
 let busy = false;
 
 // --- DOM setup ---
-const app = document.getElementById("app")!;
 const modelOptions = MODELS.map(
   (m) => `<option value="${m.id}">${m.label}</option>`
 ).join("");
@@ -114,21 +113,26 @@ const eraToastBtn = document.getElementById("era-toast-btn")!;
 const victoryOverlay = document.getElementById("victory-overlay")!;
 const victoryTimeline = document.getElementById("victory-timeline")!;
 const victoryShareBtn = document.getElementById("victory-share-btn")!;
+const restartButton = document.getElementById("restart-btn")!;
 
-modelSelect.addEventListener("change", () => {
+const handleModelChange = () => {
   selectedModel = modelSelect.value as ModelId;
   log.info("system", `Model switched to ${selectedModel}`);
-});
+};
 
-eraToastBtn.addEventListener("click", () => {
+const handleEraToastClose = () => {
   eraToast.classList.remove("visible");
-});
+};
 
-document.getElementById("restart-btn")!.addEventListener("click", () => {
+const handleRestart = () => {
   if (!confirm("Start a new game? All progress will be lost.")) return;
   clearSave();
   location.reload();
-});
+};
+
+modelSelect.addEventListener("change", handleModelChange);
+eraToastBtn.addEventListener("click", handleEraToastClose);
+restartButton.addEventListener("click", handleRestart);
 
 // --- Save/Load ---
 function persistGame() {
@@ -248,7 +252,7 @@ if (savedGame) {
 }
 
 // --- Document-level pointer drag handlers ---
-document.addEventListener("pointermove", (e) => {
+const handlePointerMove = (e: PointerEvent) => {
   if (!dragItem) return;
   const rect = workspace.getBoundingClientRect();
   dragItem.x = e.clientX - rect.left - dragOffsetX;
@@ -256,9 +260,9 @@ document.addEventListener("pointermove", (e) => {
   dragItem.el.style.left = `${dragItem.x}px`;
   dragItem.el.style.top = `${dragItem.y}px`;
   updateOverlapGlow(dragItem);
-});
+};
 
-document.addEventListener("pointerup", (e) => {
+const handlePointerUp = (e: PointerEvent) => {
   if (!dragItem) return;
   const item = dragItem;
   dragItem = null;
@@ -274,7 +278,10 @@ document.addEventListener("pointerup", (e) => {
   }
 
   checkOverlap(item);
-});
+};
+
+document.addEventListener("pointermove", handlePointerMove);
+document.addEventListener("pointerup", handlePointerUp);
 
 // --- Tier stars helper ---
 function tierStars(tier: Tier): string {
@@ -561,7 +568,7 @@ function showVictory() {
   });
 }
 
-victoryShareBtn.addEventListener("click", async () => {
+const handleVictoryShare = async () => {
   const panel = document.getElementById("victory-panel")!;
   try {
     // Use canvas to capture the victory panel
@@ -641,7 +648,9 @@ victoryShareBtn.addEventListener("click", async () => {
     console.error("Share failed:", err);
     showToast("Could not save image", 3000);
   }
-});
+};
+
+victoryShareBtn.addEventListener("click", handleVictoryShare);
 
 // --- Palette management ---
 function addToPalette(entry: ElementData) {
@@ -686,4 +695,16 @@ function showToast(msg: string, durationMs = 2000) {
   toast.classList.add("visible");
   clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => toast.classList.remove("visible"), durationMs);
+}
+
+return () => {
+  clearTimeout(toastTimer);
+  document.removeEventListener("pointermove", handlePointerMove);
+  document.removeEventListener("pointerup", handlePointerUp);
+  modelSelect.removeEventListener("change", handleModelChange);
+  eraToastBtn.removeEventListener("click", handleEraToastClose);
+  restartButton.removeEventListener("click", handleRestart);
+  victoryShareBtn.removeEventListener("click", handleVictoryShare);
+  app.innerHTML = "";
+};
 }
