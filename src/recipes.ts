@@ -10,4 +10,12 @@ export class InMemoryRecipeStore implements RecipeProvider {
   async set(key: string, value: ElementData): Promise<void> {
     this.cache[key] = value;
   }
+
+  exportCache(): Record<string, ElementData> {
+    return { ...this.cache };
+  }
+
+  importCache(data: Record<string, ElementData>): void {
+    this.cache = { ...data };
+  }
 }

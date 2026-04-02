@@ -95,32 +95,35 @@ export class EraManager {
       };
     }
 
-    // Check each unmet condition via AI
-    for (const condition of goal.conditions) {
-      if (condition.met) continue;
-      log.debug("era", `Checking condition: "${condition.description}"`);
+    // Batch check all unmet conditions in a single API call
+    const unmetConditions = goal.conditions.filter((c) => !c.met);
+    if (unmetConditions.length === 0) {
+      // All already met (shouldn't happen, but handle it)
+    } else {
+      log.debug("era", `Checking ${unmetConditions.length} unmet conditions in one call`);
       try {
         const res = await fetch("/api/check-era", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             model,
-            goal: condition.description,
+            goals: unmetConditions.map((c) => c.description),
             actionLog: actionLog.slice(-20),
             inventory,
           }),
         });
-        if (!res.ok) {
-          log.warn("api", `Era check API error: ${res.status}`);
-          continue;
-        }
-        const result = await res.json() as { passed: boolean; narrative: string };
-        if (result.passed) {
-          condition.met = true;
-          condition.narrative = result.narrative;
-          log.info("era", `Condition met: "${condition.description}"`);
+        if (res.ok) {
+          const data = await res.json() as { results: { goal: string; met: boolean; narrative: string }[] };
+          for (const r of data.results) {
+            const condition = unmetConditions.find((c) => c.description === r.goal);
+            if (condition && r.met) {
+              condition.met = true;
+              condition.narrative = r.narrative;
+              log.info("era", `Condition met: "${condition.description}"`);
+            }
+          }
         } else {
-          log.debug("era", `Condition not yet met: "${condition.description}"`);
+          log.warn("api", `Era check API error: ${res.status}`);
         }
       } catch (err) {
         log.error("api", `Era check failed: ${err instanceof Error ? err.message : String(err)}`);
@@ -205,5 +208,43 @@ export class EraManager {
     this.currentIndex = idx;
     this.advancementCheckedAt = 0;
     return this.current;
+  }
+
+  /** Export state for saving */
+  exportState(): { currentIndex: number; history: EraHistory[]; resolvedSeeds: Record<number, ElementData[]>; goalStates: Record<number, { met: boolean; narrative?: string }[]> } {
+    const resolvedSeeds: Record<number, ElementData[]> = {};
+    for (const [k, v] of this.resolvedSeeds) resolvedSeeds[k] = v;
+
+    const goalStates: Record<number, { met: boolean; narrative?: string }[]> = {};
+    goalStates[this.currentIndex] = this.current.goals[0]?.conditions.map((c) => ({
+      met: c.met,
+      narrative: c.narrative,
+    })) ?? [];
+
+    return { currentIndex: this.currentIndex, history: [...this.history], resolvedSeeds, goalStates };
+  }
+
+  /** Import state from save */
+  importState(state: { currentIndex: number; history: EraHistory[]; resolvedSeeds: Record<number, ElementData[]>; goalStates: Record<number, { met: boolean; narrative?: string }[]> }) {
+    this.currentIndex = state.currentIndex;
+    this.history.length = 0;
+    this.history.push(...state.history);
+    this.resolvedSeeds.clear();
+    for (const [k, v] of Object.entries(state.resolvedSeeds)) {
+      this.resolvedSeeds.set(Number(k), v);
+    }
+    // Restore goal condition states
+    for (const [k, conditions] of Object.entries(state.goalStates)) {
+      const era = allEras[Number(k)];
+      const goal = era?.goals[0];
+      if (goal) {
+        for (let i = 0; i < conditions.length && i < goal.conditions.length; i++) {
+          goal.conditions[i].met = conditions[i].met;
+          goal.conditions[i].narrative = conditions[i].narrative;
+        }
+      }
+    }
+    this.advancementCheckedAt = 0;
+    log.info("era", `Restored to ${this.current.name} (${this.history.length} eras completed)`);
   }
 }

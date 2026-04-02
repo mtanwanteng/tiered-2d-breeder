@@ -44,16 +44,21 @@ const COMBINE_SCHEMA = {
 const ERA_CHECK_SCHEMA = {
   type: "object" as const,
   properties: {
-    passed: {
-      type: "boolean" as const,
-      description: "Whether the player has achieved the goal based on their actions and inventory",
-    },
-    narrative: {
-      type: "string" as const,
-      description: "A 2-3 sentence narrative describing how the civilization advanced (or why it hasn't yet)",
+    results: {
+      type: "array" as const,
+      items: {
+        type: "object" as const,
+        properties: {
+          goal: { type: "string" as const, description: "The exact goal description being evaluated" },
+          met: { type: "boolean" as const, description: "Whether this goal has been achieved" },
+          narrative: { type: "string" as const, description: "If met, 1-2 sentences explaining how. If not met, empty string." },
+        },
+        required: ["goal", "met", "narrative"],
+      },
+      description: "Evaluation results for each goal",
     },
   },
-  required: ["passed", "narrative"],
+  required: ["results"],
 };
 
 interface ModelConfig {
@@ -175,13 +180,13 @@ app.post("/api/combine", async (req, res) => {
 // --- POST /api/check-era ---
 interface EraCheckRequest {
   model: string;
-  goal: string;
+  goals: string[];
   actionLog: { parentA: string; parentB: string; result: string; resultTier: number }[];
   inventory: string[];
 }
 
 app.post("/api/check-era", async (req, res) => {
-  const { model, goal, actionLog, inventory } = req.body as EraCheckRequest;
+  const { model, goals, actionLog, inventory } = req.body as EraCheckRequest;
 
   const config = MODELS[model];
   if (!config) {
@@ -193,16 +198,19 @@ app.post("/api/check-era", async (req, res) => {
     .map((a) => `  ${a.parentA} + ${a.parentB} → ${a.result} (tier ${a.resultTier})`)
     .join("\n");
 
-  const prompt = `You are judging whether a civilization-building game player has achieved a goal.
+  const goalList = goals.map((g, i) => `  ${i + 1}. "${g}"`).join("\n");
 
-Goal: "${goal}"
+  const prompt = `You are judging whether a civilization-building game player has achieved any of the following goals.
+
+Goals to evaluate:
+${goalList}
 
 Recent actions:
 ${recentActions}
 
 Current inventory: ${inventory.join(", ")}
 
-Has the player created items or taken actions that achieve this goal? Be generous but reasonable — the items don't need to literally match, but should clearly relate to the goal. If yes, write a short narrative (2-3 sentences) describing how the civilization achieved this milestone.`;
+For EACH goal, determine if the player's items or actions achieve it. Be generous but reasonable — items don't need to literally match, but should clearly relate to the goal. For each met goal, write 1-2 sentences describing how. Return your evaluation for every goal listed.`;
 
   try {
     const token = await getAccessToken();
@@ -211,7 +219,7 @@ Has the player created items or taken actions that achieve this goal? Be generou
     if (config.publisher === "google") {
       result = await callGemini(token, config.vertexModel, prompt, ERA_CHECK_SCHEMA);
     } else {
-      result = await callClaude(token, config.vertexModel, prompt, ["passed", "narrative"]);
+      result = await callClaude(token, config.vertexModel, prompt, ["results"]);
     }
 
     res.json(result);

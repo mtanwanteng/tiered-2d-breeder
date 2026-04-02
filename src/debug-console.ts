@@ -19,7 +19,11 @@ const CATEGORY_COLORS: Record<LogCategory, string> = {
 const ALL_LEVELS: LogLevel[] = ["debug", "info", "warn", "error"];
 const ALL_CATEGORIES: LogCategory[] = ["player", "api", "game", "era", "system"];
 
-export function initDebugConsole() {
+export interface DebugActions {
+  testVictory?: () => void;
+}
+
+export function initDebugConsole(actions?: DebugActions) {
   // Toggle button
   const toggle = document.createElement("button");
   toggle.id = "debug-toggle";
@@ -40,6 +44,7 @@ export function initDebugConsole() {
         ${ALL_CATEGORIES.map((c) => `<label class="debug-cat-label"><input type="checkbox" data-cat="${c}" checked><span style="color:${CATEGORY_COLORS[c]}">${c}</span></label>`).join("")}
       </div>
       <button id="debug-clear">Clear</button>
+      <button id="debug-test-victory">Test Victory</button>
     </div>
     <div id="debug-log"></div>
   `;
@@ -98,6 +103,11 @@ export function initDebugConsole() {
 
   document.getElementById("debug-clear")!.addEventListener("click", () => {
     logEl.innerHTML = "";
+  });
+
+  document.getElementById("debug-test-victory")!.addEventListener("click", () => {
+    if (actions?.testVictory) actions.testVictory();
+    else log.warn("system", "No testVictory callback registered");
   });
 
   log.info("system", "Debug console initialized");

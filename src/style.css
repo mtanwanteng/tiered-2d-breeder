@@ -291,13 +291,68 @@ body {
   100% { transform: scale(1); }
 }
 
+/* --- Combining placeholder --- */
+.combine-placeholder {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  z-index: 5;
+  animation: combine-spin 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.placeholder-emoji {
+  font-size: 20px;
+  animation: combine-orbit 1.2s ease-in-out infinite;
+}
+
+.placeholder-plus {
+  font-size: 16px;
+  animation: combine-glow 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes combine-spin {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+}
+
+@keyframes combine-orbit {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes combine-glow {
+  0% { opacity: 0.5; text-shadow: 0 0 4px rgba(255, 215, 0, 0.3); }
+  100% { opacity: 1; text-shadow: 0 0 12px rgba(255, 215, 0, 0.8); }
+}
+
 /* --- Bari avatar --- */
 #bari {
   margin-top: auto;
   text-align: center;
-  font-size: 40px;
   padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+#bari-char {
+  font-size: 40px;
   animation: bari-idle 3s ease-in-out infinite;
+}
+
+#bari-tool {
+  font-size: 24px;
+  display: none;
+}
+
+#bari.active #bari-tool {
+  display: inline-block;
+  animation: tool-swing 0.4s ease-in-out infinite alternate;
+  transform-origin: bottom center;
 }
 
 @keyframes bari-idle {
@@ -305,14 +360,26 @@ body {
   50% { transform: translateY(-6px); }
 }
 
-#bari.active {
-  animation: bari-bounce 0.5s ease-in-out infinite;
+@keyframes tool-swing {
+  0% { transform: rotate(-30deg); }
+  100% { transform: rotate(30deg); }
 }
 
-@keyframes bari-bounce {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-12px) rotate(-5deg); }
-  75% { transform: translateY(-12px) rotate(5deg); }
+#restart-btn {
+  display: block;
+  margin: 0 auto 8px;
+  background: none;
+  border: 1px solid #333;
+  color: #555;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+#restart-btn:hover {
+  border-color: #e94560;
+  color: #e94560;
 }
 
 /* --- Result toast --- */
@@ -372,6 +439,7 @@ body {
 #era-toast p {
   color: #ccc;
   font-size: 13px;
+  white-space: pre-wrap;
 }
 
 #era-toast button {
@@ -414,9 +482,9 @@ body {
   border: 2px solid #ffd700;
   border-radius: 20px;
   padding: 32px 40px;
-  max-width: 520px;
-  width: 90%;
-  max-height: 80vh;
+  max-width: 90vw;
+  width: 90vw;
+  max-height: 90vh;
   overflow-y: auto;
   text-align: center;
 }
@@ -480,6 +548,14 @@ body {
   font-size: 10px;
   color: #666;
   line-height: 1.4;
+}
+
+.victory-graph {
+  width: 100%;
+  height: 180px;
+  margin-top: 10px;
+  border-radius: 8px;
+  border: 1px solid #1a4a8a;
 }
 
 .victory-actions {
@@ -594,7 +670,7 @@ body {
   height: 12px;
 }
 
-#debug-clear {
+#debug-clear, #debug-test-victory {
   background: #333;
   color: #aaa;
   border: 1px solid #555;
@@ -605,7 +681,7 @@ body {
   font-family: monospace;
 }
 
-#debug-clear:hover {
+#debug-clear:hover, #debug-test-victory:hover {
   background: #555;
 }
 

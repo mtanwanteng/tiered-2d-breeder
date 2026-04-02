@@ -7,6 +7,9 @@ import { FilePromptProvider } from "./prompt-loader.ts";
 import { EraManager } from "./era-manager.ts";
 import { log } from "./logger.ts";
 import { initDebugConsole } from "./debug-console.ts";
+import { saveGame, loadGame, clearSave } from "./save.ts";
+import type { SaveData } from "./save.ts";
+import { renderCombinationGraph } from "./combination-graph.ts";
 
 // --- Types ---
 interface CombineItem {
@@ -36,6 +39,7 @@ let idCounter = 0;
 let dragItem: CombineItem | null = null;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
+let busy = false;
 
 // --- DOM setup ---
 const app = document.getElementById("app")!;
@@ -65,7 +69,6 @@ function renderEraName() {
 
 app.innerHTML = `
   <div id="palette">
-    <h2>Inventory</h2>
     <div id="era-display">
       <div id="era-name"></div>
       <div id="era-goals"></div>
@@ -74,8 +77,10 @@ app.innerHTML = `
       <label for="model-select">Model</label>
       <select id="model-select">${modelOptions}</select>
     </div>
+    <h2>Inventory</h2>
     <div id="palette-items"></div>
-    <div id="bari">\uD83D\uDC66</div>
+    <div id="bari"><span id="bari-char">\uD83D\uDC66</span><span id="bari-tool">\uD83D\uDD28</span></div>
+    <button id="restart-btn">Restart Game</button>
   </div>
   <div id="workspace"></div>
   <div id="result-toast"></div>
@@ -119,15 +124,127 @@ eraToastBtn.addEventListener("click", () => {
   eraToast.classList.remove("visible");
 });
 
-// --- Initialize ---
-initDebugConsole();
+document.getElementById("restart-btn")!.addEventListener("click", () => {
+  if (!confirm("Start a new game? All progress will be lost.")) return;
+  clearSave();
+  location.reload();
+});
 
-renderEraName();
-renderGoals();
-const initialSeeds = eraManager.getSeeds();
-log.info("era", `Starting ${eraManager.current.name} with seeds: ${initialSeeds.map((s) => s.name).join(", ")}`);
-for (const entry of initialSeeds) {
-  addToPalette(entry);
+// --- Save/Load ---
+function persistGame() {
+  const paletteData: ElementData[] = [];
+  for (const seed of eraManager.getSeeds()) {
+    if (paletteItems.querySelector(`[data-name="${seed.name}"]`)) paletteData.push(seed);
+  }
+  // Add non-seed palette items from recipe cache
+  for (const div of paletteItems.querySelectorAll<HTMLElement>("[data-name]")) {
+    const name = div.dataset.name!;
+    if (paletteData.some((p) => p.name === name)) continue;
+    // Find in eraActionLog
+    const entry = eraActionLog.find((e) => e.result === name);
+    if (!entry) continue;
+    const key = recipeKey(entry.parentA, entry.parentB);
+    const cached = recipeStore.exportCache()[key];
+    if (cached) paletteData.push(cached);
+  }
+
+  const eraState = eraManager.exportState();
+  const data: SaveData = {
+    version: 1,
+    selectedModel,
+    actionLog: [...actionLog],
+    eraActionLog: [...eraActionLog],
+    recipeCache: recipeStore.exportCache(),
+    eraCurrentIndex: eraState.currentIndex,
+    eraHistory: eraState.history,
+    eraResolvedSeeds: eraState.resolvedSeeds,
+    eraGoalStates: eraState.goalStates,
+    paletteItems: paletteData,
+  };
+  saveGame(data);
+}
+
+function restoreGame(save: SaveData) {
+  log.info("system", "Restoring saved game...");
+
+  selectedModel = save.selectedModel;
+  modelSelect.value = save.selectedModel;
+
+  actionLog.length = 0;
+  actionLog.push(...save.actionLog);
+  eraActionLog = [...save.eraActionLog];
+
+  recipeStore.importCache(save.recipeCache);
+
+  eraManager.importState({
+    currentIndex: save.eraCurrentIndex,
+    history: save.eraHistory,
+    resolvedSeeds: save.eraResolvedSeeds,
+    goalStates: save.eraGoalStates,
+  });
+
+  // Rebuild palette
+  paletteItems.innerHTML = "";
+  for (const entry of save.paletteItems) {
+    addToPalette(entry);
+  }
+
+  renderEraName();
+  renderGoals();
+  log.info("system", `Game restored: ${eraManager.current.name}, ${actionLog.length} total actions`);
+}
+
+// --- Initialize ---
+initDebugConsole({
+  testVictory: () => {
+    // Inject mock history if none exists
+    if (eraManager.history.length === 0) {
+      const now = Date.now();
+      const mockActions = [
+        { timestamp: now, parentA: "Fire", parentB: "Stone", result: "Flint Tool", resultTier: 2 as Tier },
+        { timestamp: now, parentA: "Flint Tool", parentB: "Wood", result: "Spear", resultTier: 3 as Tier },
+        { timestamp: now, parentA: "Seed", parentB: "Water", result: "Crop", resultTier: 2 as Tier },
+        { timestamp: now, parentA: "Crop", parentB: "Beast", result: "Farm", resultTier: 3 as Tier },
+        { timestamp: now, parentA: "Spear", parentB: "Farm", result: "Settlement", resultTier: 4 as Tier },
+        { timestamp: now, parentA: "Settlement", parentB: "Fire", result: "Village", resultTier: 5 as Tier },
+      ];
+      eraManager.history.push(
+        {
+          eraName: "Stone Age",
+          startingSeeds: ["\uD83D\uDD25 Fire", "\uD83E\uDEA8 Stone", "\uD83D\uDCA7 Water", "\uD83E\uDDAC Beast", "\uD83E\uDEB5 Wood", "\uD83C\uDF31 Seed"],
+          actions: mockActions,
+          advancementNarrative: "From stone tools to the first settlements, your people mastered fire and earth.",
+          discoveredItems: ["Fire", "Stone", "Water", "Beast", "Wood", "Seed", "Flint Tool", "Spear", "Crop", "Farm", "Settlement", "Village"],
+        },
+        {
+          eraName: "Bronze Age",
+          startingSeeds: ["\u2699\uFE0F Metal", "\uD83C\uDF3E Grain", "\uD83C\uDFFA Clay", "\uD83D\uDC02 Ox", "\uD83C\uDF0A River", "\u2600\uFE0F Sun"],
+          actions: [
+            { timestamp: now, parentA: "Metal", parentB: "Clay", result: "Bronze", resultTier: 2 as Tier },
+            { timestamp: now, parentA: "Bronze", parentB: "Grain", result: "Plow", resultTier: 3 as Tier },
+            { timestamp: now, parentA: "Plow", parentB: "River", result: "Irrigation", resultTier: 4 as Tier },
+            { timestamp: now, parentA: "Irrigation", parentB: "Sun", result: "Calendar", resultTier: 5 as Tier },
+          ],
+          advancementNarrative: "Bronze tools and irrigation transformed nomads into city-builders.",
+          discoveredItems: ["Metal", "Grain", "Clay", "Ox", "River", "Sun", "Bronze", "Plow", "Irrigation", "Calendar"],
+        },
+      );
+    }
+    showVictory();
+  },
+});
+
+const savedGame = loadGame();
+if (savedGame) {
+  restoreGame(savedGame);
+} else {
+  renderEraName();
+  renderGoals();
+  const initialSeeds = eraManager.getSeeds();
+  log.info("era", `Starting ${eraManager.current.name} with seeds: ${initialSeeds.map((s) => s.name).join(", ")}`);
+  for (const entry of initialSeeds) {
+    addToPalette(entry);
+  }
 }
 
 // --- Document-level pointer drag handlers ---
@@ -236,6 +353,7 @@ function updateOverlapGlow(dragged: CombineItem) {
 
 // --- Check if the dropped item overlaps another; if so, combine ---
 function checkOverlap(dropped: CombineItem) {
+  if (busy) return;
   const other = findOverlap(dropped);
   if (!other) return;
   if (dropped.name === other.name || dropped.tier === 5 || other.tier === 5) return;
@@ -244,13 +362,21 @@ function checkOverlap(dropped: CombineItem) {
 
 // --- Combine two items into a new one ---
 async function combine(a: CombineItem, b: CombineItem) {
+  if (busy) return;
   const key = recipeKey(a.name, b.name);
   const midX = (a.x + b.x) / 2;
   const midY = (a.y + b.y) / 2;
 
-  // Remove parents
+  // Remove parents and show combining placeholder
   removeItem(a);
   removeItem(b);
+
+  const placeholder = document.createElement("div");
+  placeholder.className = "combine-placeholder";
+  placeholder.style.left = `${midX}px`;
+  placeholder.style.top = `${midY}px`;
+  placeholder.innerHTML = `<span class="placeholder-emoji">${a.emoji}</span><span class="placeholder-plus">\u2728</span><span class="placeholder-emoji">${b.emoji}</span>`;
+  workspace.appendChild(placeholder);
 
   // Check recipe store (cached AI results)
   let elementData = await recipeStore.get(key);
@@ -275,7 +401,7 @@ async function combine(a: CombineItem, b: CombineItem) {
       const msg = err instanceof Error ? err.message : String(err);
       log.error("api", `Combine failed: ${msg}`);
       if (msg.includes("gcloud auth") || msg.includes("invalid_grant") || msg.includes("RAPT")) {
-        showToast("\u26A0\uFE0F GCP auth expired — run: gcloud auth application-default login", 8000);
+        showEraToast("\u26A0\uFE0F Auth Expired", "GCP credentials have expired. Run this in your terminal:\n\ngcloud auth application-default login\n\nThen try combining again.");
       }
       elementData = {
         name: `${a.name}+${b.name}`,
@@ -289,7 +415,8 @@ async function combine(a: CombineItem, b: CombineItem) {
     bari.classList.remove("active");
   }
 
-  // Spawn child
+  // Remove placeholder and spawn child
+  placeholder.remove();
   const child = spawnItem(elementData, midX, midY);
   child.el.classList.add("merging");
   setTimeout(() => child.el.classList.remove("merging"), 400);
@@ -308,7 +435,8 @@ async function combine(a: CombineItem, b: CombineItem) {
   actionLog.push(entry);
   eraActionLog.push(entry);
 
-  // Check era advancement
+  // Save and check era advancement
+  persistGame();
   checkEraAdvancement();
 }
 
@@ -336,7 +464,7 @@ async function checkEraAdvancement() {
   const inventory = getDiscoveredItems();
 
   const result = await eraManager.checkAdvancement(
-    actionLog,
+    eraActionLog,
     inventory,
     tier5Count,
     selectedModel,
@@ -347,6 +475,9 @@ async function checkEraAdvancement() {
 
   if (!result) return;
 
+  // Lock combining during era transition
+  busy = true;
+
   // Record this era's history
   eraManager.recordHistory(eraActionLog, result.narrative, inventory);
   eraActionLog = [];
@@ -354,6 +485,7 @@ async function checkEraAdvancement() {
   // Check if this was the last era (Space Age)
   if (eraManager.isLastEra) {
     log.info("era", "VICTORY — Space Age completed!");
+    clearSave();
     showVictory();
     return;
   }
@@ -377,12 +509,14 @@ async function checkEraAdvancement() {
     for (const seed of newSeeds) addToPalette(seed);
     renderEraName();
     renderGoals();
+    persistGame();
+    busy = false;
   }
 }
 
 function showEraToast(title: string, text: string) {
   eraToastTitle.textContent = title;
-  eraToastText.textContent = text;
+  eraToastText.innerText = text;
   eraToast.classList.add("visible");
 }
 
@@ -394,7 +528,7 @@ function showVictory() {
 
   // Build timeline
   victoryTimeline.innerHTML = eraManager.history
-    .map((h) => {
+    .map((h, i) => {
       const seeds = h.startingSeeds.join("  ");
       const topItems = h.discoveredItems.slice(0, 8).join(", ");
       const combineCount = h.actions.length;
@@ -408,12 +542,23 @@ function showVictory() {
             <span>${h.discoveredItems.length} items discovered</span>
           </div>
           <div class="victory-items">${topItems}${h.discoveredItems.length > 8 ? "..." : ""}</div>
+          <canvas class="victory-graph" id="victory-graph-${i}"></canvas>
         </div>
       `;
     })
     .join("");
 
   victoryOverlay.classList.add("visible");
+
+  // Render graphs after DOM is visible
+  requestAnimationFrame(() => {
+    eraManager.history.forEach((h, i) => {
+      const canvas = document.getElementById(`victory-graph-${i}`) as HTMLCanvasElement | null;
+      if (!canvas || h.actions.length === 0) return;
+      const seedNames = h.startingSeeds.map((s) => s.replace(/^.+\s/, "")); // strip emoji prefix
+      renderCombinationGraph(canvas, h.actions, seedNames);
+    });
+  });
 }
 
 victoryShareBtn.addEventListener("click", async () => {
@@ -514,6 +659,7 @@ function addToPalette(entry: ElementData) {
   `;
   // Spawn a workspace item at cursor and start dragging immediately
   div.addEventListener("pointerdown", (e) => {
+    if (busy) return;
     e.preventDefault();
     const rect = workspace.getBoundingClientRect();
     const x = e.clientX - rect.left - 36;
