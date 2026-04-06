@@ -1,10 +1,15 @@
 import type { CombineResult, ModelId } from "./types";
 
-export async function combineElements(model: ModelId, prompt: string): Promise<CombineResult> {
+export async function combineElements(
+  model: ModelId,
+  prompt: string,
+  tier?: number,
+  eraName?: string,
+): Promise<CombineResult> {
   const res = await fetch("/api/combine", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model, prompt }),
+    body: JSON.stringify({ model, prompt, tier, eraName }),
   });
 
   if (!res.ok) {

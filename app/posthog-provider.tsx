@@ -6,11 +6,24 @@ import { useEffect } from 'react'
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
-      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
+    const host = process.env.NEXT_PUBLIC_POSTHOG_HOST
+
+    if (!key) {
+      console.warn('[PostHog] NEXT_PUBLIC_POSTHOG_KEY is not set — tracking disabled')
+      return
+    }
+
+    posthog.init(key, {
+      api_host: host,
+      defaults: '2026-01-30',
       person_profiles: 'identified_only',
-      capture_pageview: false, // handled by SuspendedPostHogPageView
+      capture_pageview: false,
       capture_pageleave: true,
+      debug: process.env.NODE_ENV === 'development',
+      loaded: (ph) => {
+        console.log(`[PostHog] Initialized ✓ distinct_id=${ph.get_distinct_id()}`)
+      },
     })
   }, [])
 

@@ -10,6 +10,7 @@ import { saveGame, loadGame, clearSave } from "./save";
 import type { SaveData } from "./save";
 import { renderCombinationGraph } from "./combination-graph";
 import { authStore } from "./store/auth";
+import posthog from "posthog-js";
 
 // --- Types ---
 interface CombineItem {
@@ -135,6 +136,7 @@ const scoreboardCloseBtn = document.getElementById("scoreboard-close-btn")!;
 const handleModelChange = () => {
   selectedModel = modelSelect.value as ModelId;
   log.info("system", `Model switched to ${selectedModel}`);
+  posthog.capture('model_changed', { model: selectedModel });
 };
 
 const handleEraToastClose = () => {
@@ -143,6 +145,10 @@ const handleEraToastClose = () => {
 
 const handleRestart = () => {
   if (!confirm("Start a new game? All progress will be lost.")) return;
+  posthog.capture('game_restarted', {
+    current_era: eraManager.current.name,
+    combinations_so_far: actionLog.length,
+  });
   clearSave();
   location.reload();
 };
@@ -260,6 +266,11 @@ initDebugConsole({
 const savedGame = loadGame();
 if (savedGame) {
   restoreGame(savedGame);
+  posthog.capture('game_resumed', {
+    era_name: eraManager.current.name,
+    combinations_so_far: actionLog.length,
+    items_discovered: getDiscoveredItems().length,
+  });
 } else {
   renderEraName();
   renderGoals();
@@ -268,6 +279,7 @@ if (savedGame) {
   for (const entry of initialSeeds) {
     addToPalette(entry);
   }
+  posthog.capture('game_started', { era_name: eraManager.current.name });
 }
 
 // --- Document-level pointer drag handlers ---
@@ -405,9 +417,11 @@ async function combine(a: CombineItem, b: CombineItem) {
   workspace.appendChild(placeholder);
 
   // Check recipe store (cached AI results)
+  let isCacheHit = false;
   let elementData = await recipeStore.get(key);
 
   if (elementData) {
+    isCacheHit = true;
     log.debug("game", `Cache hit: ${key} → ${elementData.name}`);
   } else {
     const childTier = Math.min(Math.max(a.tier, b.tier) + 1, 5) as Tier;
@@ -419,7 +433,7 @@ async function combine(a: CombineItem, b: CombineItem) {
       const template = await promptProvider.getPrompt(childTier, eraManager.current.name);
       const prompt = template.replace("{{a}}", a.name).replace("{{b}}", b.name);
       log.debug("api", `Calling ${selectedModel} for ${a.name} + ${b.name}`);
-      const result = await combineElements(selectedModel, prompt);
+      const result = await combineElements(selectedModel, prompt, childTier, eraManager.current.name);
       elementData = { ...result, tier: childTier };
       await recipeStore.set(key, elementData);
       log.info("api", `Result: ${result.emoji} ${result.name} (${result.color})`);
@@ -448,7 +462,24 @@ async function combine(a: CombineItem, b: CombineItem) {
   setTimeout(() => child.el.classList.remove("merging"), 400);
 
   showToast(`${a.emoji} ${a.name} + ${b.emoji} ${b.name} = ${elementData.emoji} ${elementData.name}`);
+  const isFirstDiscovery = !paletteItems.querySelector(`[data-name="${elementData.name}"]`);
   addToPaletteIfNew(elementData);
+  posthog.capture('combination_created', {
+    item_a: a.name,
+    item_b: b.name,
+    result: elementData.name,
+    result_tier: elementData.tier,
+    is_cache_hit: isCacheHit,
+    model: selectedModel,
+    era_name: eraManager.current.name,
+  });
+  if (isFirstDiscovery) {
+    posthog.capture('item_discovered', {
+      item: elementData.name,
+      tier: elementData.tier,
+      era_name: eraManager.current.name,
+    });
+  }
 
   // Log action
   const entry: ActionLogEntry = {
@@ -501,6 +532,12 @@ async function checkEraAdvancement() {
 
   if (!result) return;
 
+  // Snapshot pre-mutation values for PostHog
+  const fromEra = eraManager.current.name;
+  const eraNumber = eraManager.history.length + 1;
+  const combinationsInEra = eraActionLog.length;
+  const itemsDiscoveredInEra = getDiscoveredItems().length;
+
   // Lock combining during era transition
   busy = true;
 
@@ -525,6 +562,13 @@ async function checkEraAdvancement() {
   const nextEra = eraManager.advanceTo(choice.era.name);
   if (nextEra) {
     log.info("era", `Era advanced to: ${nextEra.name}`);
+    posthog.capture('era_advanced', {
+      from_era: fromEra,
+      to_era: nextEra.name,
+      era_number: eraNumber,
+      combinations_in_era: combinationsInEra,
+      items_discovered_in_era: itemsDiscoveredInEra,
+    });
     const completedEraRecord = eraManager.history[eraManager.history.length - 1];
     showEraToast(`${nextEra.name} Begins!`, choice.narrative, completedEraRecord ? {
       eraName: completedEraRecord.eraName,
@@ -547,6 +591,7 @@ async function checkEraAdvancement() {
 }
 
 function showScoreboard() {
+  posthog.capture('scoreboard_opened');
   const currentItems = getDiscoveredItems();
 
   const historyHtml = eraManager.history.map(h => {
@@ -635,6 +680,11 @@ function updateVictoryAuthSection() {
 }
 
 function showVictory() {
+  posthog.capture('game_completed', {
+    total_eras: eraManager.history.length,
+    total_combinations: actionLog.length,
+    total_items_discovered: getDiscoveredItems().length,
+  });
   // Set era name to The Age of Plenty
   document.getElementById("era-name")!.textContent = "The Age of Plenty";
   document.getElementById("era-goals")!.innerHTML =

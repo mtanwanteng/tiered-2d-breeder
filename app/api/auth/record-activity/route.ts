@@ -3,6 +3,7 @@ import { auth } from "../../../auth";
 import { db } from "../../../../src/db";
 import { user } from "../../../../src/db/schema";
 import { eq, sql } from "drizzle-orm";
+import { getPostHogClient } from "../../../../src/lib/posthog-server";
 
 export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({ headers: req.headers });
@@ -22,6 +23,10 @@ export async function POST(req: NextRequest) {
       updatedAt: now,
     })
     .where(eq(user.id, session.user.id));
+
+  const ph = getPostHogClient();
+  ph.capture({ distinctId: session.user.id, event: 'session_started' });
+  await ph.shutdown();
 
   return NextResponse.json({ ok: true });
 }
