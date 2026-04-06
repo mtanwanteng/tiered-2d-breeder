@@ -813,6 +813,14 @@ function showToast(msg: string, durationMs = 2000) {
   toastTimer = window.setTimeout(() => toast.classList.remove("visible"), durationMs);
 }
 
+// Expose game reset to React auth layer (called on sign-out)
+authStore.setState({
+  resetGame: () => {
+    clearSave();
+    location.reload();
+  },
+});
+
 // Subscribe to auth state changes to keep victory screen in sync
 const unsubAuth = authStore.subscribe(
   (s) => s.isLoggedIn,
@@ -821,6 +829,7 @@ const unsubAuth = authStore.subscribe(
 
 return () => {
   unsubAuth();
+  authStore.setState({ resetGame: null });
   clearTimeout(toastTimer);
   document.removeEventListener("pointermove", handlePointerMove);
   document.removeEventListener("pointerup", handlePointerUp);
