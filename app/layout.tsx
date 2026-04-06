@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { PostHogProvider } from "./posthog-provider";
 import PostHogPageView from "./posthog-pageview";
+import { AuthProvider } from "./components/auth-provider";
 
 export const metadata: Metadata = {
   title: "Tiered 2D Breeder",
@@ -22,7 +23,9 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <PostHogPageView />
           </Suspense>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </PostHogProvider>
       </body>
     </html>

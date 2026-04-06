@@ -9,6 +9,7 @@ import { initDebugConsole } from "./debug-console";
 import { saveGame, loadGame, clearSave } from "./save";
 import type { SaveData } from "./save";
 import { renderCombinationGraph } from "./combination-graph";
+import { authStore } from "./store/auth";
 
 // --- Types ---
 interface CombineItem {
@@ -85,9 +86,20 @@ app.innerHTML = `
   <div id="result-toast"></div>
   <div id="era-toast">
     <h3 id="era-toast-title"></h3>
+    <div id="era-toast-stats"></div>
     <p id="era-toast-text"></p>
     <button id="era-toast-btn">Continue</button>
   </div>
+  <div id="scoreboard-overlay">
+    <div id="scoreboard-panel">
+      <h2>Civilization Progress</h2>
+      <div id="scoreboard-timeline"></div>
+      <div class="scoreboard-actions">
+        <button id="scoreboard-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+  <button id="scoreboard-btn" title="View Scoreboard">\uD83D\uDCDC</button>
   <div id="victory-overlay">
     <div id="victory-panel">
       <h2>The Age of Plenty</h2>
@@ -111,9 +123,14 @@ const eraToastText = document.getElementById("era-toast-text")!;
 const eraToastBtn = document.getElementById("era-toast-btn")!;
 
 const victoryOverlay = document.getElementById("victory-overlay")!;
+const victoryPanel = document.getElementById("victory-panel")!;
 const victoryTimeline = document.getElementById("victory-timeline")!;
 const victoryShareBtn = document.getElementById("victory-share-btn")!;
 const restartButton = document.getElementById("restart-btn")!;
+const scoreboardOverlay = document.getElementById("scoreboard-overlay")!;
+const scoreboardTimeline = document.getElementById("scoreboard-timeline")!;
+const scoreboardBtn = document.getElementById("scoreboard-btn")!;
+const scoreboardCloseBtn = document.getElementById("scoreboard-close-btn")!;
 
 const handleModelChange = () => {
   selectedModel = modelSelect.value as ModelId;
@@ -133,6 +150,8 @@ const handleRestart = () => {
 modelSelect.addEventListener("change", handleModelChange);
 eraToastBtn.addEventListener("click", handleEraToastClose);
 restartButton.addEventListener("click", handleRestart);
+scoreboardBtn.addEventListener("click", showScoreboard);
+scoreboardCloseBtn.addEventListener("click", () => scoreboardOverlay.classList.remove("visible"));
 
 // --- Save/Load ---
 function persistGame() {
@@ -506,7 +525,13 @@ async function checkEraAdvancement() {
   const nextEra = eraManager.advanceTo(choice.era.name);
   if (nextEra) {
     log.info("era", `Era advanced to: ${nextEra.name}`);
-    showEraToast(`${nextEra.name} Begins!`, choice.narrative);
+    const completedEraRecord = eraManager.history[eraManager.history.length - 1];
+    showEraToast(`${nextEra.name} Begins!`, choice.narrative, completedEraRecord ? {
+      eraName: completedEraRecord.eraName,
+      combineCount: completedEraRecord.actions.length,
+      itemCount: completedEraRecord.discoveredItems.length,
+      topItems: completedEraRecord.discoveredItems,
+    } : undefined);
     // Clear workspace
     for (const item of [...items]) removeItem(item);
     // Clear palette and load new seeds
@@ -521,10 +546,92 @@ async function checkEraAdvancement() {
   }
 }
 
-function showEraToast(title: string, text: string) {
+function showScoreboard() {
+  const currentItems = getDiscoveredItems();
+
+  const historyHtml = eraManager.history.map(h => {
+    const topItems = h.discoveredItems.slice(0, 8).join(", ");
+    return `
+      <div class="scoreboard-era completed">
+        <div class="scoreboard-era-header">
+          <h4>${h.eraName}</h4>
+          <span class="scoreboard-era-badge">\u2714 Complete</span>
+        </div>
+        <div class="scoreboard-era-stats">
+          <span>${h.actions.length} combinations</span>
+          <span>\u00B7</span>
+          <span>${h.discoveredItems.length} items discovered</span>
+        </div>
+        <p class="scoreboard-narrative">${h.advancementNarrative}</p>
+        ${topItems ? `<div class="scoreboard-items">${topItems}${h.discoveredItems.length > 8 ? "..." : ""}</div>` : ""}
+      </div>
+    `;
+  }).join("");
+
+  const currentHtml = `
+    <div class="scoreboard-era current">
+      <div class="scoreboard-era-header">
+        <h4>${eraManager.current.name}</h4>
+        <span class="scoreboard-era-badge current-badge">In Progress</span>
+      </div>
+      <div class="scoreboard-era-stats">
+        <span>${eraActionLog.length} combinations</span>
+        <span>\u00B7</span>
+        <span>${currentItems.length} items discovered</span>
+      </div>
+    </div>
+  `;
+
+  const totalHtml = `
+    <div class="scoreboard-totals">
+      Total: ${actionLog.length} combinations across ${eraManager.history.length + 1} era${eraManager.history.length !== 0 ? "s" : ""}
+    </div>
+  `;
+
+  scoreboardTimeline.innerHTML = historyHtml + currentHtml + totalHtml;
+  scoreboardOverlay.classList.add("visible");
+}
+
+function showEraToast(title: string, text: string, completedEra?: { eraName: string; combineCount: number; itemCount: number; topItems: string[] }) {
   eraToastTitle.textContent = title;
   eraToastText.innerText = text;
+  const statsEl = document.getElementById("era-toast-stats")!;
+  if (completedEra) {
+    const items = completedEra.topItems.slice(0, 6).join(", ");
+    statsEl.innerHTML = `
+      <div class="era-toast-completed">
+        <div class="era-toast-completed-name">${completedEra.eraName} complete</div>
+        <div class="era-toast-completed-stats">
+          <span>${completedEra.combineCount} combinations</span>
+          <span>\u00B7</span>
+          <span>${completedEra.itemCount} items discovered</span>
+        </div>
+        ${items ? `<div class="era-toast-completed-items">${items}${completedEra.topItems.length > 6 ? "..." : ""}</div>` : ""}
+      </div>
+    `;
+  } else {
+    statsEl.innerHTML = "";
+  }
   eraToast.classList.add("visible");
+}
+
+function updateVictoryAuthSection() {
+  const section = document.getElementById("victory-auth-section");
+  if (!section) return;
+  const { isLoggedIn, name, openLoginFromVictory } = authStore.getState();
+  if (isLoggedIn) {
+    section.innerHTML = `<div class="victory-auth-saved">✓ Saved to ${name ?? "your account"}</div>`;
+  } else {
+    section.innerHTML = `
+      <div class="victory-auth-prompt">
+        <p>Save your achievements to your account</p>
+        <button id="victory-signin-btn" class="victory-signin-btn">Sign in</button>
+      </div>
+    `;
+    document.getElementById("victory-signin-btn")?.addEventListener("click", () => {
+      openLoginFromVictory?.();
+    });
+  }
 }
 
 function showVictory() {
@@ -554,6 +661,15 @@ function showVictory() {
       `;
     })
     .join("");
+
+  // Inject auth section before actions
+  const victoryActions = victoryPanel.querySelector(".victory-actions")!;
+  if (!document.getElementById("victory-auth-section")) {
+    const authSection = document.createElement("div");
+    authSection.id = "victory-auth-section";
+    victoryPanel.insertBefore(authSection, victoryActions);
+  }
+  updateVictoryAuthSection();
 
   victoryOverlay.classList.add("visible");
 
@@ -697,7 +813,14 @@ function showToast(msg: string, durationMs = 2000) {
   toastTimer = window.setTimeout(() => toast.classList.remove("visible"), durationMs);
 }
 
+// Subscribe to auth state changes to keep victory screen in sync
+const unsubAuth = authStore.subscribe(
+  (s) => s.isLoggedIn,
+  () => updateVictoryAuthSection()
+);
+
 return () => {
+  unsubAuth();
   clearTimeout(toastTimer);
   document.removeEventListener("pointermove", handlePointerMove);
   document.removeEventListener("pointerup", handlePointerUp);
@@ -705,6 +828,7 @@ return () => {
   eraToastBtn.removeEventListener("click", handleEraToastClose);
   restartButton.removeEventListener("click", handleRestart);
   victoryShareBtn.removeEventListener("click", handleVictoryShare);
+  scoreboardBtn.removeEventListener("click", showScoreboard);
   app.innerHTML = "";
 };
 }

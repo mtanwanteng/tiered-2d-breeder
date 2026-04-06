@@ -579,6 +579,205 @@ body {
   background: #ffed4a;
 }
 
+/* --- Era toast completed-era stats --- */
+#era-toast-stats {
+  margin-bottom: 12px;
+}
+
+.era-toast-completed {
+  background: #0f3460;
+  border-radius: 8px;
+  padding: 10px 14px;
+  border-left: 3px solid #ffd700;
+  text-align: left;
+  margin-bottom: 4px;
+}
+
+.era-toast-completed-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffd700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.era-toast-completed-stats {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+
+.era-toast-completed-items {
+  font-size: 10px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* --- Scoreboard button --- */
+#scoreboard-btn {
+  position: fixed;
+  bottom: 12px;
+  right: 56px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #0f3460;
+  border: 1px solid #1a4a8a;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+#scoreboard-btn:hover {
+  background: #1a4a8a;
+}
+
+/* --- Scoreboard overlay --- */
+#scoreboard-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 350;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+#scoreboard-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#scoreboard-panel {
+  background: #16213e;
+  border: 2px solid #ffd700;
+  border-radius: 20px;
+  padding: 28px 36px;
+  max-width: 560px;
+  width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  text-align: center;
+}
+
+#scoreboard-panel h2 {
+  color: #ffd700;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+#scoreboard-timeline {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.scoreboard-era {
+  background: #0f3460;
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+
+.scoreboard-era.completed {
+  border-left: 4px solid #ffd700;
+}
+
+.scoreboard-era.current {
+  border-left: 4px solid #e94560;
+}
+
+.scoreboard-era-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.scoreboard-era-header h4 {
+  color: #ffd700;
+  font-size: 14px;
+}
+
+.scoreboard-era.current .scoreboard-era-header h4 {
+  color: #e94560;
+}
+
+.scoreboard-era-badge {
+  font-size: 10px;
+  background: #1a4a8a;
+  color: #7af;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.scoreboard-era-badge.current-badge {
+  background: rgba(233, 69, 96, 0.2);
+  color: #e94560;
+}
+
+.scoreboard-era-stats {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.scoreboard-narrative {
+  color: #ccc;
+  font-size: 11px;
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.scoreboard-items {
+  font-size: 10px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.scoreboard-totals {
+  font-size: 11px;
+  color: #555;
+  text-align: center;
+  padding: 8px 0 0;
+  border-top: 1px solid #0f3460;
+}
+
+.scoreboard-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.scoreboard-actions button {
+  background: #ffd700;
+  color: #1a1a2e;
+  border: none;
+  padding: 8px 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.scoreboard-actions button:hover {
+  background: #ffed4a;
+}
+
 /* --- Debug console --- */
 #debug-toggle {
   position: fixed;
@@ -700,4 +899,196 @@ body {
 
 .debug-time {
   color: #555;
+}
+
+/* --- Auth overlay --- */
+
+.auth-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-login-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #eee;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.auth-login-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.auth-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 4px 10px 4px 4px;
+}
+
+.auth-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.auth-user-name {
+  font-size: 13px;
+  color: #ddd;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-signout-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+}
+
+.auth-signout-btn:hover {
+  color: #ccc;
+}
+
+/* --- Auth modal --- */
+
+.auth-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-modal {
+  background: #1e2a4a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 32px 28px;
+  width: 320px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px 6px;
+}
+
+.auth-modal-close:hover {
+  color: #eee;
+}
+
+.auth-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #eee;
+  margin: 0;
+}
+
+.auth-modal-subtitle {
+  font-size: 13px;
+  color: #aaa;
+  margin: -8px 0 0;
+}
+
+.auth-modal-providers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-provider-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: opacity 0.15s;
+  width: 100%;
+}
+
+.auth-provider-btn:hover {
+  opacity: 0.85;
+}
+
+.auth-provider-google {
+  background: #fff;
+  color: #333;
+}
+
+.auth-provider-discord {
+  background: #5865f2;
+  color: #fff;
+}
+
+/* --- Victory auth section --- */
+
+.victory-auth-prompt {
+  text-align: center;
+  padding: 16px 0 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.victory-auth-prompt p {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+
+.victory-signin-btn {
+  background: #ffd700;
+  color: #1a1a2e;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.victory-signin-btn:hover {
+  background: #ffe44d;
+}
+
+.victory-auth-saved {
+  text-align: center;
+  padding: 14px 0 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  color: #4caf50;
 }
