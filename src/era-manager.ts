@@ -191,13 +191,23 @@ export class EraManager {
   }
 
   /** Record the current era's history */
-  recordHistory(actions: ActionLogEntry[], narrative: string, discoveredItems: string[]) {
+  recordHistory(
+    actions: ActionLogEntry[],
+    narrative: string,
+    discoveredItems: string[],
+    eraStartedAt?: number,
+    eraCompletedAt?: number,
+    tileSpawnCounts?: Record<string, number>,
+  ) {
     this.history.push({
       eraName: this.current.name,
       startingSeeds: this.getSeeds().map((s) => `${s.emoji} ${s.name}`),
       actions: [...actions],
       advancementNarrative: narrative,
       discoveredItems: [...discoveredItems],
+      eraStartedAt,
+      eraCompletedAt,
+      tileSpawnCounts: tileSpawnCounts ? { ...tileSpawnCounts } : undefined,
     });
   }
 

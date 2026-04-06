@@ -21,7 +21,7 @@
 
 | Stat | Data needed | Status |
 |------|-------------|--------|
-| Tiles placed by tier — e.g. gen1: 20, gen2: 8, gen3: 3, total: 31 | Count of `tile_spawned` events per tier in save | **Missing** — `tile_spawned` not yet tracked in save system |
+| Tiles placed by tier — e.g. gen1: 20, gen2: 8, gen3: 3, total: 31 | `tileSpawnCounts` on `EraHistory`, grouped by tier | Available |
 | Tile combinations discovered by tier — e.g. gen2: 4, gen3: 2, total: 6 | Count of unique results per tier in `eraActionLog` | Available — derivable from `eraActionLog` |
 | Number of combinations created | `eraActionLog.length` | Available |
 | Highest tier combination made | Max `resultTier` in `eraActionLog` | Available |
@@ -33,10 +33,10 @@
 
 | Stat | Data needed | Status |
 |------|-------------|--------|
-| Time spent per era | `eraStartedAt` + `eraCompletedAt` timestamps on `EraHistory` | **Missing** — timestamps not in `EraHistory` |
-| Total time played | Sum of era durations | **Missing** — depends on above |
+| Time spent per era | `eraStartedAt` + `eraCompletedAt` on `EraHistory` | Available — note: restored games track from resume point, not original start |
+| Total time played | Sum of `(eraCompletedAt - eraStartedAt)` across `EraHistory` | Available |
 | Avg time between combinations | Timestamps on `eraActionLog` entries (already have `timestamp`) | Available — `ActionLogEntry.timestamp` exists |
-| Avg time per tile placed | Timestamps on spawn events in save | **Missing** — tile_spawned not in save |
+| Avg time per tile placed | `tileSpawnCounts` + `eraStartedAt`/`eraCompletedAt` on `EraHistory` | Available |
 | Avg time per new discovery | Timestamps on first-discovery entries in `eraActionLog` | Derivable from `eraActionLog.timestamp` |
 
 ### End of Era Snapshot
@@ -45,7 +45,7 @@
 |------|--------|
 | Era name, combinations, items discovered, narrative | Available — in `EraHistory` |
 | Advancement conditions met | Available — `eraManager.goalStates` |
-| Time to complete era | **Missing** — needs era timestamps |
+| Time to complete era | `eraCompletedAt - eraStartedAt` on `EraHistory` | Available |
 
 ---
 
@@ -57,9 +57,9 @@
 
 | Question | Source events | Status |
 |----------|---------------|--------|
-| How many tiles do players place per era? | `tile_spawned` count grouped by `era_name` | **Missing** — `tile_spawned` not tracked |
-| What's the max tiles in play at once? | Peak `tile_spawned` minus combines (complex) | **Missing** |
-| Which palette items do players ignore? | `tile_spawned` by `item` — items with low spawn rate | **Missing** |
+| How many tiles do players place per era? | `tile_spawned` count grouped by `era_name` | Available |
+| What's the max tiles in play at once? | Peak `tile_spawned` minus combines (complex) | **Missing** — requires per-player state tracking |
+| Which palette items do players ignore? | `tile_spawned` by `item` — items with low spawn rate | Available |
 | How many combinations per era? | `combination_created` count grouped by `era_name` | Available |
 | What's the discovery rate? | `item_discovered` / `combination_created` ratio | Available |
 | How often do players repeat known combos? | `is_cache_hit` on `combination_created` | Available |
@@ -70,7 +70,7 @@
 | Question | Source | Status |
 |----------|--------|--------|
 | How long between combinations? (TikTok threshold ~12s) | Delta between consecutive `combination_created` timestamps | Available — PostHog timestamps |
-| How long between tile placements? | Delta between `tile_spawned` timestamps | **Missing** |
+| How long between tile placements? | Delta between `tile_spawned` timestamps | Available — PostHog timestamps |
 | How long does each era take? | `era_advanced` timestamp minus prior `era_advanced` or `game_started` | Available — derivable |
 | Total session length | `$pageleave` minus `game_started` / `game_resumed` | Available — PostHog sessions |
 
@@ -150,6 +150,7 @@
 | `era_advanced` | `from_era`, `to_era`, `era_number`, `combinations_in_era`, `items_discovered_in_era` |
 | `model_changed` | `model` |
 | `scoreboard_opened` | — |
+| `tile_spawned` | `item`, `tier`, `era_name` |
 
 ### Client — auth components
 
@@ -192,7 +193,7 @@
 
 ### Near-term
 
-- **`tile_spawned`** — fire when a tile is dragged from palette to play area; properties: `{ item, tier, era_name }`. Feeds: scoreboard tile placement counts, favorite tile, game design placement analysis.
+- **Scoreboard tile display** — `tileSpawnCounts` and era timestamps are now in `EraHistory`; the scoreboard UI rendering of these stats still needs to be built.
 - **Era timestamps** — add `eraStartedAt` / `eraCompletedAt` to `EraHistory` in the save system. Feeds: scoreboard time display, game design pace analysis.
 - **`era_rated`** — player rates an era at transition; properties: `{ era_name, era_number, rating, pace }`. Feeds: game design satisfaction + balance.
 - **`game_rated`** — player rates the full game at victory; properties: `{ rating, total_eras, total_time_ms }`.

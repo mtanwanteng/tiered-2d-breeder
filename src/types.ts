@@ -91,4 +91,7 @@ export interface EraHistory {
   actions: ActionLogEntry[];
   advancementNarrative: string;
   discoveredItems: string[];
+  eraStartedAt?: number;     // ms timestamp — absent on saves predating this field
+  eraCompletedAt?: number;   // ms timestamp
+  tileSpawnCounts?: Record<string, number>; // item name → times spawned from palette
 }

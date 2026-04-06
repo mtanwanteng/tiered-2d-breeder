@@ -37,6 +37,8 @@ let selectedModel: ModelId = MODELS[0].id;
 const items: CombineItem[] = [];
 const actionLog: ActionLogEntry[] = [];
 let eraActionLog: ActionLogEntry[] = [];
+let eraStartedAt: number = Date.now();
+let eraSpawnCounts: Record<string, number> = {};
 let idCounter = 0;
 let dragItem: CombineItem | null = null;
 let dragOffsetX = 0;
@@ -266,6 +268,7 @@ initDebugConsole({
 const savedGame = loadGame();
 if (savedGame) {
   restoreGame(savedGame);
+  eraStartedAt = Date.now(); // current era start unknown; track from resume point
   posthog.capture('game_resumed', {
     era_name: eraManager.current.name,
     combinations_so_far: actionLog.length,
@@ -542,8 +545,11 @@ async function checkEraAdvancement() {
   busy = true;
 
   // Record this era's history
-  eraManager.recordHistory(eraActionLog, result.narrative, inventory);
+  const eraCompletedAt = Date.now();
+  eraManager.recordHistory(eraActionLog, result.narrative, inventory, eraStartedAt, eraCompletedAt, eraSpawnCounts);
   eraActionLog = [];
+  eraStartedAt = Date.now();
+  eraSpawnCounts = {};
 
   // Check if this was the last era (Space Age)
   if (eraManager.isLastEra) {
@@ -840,6 +846,8 @@ function addToPalette(entry: ElementData) {
     const x = e.clientX - rect.left - 36;
     const y = e.clientY - rect.top - 36;
     const item = spawnItem(entry, x, y);
+    eraSpawnCounts[entry.name] = (eraSpawnCounts[entry.name] ?? 0) + 1;
+    posthog.capture('tile_spawned', { item: entry.name, tier: entry.tier, era_name: eraManager.current.name });
     dragItem = item;
     dragOffsetX = 36;
     dragOffsetY = 36;
