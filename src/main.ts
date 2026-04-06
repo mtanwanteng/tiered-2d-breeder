@@ -1,4 +1,4 @@
-import type { Tier, ElementData, ModelId, ActionLogEntry } from "./types";
+import type { Tier, ElementData, ModelId, ActionLogEntry, EraHistory } from "./types";
 import { recipeKey, MODELS } from "./types";
 import { combineElements } from "./gemini";
 import { InMemoryRecipeStore } from "./recipes";
@@ -39,6 +39,10 @@ const actionLog: ActionLogEntry[] = [];
 let eraActionLog: ActionLogEntry[] = [];
 let eraStartedAt: number = Date.now();
 let eraSpawnCounts: Record<string, number> = {};
+let eraSpawnByTier: Record<number, number> = {};
+let pendingCombines = 0;
+let eraAdvancing = false;
+let pendingEraResult: { narrative: string } | null = null;
 let idCounter = 0;
 let dragItem: CombineItem | null = null;
 let dragOffsetX = 0;
@@ -95,14 +99,32 @@ app.innerHTML = `
   </div>
   <div id="scoreboard-overlay">
     <div id="scoreboard-panel">
-      <h2>Civilization Progress</h2>
-      <div id="scoreboard-timeline"></div>
-      <div class="scoreboard-actions">
-        <button id="scoreboard-close-btn">Close</button>
+      <div class="scoreboard-header">
+        <h2>Civilization Progress</h2>
+        <button id="scoreboard-close-btn">\u2715</button>
       </div>
+      <div id="scoreboard-timeline"></div>
     </div>
   </div>
   <button id="scoreboard-btn" title="View Scoreboard">\uD83D\uDCDC</button>
+  <div id="era-summary-overlay">
+    <div id="era-summary-panel">
+      <div class="era-summary-header">
+        <div class="era-summary-complete-badge">\u2714 Era Complete</div>
+        <h2 id="era-summary-era-name"></h2>
+      </div>
+      <div id="era-summary-stat-cards"></div>
+      <div id="era-summary-tile-detail"></div>
+      <p class="era-summary-narrative" id="era-summary-narrative"></p>
+      <div class="era-summary-discovered" id="era-summary-discovered"></div>
+      <div class="era-summary-next">
+        <div class="era-summary-next-label">\u2193 Next Era</div>
+        <h3 id="era-summary-next-name"></h3>
+        <p class="era-summary-next-text" id="era-summary-next-text"></p>
+      </div>
+      <button id="era-summary-continue-btn"></button>
+    </div>
+  </div>
   <div id="victory-overlay">
     <div id="victory-panel">
       <h2>The Age of Plenty</h2>
@@ -132,6 +154,7 @@ const victoryShareBtn = document.getElementById("victory-share-btn")!;
 const restartButton = document.getElementById("restart-btn")!;
 const scoreboardOverlay = document.getElementById("scoreboard-overlay")!;
 const scoreboardTimeline = document.getElementById("scoreboard-timeline")!;
+const eraSummaryOverlay = document.getElementById("era-summary-overlay")!;
 const scoreboardBtn = document.getElementById("scoreboard-btn")!;
 const scoreboardCloseBtn = document.getElementById("scoreboard-close-btn")!;
 
@@ -269,6 +292,8 @@ const savedGame = loadGame();
 if (savedGame) {
   restoreGame(savedGame);
   eraStartedAt = Date.now(); // current era start unknown; track from resume point
+  eraSpawnCounts = {};
+  eraSpawnByTier = {};
   posthog.capture('game_resumed', {
     era_name: eraManager.current.name,
     combinations_so_far: actionLog.length,
@@ -404,6 +429,7 @@ function checkOverlap(dropped: CombineItem) {
 // --- Combine two items into a new one ---
 async function combine(a: CombineItem, b: CombineItem) {
   if (busy) return;
+  pendingCombines++;
   const key = recipeKey(a.name, b.name);
   const midX = (a.x + b.x) / 2;
   const midY = (a.y + b.y) / 2;
@@ -498,6 +524,13 @@ async function combine(a: CombineItem, b: CombineItem) {
   // Save and check era advancement
   persistGame();
   checkEraAdvancement();
+
+  pendingCombines--;
+  if (eraAdvancing && pendingCombines === 0 && pendingEraResult) {
+    const result = pendingEraResult;
+    pendingEraResult = null;
+    doEraTransition(result);
+  }
 }
 
 function removeItem(item: CombineItem) {
@@ -515,7 +548,7 @@ function getDiscoveredItems(): string[] {
 }
 
 async function checkEraAdvancement() {
-  // Don't check advancement until the player has created something beyond tier 2
+  if (eraAdvancing) return;
   const hasAdvancedItem = eraActionLog.some((e) => e.resultTier >= 3);
   if (!hasAdvancedItem) return;
   log.debug("era", "Checking era advancement...");
@@ -530,94 +563,171 @@ async function checkEraAdvancement() {
     selectedModel,
   );
 
-  // Re-render goals to show newly checked-off conditions
   renderGoals();
 
   if (!result) return;
+  if (eraAdvancing) return; // another call won the race while we awaited
 
-  // Snapshot pre-mutation values for PostHog
-  const fromEra = eraManager.current.name;
-  const eraNumber = eraManager.history.length + 1;
-  const combinationsInEra = eraActionLog.length;
-  const itemsDiscoveredInEra = getDiscoveredItems().length;
-
-  // Lock combining during era transition
+  eraAdvancing = true;
   busy = true;
 
-  // Record this era's history
-  const eraCompletedAt = Date.now();
-  eraManager.recordHistory(eraActionLog, result.narrative, inventory, eraStartedAt, eraCompletedAt, eraSpawnCounts);
-  eraActionLog = [];
-  eraStartedAt = Date.now();
-  eraSpawnCounts = {};
-
-  // Check if this was the last era (Space Age)
-  if (eraManager.isLastEra) {
-    log.info("era", "VICTORY — Space Age completed!");
-    clearSave();
-    showVictory();
-    return;
+  if (pendingCombines === 0) {
+    doEraTransition(result);
+  } else {
+    pendingEraResult = result;
   }
+}
 
-  // Ask AI which era to advance to
-  showToast("Bari is charting the next age...", 5000);
-  bari.classList.add("active");
-  const choice = await eraManager.chooseNextEra(actionLog, inventory, selectedModel);
-  bari.classList.remove("active");
+async function doEraTransition(result: { narrative: string }) {
+  try {
+    const inventory = getDiscoveredItems();
+    const completedAt = Date.now();
 
-  const nextEra = eraManager.advanceTo(choice.era.name);
-  if (nextEra) {
-    log.info("era", `Era advanced to: ${nextEra.name}`);
-    posthog.capture('era_advanced', {
-      from_era: fromEra,
-      to_era: nextEra.name,
-      era_number: eraNumber,
-      combinations_in_era: combinationsInEra,
-      items_discovered_in_era: itemsDiscoveredInEra,
-    });
-    const completedEraRecord = eraManager.history[eraManager.history.length - 1];
-    showEraToast(`${nextEra.name} Begins!`, choice.narrative, completedEraRecord ? {
-      eraName: completedEraRecord.eraName,
-      combineCount: completedEraRecord.actions.length,
-      itemCount: completedEraRecord.discoveredItems.length,
-      topItems: completedEraRecord.discoveredItems,
-    } : undefined);
-    // Clear workspace
-    for (const item of [...items]) removeItem(item);
-    // Clear palette and load new seeds
-    paletteItems.innerHTML = "";
-    const newSeeds = eraManager.getSeeds();
-    log.info("era", `Seeds: ${newSeeds.map((s) => s.name).join(", ")}`);
-    for (const seed of newSeeds) addToPalette(seed);
-    renderEraName();
-    renderGoals();
-    persistGame();
+    const fromEra = eraManager.current.name;
+    const eraNumber = eraManager.history.length + 1;
+    const combinationsInEra = eraActionLog.length;
+    const itemsDiscoveredInEra = inventory.length;
+
+    eraManager.recordHistory(eraActionLog, result.narrative, inventory, eraStartedAt, completedAt, eraSpawnCounts, eraSpawnByTier);
+    eraActionLog = [];
+    eraStartedAt = Date.now();
+    eraSpawnCounts = {};
+    eraSpawnByTier = {};
+
+    if (eraManager.isLastEra) {
+      log.info("era", "VICTORY — Space Age completed!");
+      clearSave();
+      showVictory();
+      return;
+    }
+
+    showToast("Bari is charting the next age...", 5000);
+    bari.classList.add("active");
+    const choice = await eraManager.chooseNextEra(actionLog, inventory, selectedModel);
+    bari.classList.remove("active");
+
+    const nextEra = eraManager.advanceTo(choice.era.name);
+    if (nextEra) {
+      log.info("era", `Era advanced to: ${nextEra.name}`);
+      posthog.capture('era_advanced', {
+        from_era: fromEra,
+        to_era: nextEra.name,
+        era_number: eraNumber,
+        combinations_in_era: combinationsInEra,
+        items_discovered_in_era: itemsDiscoveredInEra,
+      });
+
+      const completedRecord = eraManager.history[eraManager.history.length - 1];
+      showEraSummary(completedRecord!, nextEra.name, choice.narrative, () => {
+        for (const item of [...items]) removeItem(item);
+        paletteItems.innerHTML = "";
+        const newSeeds = eraManager.getSeeds();
+        log.info("era", `Seeds: ${newSeeds.map((s) => s.name).join(", ")}`);
+        for (const seed of newSeeds) addToPalette(seed);
+        renderEraName();
+        renderGoals();
+        persistGame();
+        busy = false;
+        eraAdvancing = false;
+      });
+    }
+  } catch (err) {
+    log.error("era", `Era transition failed: ${err}`);
     busy = false;
+    eraAdvancing = false;
+    pendingEraResult = null;
   }
+}
+
+function formatDuration(ms: number): string {
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  if (m < 60) return rem > 0 ? `${m}m ${rem}s` : `${m}m`;
+  const h = Math.floor(m / 60);
+  const remM = m % 60;
+  return remM > 0 ? `${h}h ${remM}m` : `${h}h`;
+}
+
+function renderEraStatCards(h: { actions: { length: number }; discoveredItems: string[]; eraStartedAt?: number; eraCompletedAt?: number; tileSpawnCounts?: Record<string, number>; tileSpawnByTier?: Record<number, number> }): string {
+  const durationMs = h.eraStartedAt && h.eraCompletedAt ? h.eraCompletedAt - h.eraStartedAt : null;
+  const totalSpawned = h.tileSpawnCounts ? Object.values(h.tileSpawnCounts).reduce((a, b) => a + b, 0) : null;
+  const byTier = h.tileSpawnByTier;
+  const topSpawn = h.tileSpawnCounts ? Object.entries(h.tileSpawnCounts).sort((a, b) => b[1] - a[1])[0] : null;
+
+  const statCards = [
+    durationMs !== null ? `<div class="era-stat"><div class="era-stat-value">${formatDuration(durationMs)}</div><div class="era-stat-label">Time</div></div>` : '',
+    totalSpawned !== null ? `<div class="era-stat"><div class="era-stat-value">${totalSpawned}</div><div class="era-stat-label">Tiles Placed</div></div>` : '',
+    `<div class="era-stat"><div class="era-stat-value">${h.actions.length}</div><div class="era-stat-label">Combos</div></div>`,
+    `<div class="era-stat"><div class="era-stat-value">${h.discoveredItems.length}</div><div class="era-stat-label">Discovered</div></div>`,
+  ].filter(Boolean).join('');
+
+  const tierRow = byTier
+    ? `<div class="era-stat-tier-row">${[1, 2, 3, 4, 5].filter(t => byTier[t]).map(t => `<span class="era-stat-tier-chip">gen${t}: ${byTier[t]}</span>`).join('')}</div>`
+    : '';
+
+  const favoriteRow = topSpawn
+    ? `<div class="era-stat-favorite">\u2605 ${topSpawn[0]} &nbsp;<span class="era-stat-count">${topSpawn[1]}\u00D7</span></div>`
+    : '';
+
+  return `<div class="era-stat-grid">${statCards}</div>${tierRow}${favoriteRow}`;
+}
+
+function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: string, onContinue: () => void) {
+  document.getElementById("era-summary-era-name")!.textContent = record.eraName;
+  document.getElementById("era-summary-stat-cards")!.innerHTML = renderEraStatCards(record);
+  document.getElementById("era-summary-narrative")!.textContent = record.advancementNarrative;
+  const topItems = record.discoveredItems.slice(0, 16).join(", ");
+  document.getElementById("era-summary-discovered")!.textContent = topItems + (record.discoveredItems.length > 16 ? "…" : "");
+  document.getElementById("era-summary-next-name")!.textContent = nextEraName;
+  document.getElementById("era-summary-next-text")!.textContent = nextNarrative;
+  const continueBtn = document.getElementById("era-summary-continue-btn")!;
+  continueBtn.textContent = `Begin ${nextEraName} \u2192`;
+  continueBtn.onclick = () => {
+    eraSummaryOverlay.classList.remove("visible");
+    continueBtn.onclick = null;
+    onContinue();
+  };
+  eraSummaryOverlay.classList.add("visible");
 }
 
 function showScoreboard() {
   posthog.capture('scoreboard_opened');
   const currentItems = getDiscoveredItems();
+  const now = Date.now();
 
   const historyHtml = eraManager.history.map(h => {
-    const topItems = h.discoveredItems.slice(0, 8).join(", ");
+    const topItems = h.discoveredItems.slice(0, 12).join(", ");
     return `
       <div class="scoreboard-era completed">
         <div class="scoreboard-era-header">
           <h4>${h.eraName}</h4>
           <span class="scoreboard-era-badge">\u2714 Complete</span>
         </div>
-        <div class="scoreboard-era-stats">
-          <span>${h.actions.length} combinations</span>
-          <span>\u00B7</span>
-          <span>${h.discoveredItems.length} items discovered</span>
-        </div>
+        ${renderEraStatCards(h)}
         <p class="scoreboard-narrative">${h.advancementNarrative}</p>
-        ${topItems ? `<div class="scoreboard-items">${topItems}${h.discoveredItems.length > 8 ? "..." : ""}</div>` : ""}
+        ${topItems ? `<div class="scoreboard-items">${topItems}${h.discoveredItems.length > 12 ? "\u2026" : ""}</div>` : ""}
       </div>
     `;
   }).join("");
+
+  const currentDurationMs = now - eraStartedAt;
+  const currentTotalSpawned = Object.values(eraSpawnCounts).reduce((a, b) => a + b, 0);
+  const currentByTier = eraSpawnByTier;
+  const currentTopSpawn = Object.entries(eraSpawnCounts).sort((a, b) => b[1] - a[1])[0];
+  const currentTierRow = Object.keys(currentByTier).length > 0
+    ? `<div class="era-stat-tier-row">${[1,2,3,4,5].filter(t => currentByTier[t]).map(t => `<span class="era-stat-tier-chip">gen${t}: ${currentByTier[t]}</span>`).join('')}</div>`
+    : '';
+  const currentFav = currentTopSpawn
+    ? `<div class="era-stat-favorite">\u2605 ${currentTopSpawn[0]} &nbsp;<span class="era-stat-count">${currentTopSpawn[1]}\u00D7</span></div>`
+    : '';
+  const currentStatCards = [
+    `<div class="era-stat"><div class="era-stat-value">${formatDuration(currentDurationMs)}</div><div class="era-stat-label">Time</div></div>`,
+    currentTotalSpawned > 0 ? `<div class="era-stat"><div class="era-stat-value">${currentTotalSpawned}</div><div class="era-stat-label">Tiles Placed</div></div>` : '',
+    `<div class="era-stat"><div class="era-stat-value">${eraActionLog.length}</div><div class="era-stat-label">Combos</div></div>`,
+    `<div class="era-stat"><div class="era-stat-value">${currentItems.length}</div><div class="era-stat-label">Discovered</div></div>`,
+  ].filter(Boolean).join('');
 
   const currentHtml = `
     <div class="scoreboard-era current">
@@ -625,21 +735,28 @@ function showScoreboard() {
         <h4>${eraManager.current.name}</h4>
         <span class="scoreboard-era-badge current-badge">In Progress</span>
       </div>
-      <div class="scoreboard-era-stats">
-        <span>${eraActionLog.length} combinations</span>
-        <span>\u00B7</span>
-        <span>${currentItems.length} items discovered</span>
-      </div>
+      <div class="era-stat-grid">${currentStatCards}</div>
+      ${currentTierRow}${currentFav}
     </div>
   `;
 
-  const totalHtml = `
-    <div class="scoreboard-totals">
-      Total: ${actionLog.length} combinations across ${eraManager.history.length + 1} era${eraManager.history.length !== 0 ? "s" : ""}
+  // Totals
+  const totalCombos = actionLog.length;
+  const totalItems = eraManager.history.reduce((n, h) => n + h.discoveredItems.length, currentItems.length);
+  const totalEras = eraManager.history.length + 1;
+  const totalMs = eraManager.history.reduce((ms, h) =>
+    ms + (h.eraStartedAt && h.eraCompletedAt ? h.eraCompletedAt - h.eraStartedAt : 0), currentDurationMs);
+
+  const totalsHtml = `
+    <div class="scoreboard-totals-section">
+      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${formatDuration(totalMs)}</div><div class="scoreboard-total-label">Total Time</div></div>
+      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalCombos}</div><div class="scoreboard-total-label">Combinations</div></div>
+      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalItems}</div><div class="scoreboard-total-label">Items Found</div></div>
+      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalEras}</div><div class="scoreboard-total-label">Eras</div></div>
     </div>
   `;
 
-  scoreboardTimeline.innerHTML = historyHtml + currentHtml + totalHtml;
+  scoreboardTimeline.innerHTML = historyHtml + currentHtml + totalsHtml;
   scoreboardOverlay.classList.add("visible");
 }
 
@@ -847,6 +964,7 @@ function addToPalette(entry: ElementData) {
     const y = e.clientY - rect.top - 36;
     const item = spawnItem(entry, x, y);
     eraSpawnCounts[entry.name] = (eraSpawnCounts[entry.name] ?? 0) + 1;
+    eraSpawnByTier[entry.tier] = (eraSpawnByTier[entry.tier] ?? 0) + 1;
     posthog.capture('tile_spawned', { item: entry.name, tier: entry.tier, era_name: eraManager.current.name });
     dragItem = item;
     dragOffsetX = 36;

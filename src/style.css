@@ -640,18 +640,16 @@ body {
   background: #1a4a8a;
 }
 
-/* --- Scoreboard overlay --- */
+/* --- Scoreboard overlay (full screen) --- */
 #scoreboard-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.92);
   display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 350;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.4s;
+  transition: opacity 0.3s;
 }
 
 #scoreboard-overlay.visible {
@@ -660,35 +658,60 @@ body {
 }
 
 #scoreboard-panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
   background: #16213e;
-  border: 2px solid #ffd700;
-  border-radius: 20px;
-  padding: 28px 36px;
-  max-width: 560px;
-  width: 90vw;
-  max-height: 85vh;
-  overflow-y: auto;
-  text-align: center;
+  overflow: hidden;
 }
 
-#scoreboard-panel h2 {
+.scoreboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px 14px;
+  border-bottom: 1px solid #0f3460;
+  flex-shrink: 0;
+}
+
+.scoreboard-header h2 {
   color: #ffd700;
-  font-size: 22px;
-  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+#scoreboard-close-btn {
+  background: none;
+  border: 1px solid #2a3a5a;
+  color: #888;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#scoreboard-close-btn:hover {
+  background: #0f3460;
+  color: #fff;
 }
 
 #scoreboard-timeline {
-  text-align: left;
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 28px 24px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 12px;
 }
 
 .scoreboard-era {
   background: #0f3460;
   border-radius: 10px;
-  padding: 12px 16px;
+  padding: 14px 18px;
 }
 
 .scoreboard-era.completed {
@@ -703,12 +726,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
+  margin-bottom: 10px;
 }
 
 .scoreboard-era-header h4 {
   color: #ffd700;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .scoreboard-era.current .scoreboard-era-header h4 {
@@ -720,7 +743,7 @@ body {
   background: #1a4a8a;
   color: #7af;
   border-radius: 4px;
-  padding: 2px 6px;
+  padding: 2px 7px;
 }
 
 .scoreboard-era-badge.current-badge {
@@ -728,53 +751,218 @@ body {
   color: #e94560;
 }
 
-.scoreboard-era-stats {
-  display: flex;
-  gap: 6px;
-  font-size: 11px;
-  color: #888;
-  margin-bottom: 6px;
-}
-
 .scoreboard-narrative {
   color: #ccc;
   font-size: 11px;
   font-style: italic;
   line-height: 1.5;
-  margin-bottom: 6px;
+  margin: 8px 0 6px;
 }
 
 .scoreboard-items {
   font-size: 10px;
-  color: #666;
-  line-height: 1.4;
+  color: #556;
+  line-height: 1.5;
 }
 
-.scoreboard-totals {
-  font-size: 11px;
-  color: #555;
-  text-align: center;
-  padding: 8px 0 0;
-  border-top: 1px solid #0f3460;
-}
-
-.scoreboard-actions {
+/* Totals bar */
+.scoreboard-totals-section {
   display: flex;
-  justify-content: center;
+  gap: 0;
+  border-top: 1px solid #0f3460;
+  flex-shrink: 0;
 }
 
-.scoreboard-actions button {
+.scoreboard-total-stat {
+  flex: 1;
+  padding: 12px 0;
+  text-align: center;
+  border-right: 1px solid #0f3460;
+}
+
+.scoreboard-total-stat:last-child {
+  border-right: none;
+}
+
+.scoreboard-total-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.scoreboard-total-label {
+  font-size: 10px;
+  color: #666;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Shared era stat cards (scoreboard + era summary) --- */
+.era-stat-grid {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.era-stat {
+  background: #16213e;
+  border-radius: 6px;
+  padding: 6px 12px;
+  min-width: 64px;
+  text-align: center;
+}
+
+.era-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.era-stat-label {
+  font-size: 9px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+}
+
+.era-stat-tier-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+.era-stat-tier-chip {
+  background: #1a2a4a;
+  color: #7af;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.era-stat-favorite {
+  font-size: 11px;
+  color: #ffd700;
+  margin-bottom: 2px;
+}
+
+.era-stat-count {
+  color: #888;
+}
+
+/* --- Era summary modal --- */
+#era-summary-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 280;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s;
+}
+
+#era-summary-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#era-summary-panel {
+  background: #16213e;
+  border: 2px solid #ffd700;
+  border-radius: 16px;
+  padding: 28px 36px;
+  width: min(680px, 92vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.era-summary-header {
+  text-align: center;
+}
+
+.era-summary-complete-badge {
+  display: inline-block;
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 12px;
+  margin-bottom: 8px;
+}
+
+#era-summary-era-name {
+  color: #ffd700;
+  font-size: 26px;
+}
+
+.era-summary-narrative {
+  color: #ccc;
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.era-summary-discovered {
+  font-size: 11px;
+  color: #556;
+  line-height: 1.5;
+}
+
+.era-summary-next {
+  background: #0f3460;
+  border-radius: 10px;
+  padding: 14px 18px;
+  border-left: 4px solid #e94560;
+}
+
+.era-summary-next-label {
+  font-size: 10px;
+  color: #e94560;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.era-summary-next h3 {
+  color: #fff;
+  font-size: 17px;
+  margin-bottom: 6px;
+}
+
+.era-summary-next-text {
+  color: #aaa;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#era-summary-continue-btn {
   background: #ffd700;
   color: #1a1a2e;
   border: none;
-  padding: 8px 28px;
-  border-radius: 8px;
+  padding: 12px 32px;
+  border-radius: 10px;
   font-weight: 700;
+  font-size: 15px;
   cursor: pointer;
-  font-size: 14px;
+  align-self: center;
+  margin-top: 4px;
 }
 
-.scoreboard-actions button:hover {
+#era-summary-continue-btn:hover {
   background: #ffed4a;
 }
 

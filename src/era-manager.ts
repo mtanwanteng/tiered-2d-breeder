@@ -198,6 +198,7 @@ export class EraManager {
     eraStartedAt?: number,
     eraCompletedAt?: number,
     tileSpawnCounts?: Record<string, number>,
+    tileSpawnByTier?: Record<number, number>,
   ) {
     this.history.push({
       eraName: this.current.name,
@@ -208,6 +209,7 @@ export class EraManager {
       eraStartedAt,
       eraCompletedAt,
       tileSpawnCounts: tileSpawnCounts ? { ...tileSpawnCounts } : undefined,
+      tileSpawnByTier: tileSpawnByTier ? { ...tileSpawnByTier } : undefined,
     });
   }
 
