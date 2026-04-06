@@ -12,13 +12,19 @@
     "@types/node": "^25.5.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "dotenv": "^17.4.1",
+    "drizzle-kit": "^0.31.10",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "~5.9.3"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
+    "better-auth": "^1.6.0",
+    "drizzle-orm": "^0.45.2",
     "google-auth-library": "^10.6.2",
-    "posthog-js": "^1.364.6"
+    "posthog-js": "^1.364.6",
+    "zustand": "^5.0.12"
   }
 }
