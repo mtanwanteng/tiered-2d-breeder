@@ -66,7 +66,7 @@ export function AuthOverlay() {
               </button>
             ))}
           </div>
-        ) : (
+        ) : !isDiscordActivity() ? (
           <button
             className="auth-login-btn"
             onClick={() => {
@@ -76,7 +76,7 @@ export function AuthOverlay() {
           >
             Sign in
           </button>
-        )}
+        ) : null}
       </div>
       <AuthModal
         isOpen={isModalOpen}
