@@ -7,7 +7,7 @@ import PostHogPageView from "./posthog-pageview";
 import { AuthProvider } from "./components/auth-provider";
 
 export const metadata: Metadata = {
-  title: "Tiered 2D Breeder",
+  title: "Bari The Architect",
   description: "An AI-powered civilization breeding game.",
 };
 

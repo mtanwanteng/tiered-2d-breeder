@@ -187,6 +187,13 @@ restartButton.addEventListener("click", handleRestart);
 scoreboardBtn.addEventListener("click", showScoreboard);
 scoreboardCloseBtn.addEventListener("click", () => scoreboardOverlay.classList.remove("visible"));
 
+const handleKeyDown = (e: KeyboardEvent) => {
+  if (e.key === "Escape" && scoreboardOverlay.classList.contains("visible")) {
+    scoreboardOverlay.classList.remove("visible");
+  }
+};
+document.addEventListener("keydown", handleKeyDown);
+
 // --- Save/Load ---
 function persistGame() {
   const paletteData: ElementData[] = [];
@@ -257,13 +264,17 @@ initDebugConsole({
     // Inject mock history if none exists
     if (eraManager.history.length === 0) {
       const now = Date.now();
+      const era1Start = now - 18 * 60 * 1000;
+      const era1End = now - 10 * 60 * 1000;
+      const era2Start = era1End;
+      const era2End = now - 2 * 60 * 1000;
       const mockActions = [
-        { timestamp: now, parentA: "Fire", parentB: "Stone", result: "Flint Tool", resultTier: 2 as Tier },
-        { timestamp: now, parentA: "Flint Tool", parentB: "Wood", result: "Spear", resultTier: 3 as Tier },
-        { timestamp: now, parentA: "Seed", parentB: "Water", result: "Crop", resultTier: 2 as Tier },
-        { timestamp: now, parentA: "Crop", parentB: "Beast", result: "Farm", resultTier: 3 as Tier },
-        { timestamp: now, parentA: "Spear", parentB: "Farm", result: "Settlement", resultTier: 4 as Tier },
-        { timestamp: now, parentA: "Settlement", parentB: "Fire", result: "Village", resultTier: 5 as Tier },
+        { timestamp: era1Start + 30000, parentA: "Fire", parentB: "Stone", result: "Flint Tool", resultTier: 2 as Tier },
+        { timestamp: era1Start + 60000, parentA: "Flint Tool", parentB: "Wood", result: "Spear", resultTier: 3 as Tier },
+        { timestamp: era1Start + 90000, parentA: "Seed", parentB: "Water", result: "Crop", resultTier: 2 as Tier },
+        { timestamp: era1Start + 120000, parentA: "Crop", parentB: "Beast", result: "Farm", resultTier: 3 as Tier },
+        { timestamp: era1Start + 150000, parentA: "Spear", parentB: "Farm", result: "Settlement", resultTier: 4 as Tier },
+        { timestamp: era1Start + 180000, parentA: "Settlement", parentB: "Fire", result: "Village", resultTier: 5 as Tier },
       ];
       eraManager.history.push(
         {
@@ -272,21 +283,32 @@ initDebugConsole({
           actions: mockActions,
           advancementNarrative: "From stone tools to the first settlements, your people mastered fire and earth.",
           discoveredItems: ["Fire", "Stone", "Water", "Beast", "Wood", "Seed", "Flint Tool", "Spear", "Crop", "Farm", "Settlement", "Village"],
+          eraStartedAt: era1Start,
+          eraCompletedAt: era1End,
+          tileSpawnCounts: { "Fire": 8, "Stone": 6, "Water": 5, "Wood": 4, "Seed": 3, "Beast": 2, "Flint Tool": 3, "Spear": 2, "Crop": 2, "Farm": 1 },
+          tileSpawnByTier: { 1: 28, 2: 5, 3: 4, 4: 1 },
         },
         {
           eraName: "Bronze Age",
           startingSeeds: ["\u2699\uFE0F Metal", "\uD83C\uDF3E Grain", "\uD83C\uDFFA Clay", "\uD83D\uDC02 Ox", "\uD83C\uDF0A River", "\u2600\uFE0F Sun"],
           actions: [
-            { timestamp: now, parentA: "Metal", parentB: "Clay", result: "Bronze", resultTier: 2 as Tier },
-            { timestamp: now, parentA: "Bronze", parentB: "Grain", result: "Plow", resultTier: 3 as Tier },
-            { timestamp: now, parentA: "Plow", parentB: "River", result: "Irrigation", resultTier: 4 as Tier },
-            { timestamp: now, parentA: "Irrigation", parentB: "Sun", result: "Calendar", resultTier: 5 as Tier },
+            { timestamp: era2Start + 45000, parentA: "Metal", parentB: "Clay", result: "Bronze", resultTier: 2 as Tier },
+            { timestamp: era2Start + 90000, parentA: "Bronze", parentB: "Grain", result: "Plow", resultTier: 3 as Tier },
+            { timestamp: era2Start + 135000, parentA: "Plow", parentB: "River", result: "Irrigation", resultTier: 4 as Tier },
+            { timestamp: era2Start + 180000, parentA: "Irrigation", parentB: "Sun", result: "Calendar", resultTier: 5 as Tier },
           ],
           advancementNarrative: "Bronze tools and irrigation transformed nomads into city-builders.",
           discoveredItems: ["Metal", "Grain", "Clay", "Ox", "River", "Sun", "Bronze", "Plow", "Irrigation", "Calendar"],
+          eraStartedAt: era2Start,
+          eraCompletedAt: era2End,
+          tileSpawnCounts: { "Metal": 7, "Grain": 6, "Clay": 5, "River": 4, "Ox": 3, "Sun": 3, "Bronze": 2, "Plow": 2 },
+          tileSpawnByTier: { 1: 32, 2: 3, 3: 2, 4: 1 },
         },
       );
     }
+    // Mirror the real victory path: lock interactions like the real path does.
+    // victoryShown is intentionally NOT set — lets you re-trigger from the debug console.
+    busy = true;
     showVictory();
   },
 });
@@ -1018,6 +1040,7 @@ return () => {
   restartButton.removeEventListener("click", handleRestart);
   victoryShareBtn.removeEventListener("click", handleVictoryShare);
   scoreboardBtn.removeEventListener("click", showScoreboard);
+  document.removeEventListener("keydown", handleKeyDown);
   app.innerHTML = "";
 };
 }
