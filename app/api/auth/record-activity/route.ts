@@ -41,8 +41,10 @@ export async function POST(req: NextRequest) {
   }
 
   const ph = getPostHogClient();
-  ph.capture({ distinctId: session.user.id, event: 'session_started' });
-  await ph.shutdown();
+  if (ph) {
+    ph.capture({ distinctId: session.user.id, event: 'session_started' });
+    await ph.shutdown();
+  }
 
   return NextResponse.json({ ok: true });
 }

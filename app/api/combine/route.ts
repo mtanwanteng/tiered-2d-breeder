@@ -40,16 +40,20 @@ export async function POST(request: Request) {
           ]);
 
     const ph = getPostHogClient();
-    ph.capture({ distinctId: 'anonymous', event: 'ai_combination_requested', properties: { model, tier, era_name: eraName } });
-    await ph.shutdown();
+    if (ph) {
+      ph.capture({ distinctId: 'anonymous', event: 'ai_combination_requested', properties: { model, tier, era_name: eraName } });
+      await ph.shutdown();
+    }
 
     return NextResponse.json(result);
   } catch (error) {
     console.error("Combine error:", error);
 
     const ph = getPostHogClient();
-    ph.capture({ distinctId: 'anonymous', event: 'ai_combination_error', properties: { model, error_type: String(error) } });
-    await ph.shutdown();
+    if (ph) {
+      ph.capture({ distinctId: 'anonymous', event: 'ai_combination_error', properties: { model, error_type: String(error) } });
+      await ph.shutdown();
+    }
 
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
