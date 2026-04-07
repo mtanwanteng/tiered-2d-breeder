@@ -1,0 +1,142 @@
+/* Shared layout for legal pages (Terms, Privacy) */
+
+.page {
+  min-height: 100vh;
+  background: #080d14;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+
+.backLink {
+  display: block;
+  margin-bottom: 16px;
+  color: #5bc4e5;
+  text-decoration: none;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+  align-self: flex-start;
+  max-width: 760px;
+  width: 100%;
+}
+.backLink:hover { opacity: 1; }
+
+.card {
+  width: 100%;
+  max-width: 760px;
+  max-height: calc(100vh - 120px);
+  background: #0d1b2e;
+  border: 1px solid #1d3550;
+  border-radius: 12px;
+  box-shadow: 0 12px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 28px 40px 20px;
+  border-bottom: 1px solid #1d3550;
+  flex-shrink: 0;
+  background: #0d1b2e;
+}
+
+.title {
+  font-family: system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #e8e8e8;
+  margin: 0 0 6px;
+  letter-spacing: 0.01em;
+}
+
+.date {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  color: #5a7a99;
+  margin: 0;
+}
+
+.scrollBody {
+  overflow-y: auto;
+  flex: 1;
+  padding: 32px 40px 40px;
+  scroll-behavior: smooth;
+}
+
+/* Scrollbar styling */
+.scrollBody::-webkit-scrollbar { width: 6px; }
+.scrollBody::-webkit-scrollbar-track { background: transparent; }
+.scrollBody::-webkit-scrollbar-thumb { background: #1d3550; border-radius: 3px; }
+.scrollBody::-webkit-scrollbar-thumb:hover { background: #2a4d70; }
+
+/* Typography */
+.scrollBody p {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #c8d4df;
+  margin: 0 0 16px;
+}
+
+.scrollBody h2 {
+  font-family: system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #e8e8e8;
+  margin: 36px 0 12px;
+  padding-top: 24px;
+  border-top: 1px solid #1d3550;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.scrollBody h2:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+
+.scrollBody h3 {
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #a0bcd4;
+  margin: 20px 0 8px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.scrollBody h4 {
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #7a9db8;
+  margin: 16px 0 6px;
+}
+
+.scrollBody ul {
+  margin: 0 0 16px;
+  padding-left: 20px;
+}
+
+.scrollBody li {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #c8d4df;
+  margin-bottom: 8px;
+}
+
+.scrollBody strong {
+  color: #ddeaf5;
+  font-weight: 600;
+}
+
+.scrollBody a {
+  color: #5bc4e5;
+  text-decoration: none;
+}
+.scrollBody a:hover { text-decoration: underline; }
