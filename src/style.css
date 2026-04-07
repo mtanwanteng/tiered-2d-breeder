@@ -652,16 +652,18 @@ body {
   background: #1a4a8a;
 }
 
-/* --- Scoreboard overlay (full screen) --- */
+/* --- Scoreboard overlay (matches victory style) --- */
 #scoreboard-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 350;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s;
+  transition: opacity 0.4s;
 }
 
 #scoreboard-overlay.visible {
@@ -670,29 +672,37 @@ body {
 }
 
 #scoreboard-panel {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
+  position: relative;
   background: #16213e;
-  overflow: hidden;
+  border: 2px solid #ffd700;
+  border-radius: 20px;
+  padding: 32px 40px;
+  max-width: 90vw;
+  width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  text-align: center;
 }
 
 .scoreboard-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 28px 14px;
-  border-bottom: 1px solid #0f3460;
-  flex-shrink: 0;
+  margin-bottom: 24px;
 }
 
 .scoreboard-header h2 {
   color: #ffd700;
-  font-size: 20px;
+  font-size: 28px;
+  margin-bottom: 4px;
+}
+
+.scoreboard-subtitle {
+  color: #aaa;
+  font-size: 13px;
 }
 
 #scoreboard-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
   background: none;
   border: 1px solid #2a3a5a;
   color: #888;
@@ -712,69 +722,17 @@ body {
 }
 
 #scoreboard-timeline {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 28px 24px;
+  text-align: left;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.scoreboard-era {
-  background: #0f3460;
-  border-radius: 10px;
-  padding: 14px 18px;
-}
-
-.scoreboard-era.completed {
-  border-left: 4px solid #ffd700;
-}
-
-.scoreboard-era.current {
-  border-left: 4px solid #e94560;
-}
-
-.scoreboard-era-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.scoreboard-era-header h4 {
-  color: #ffd700;
-  font-size: 15px;
-}
-
-.scoreboard-era.current .scoreboard-era-header h4 {
-  color: #e94560;
-}
-
-.scoreboard-era-badge {
-  font-size: 10px;
-  background: #1a4a8a;
-  color: #7af;
-  border-radius: 4px;
-  padding: 2px 7px;
-}
-
-.scoreboard-era-badge.current-badge {
-  background: rgba(233, 69, 96, 0.2);
-  color: #e94560;
-}
-
-.scoreboard-narrative {
-  color: #ccc;
-  font-size: 11px;
-  font-style: italic;
-  line-height: 1.5;
-  margin: 8px 0 6px;
-}
-
-.scoreboard-items {
-  font-size: 10px;
+.scoreboard-empty {
   color: #556;
-  line-height: 1.5;
+  font-size: 14px;
+  padding: 32px 0;
 }
 
 /* Totals bar */
@@ -782,12 +740,13 @@ body {
   display: flex;
   gap: 0;
   border-top: 1px solid #0f3460;
-  flex-shrink: 0;
+  padding-top: 16px;
+  margin-top: 8px;
 }
 
 .scoreboard-total-stat {
   flex: 1;
-  padding: 12px 0;
+  padding: 8px 0;
   text-align: center;
   border-right: 1px solid #0f3460;
 }

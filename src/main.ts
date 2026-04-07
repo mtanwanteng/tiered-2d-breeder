@@ -102,8 +102,9 @@ app.innerHTML = `
     <div id="scoreboard-panel">
       <div class="scoreboard-header">
         <h2>Civilization Progress</h2>
-        <button id="scoreboard-close-btn">\u2715</button>
+        <p class="scoreboard-subtitle"></p>
       </div>
+      <button id="scoreboard-close-btn">\u2715</button>
       <div id="scoreboard-timeline"></div>
     </div>
   </div>
@@ -698,70 +699,63 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
 
 function showScoreboard() {
   posthog.capture('scoreboard_opened');
-  const currentItems = getDiscoveredItems();
-  const now = Date.now();
+  const history = eraManager.history;
 
-  const historyHtml = eraManager.history.map(h => {
-    const topItems = h.discoveredItems.slice(0, 12).join(", ");
+  // Header
+  const erasCompleted = history.length;
+  const totalCombos = actionLog.length;
+  const subtitleText = erasCompleted === 0
+    ? 'No eras completed yet \u2014 keep building!'
+    : `${erasCompleted} era${erasCompleted !== 1 ? 's' : ''} completed \u00B7 ${totalCombos} combinations`;
+
+  document.querySelector('.scoreboard-header h2')!.textContent = 'Civilization Progress';
+  document.querySelector('.scoreboard-subtitle')!.textContent = subtitleText;
+
+  if (erasCompleted === 0) {
+    scoreboardTimeline.innerHTML = `<div class="scoreboard-empty">Complete your first era to see it here.</div>`;
+    scoreboardOverlay.classList.add("visible");
+    return;
+  }
+
+  const timelineHtml = history.map((h, i) => {
+    const seeds = h.startingSeeds.join('\u00A0\u00A0');
+    const topItems = h.discoveredItems.slice(0, 8).join(', ');
     return `
-      <div class="scoreboard-era completed">
-        <div class="scoreboard-era-header">
-          <h4>${h.eraName}</h4>
-          <span class="scoreboard-era-badge">\u2714 Complete</span>
-        </div>
+      <div class="victory-era">
+        <h4>${h.eraName}</h4>
+        <div class="victory-seeds">Started with: ${seeds}</div>
         ${renderEraStatCards(h)}
-        <p class="scoreboard-narrative">${h.advancementNarrative}</p>
-        ${topItems ? `<div class="scoreboard-items">${topItems}${h.discoveredItems.length > 12 ? "\u2026" : ""}</div>` : ""}
+        <p class="victory-narrative">${h.advancementNarrative}</p>
+        <div class="victory-items">${topItems}${h.discoveredItems.length > 8 ? '\u2026' : ''}</div>
+        <canvas class="victory-graph" id="scoreboard-graph-${i}"></canvas>
       </div>
     `;
-  }).join("");
+  }).join('');
 
-  const currentDurationMs = now - eraStartedAt;
-  const currentTotalSpawned = Object.values(eraSpawnCounts).reduce((a, b) => a + b, 0);
-  const currentByTier = eraSpawnByTier;
-  const currentTopSpawn = Object.entries(eraSpawnCounts).sort((a, b) => b[1] - a[1])[0];
-  const currentTierRow = Object.keys(currentByTier).length > 0
-    ? `<div class="era-stat-tier-row">${[1,2,3,4,5].filter(t => currentByTier[t]).map(t => `<span class="era-stat-tier-chip">gen${t}: ${currentByTier[t]}</span>`).join('')}</div>`
-    : '';
-  const currentFav = currentTopSpawn
-    ? `<div class="era-stat-favorite">\u2605 ${currentTopSpawn[0]} &nbsp;<span class="era-stat-count">${currentTopSpawn[1]}\u00D7</span></div>`
-    : '';
-  const currentStatCards = [
-    `<div class="era-stat"><div class="era-stat-value">${formatDuration(currentDurationMs)}</div><div class="era-stat-label">Time</div></div>`,
-    currentTotalSpawned > 0 ? `<div class="era-stat"><div class="era-stat-value">${currentTotalSpawned}</div><div class="era-stat-label">Tiles Placed</div></div>` : '',
-    `<div class="era-stat"><div class="era-stat-value">${eraActionLog.length}</div><div class="era-stat-label">Combos</div></div>`,
-    `<div class="era-stat"><div class="era-stat-value">${currentItems.length}</div><div class="era-stat-label">Discovered</div></div>`,
-  ].filter(Boolean).join('');
-
-  const currentHtml = `
-    <div class="scoreboard-era current">
-      <div class="scoreboard-era-header">
-        <h4>${eraManager.current.name}</h4>
-        <span class="scoreboard-era-badge current-badge">In Progress</span>
-      </div>
-      <div class="era-stat-grid">${currentStatCards}</div>
-      ${currentTierRow}${currentFav}
-    </div>
-  `;
-
-  // Totals
-  const totalCombos = actionLog.length;
-  const totalItems = eraManager.history.reduce((n, h) => n + h.discoveredItems.length, currentItems.length);
-  const totalEras = eraManager.history.length + 1;
-  const totalMs = eraManager.history.reduce((ms, h) =>
-    ms + (h.eraStartedAt && h.eraCompletedAt ? h.eraCompletedAt - h.eraStartedAt : 0), currentDurationMs);
+  const totalMs = history.reduce((ms, h) =>
+    ms + (h.eraStartedAt && h.eraCompletedAt ? h.eraCompletedAt - h.eraStartedAt : 0), 0);
+  const totalItems = history.reduce((n, h) => n + h.discoveredItems.length, 0);
 
   const totalsHtml = `
     <div class="scoreboard-totals-section">
-      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${formatDuration(totalMs)}</div><div class="scoreboard-total-label">Total Time</div></div>
+      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalMs > 0 ? formatDuration(totalMs) : '\u2014'}</div><div class="scoreboard-total-label">Time</div></div>
       <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalCombos}</div><div class="scoreboard-total-label">Combinations</div></div>
       <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalItems}</div><div class="scoreboard-total-label">Items Found</div></div>
-      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalEras}</div><div class="scoreboard-total-label">Eras</div></div>
+      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${erasCompleted}</div><div class="scoreboard-total-label">Eras</div></div>
     </div>
   `;
 
-  scoreboardTimeline.innerHTML = historyHtml + currentHtml + totalsHtml;
+  scoreboardTimeline.innerHTML = timelineHtml + totalsHtml;
   scoreboardOverlay.classList.add("visible");
+
+  requestAnimationFrame(() => {
+    history.forEach((h, i) => {
+      const canvas = document.getElementById(`scoreboard-graph-${i}`) as HTMLCanvasElement | null;
+      if (!canvas || h.actions.length === 0) return;
+      const seedNames = h.startingSeeds.map((s) => s.replace(/^.+\s/, ''));
+      renderCombinationGraph(canvas, h.actions, seedNames);
+    });
+  });
 }
 
 function showEraToast(title: string, text: string, completedEra?: { eraName: string; combineCount: number; itemCount: number; topItems: string[] }) {
