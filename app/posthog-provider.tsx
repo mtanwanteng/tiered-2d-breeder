@@ -7,7 +7,6 @@ import { useEffect } from 'react'
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY
-    const host = process.env.NEXT_PUBLIC_POSTHOG_HOST
 
     if (!key) {
       console.warn('[PostHog] NEXT_PUBLIC_POSTHOG_KEY is not set — tracking disabled')
@@ -15,7 +14,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     }
 
     posthog.init(key, {
-      api_host: host,
+      api_host: '/ingest',
       defaults: '2026-01-30',
       person_profiles: 'identified_only',
       capture_pageview: false,
