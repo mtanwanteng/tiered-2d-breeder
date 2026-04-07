@@ -44,6 +44,7 @@ let pendingCombines = 0;
 let eraAdvancing = false;
 let pendingEraResult: { narrative: string } | null = null;
 let victoryShown = false;
+let restarting = false;
 let idCounter = 0;
 let dragItem: CombineItem | null = null;
 let dragOffsetX = 0;
@@ -177,6 +178,7 @@ const handleRestart = () => {
     current_era: eraManager.current.name,
     combinations_so_far: actionLog.length,
   });
+  restarting = true;
   clearSave();
   location.reload();
 };
@@ -196,6 +198,7 @@ document.addEventListener("keydown", handleKeyDown);
 
 // --- Save/Load ---
 function persistGame() {
+  if (restarting) return;
   const paletteData: ElementData[] = [];
   for (const seed of eraManager.getSeeds()) {
     if (paletteItems.querySelector(`[data-name="${seed.name}"]`)) paletteData.push(seed);
@@ -666,39 +669,45 @@ async function doEraTransition(result: { narrative: string }) {
   }
 }
 
-function formatDuration(ms: number): string {
-  const s = Math.floor(ms / 1000);
-  if (s < 60) return `${s}s`;
-  const m = Math.floor(s / 60);
-  const rem = s % 60;
-  if (m < 60) return rem > 0 ? `${m}m ${rem}s` : `${m}m`;
-  const h = Math.floor(m / 60);
-  const remM = m % 60;
-  return remM > 0 ? `${h}h ${remM}m` : `${h}h`;
-}
 
-function renderEraStatCards(h: { actions: { length: number }; discoveredItems: string[]; eraStartedAt?: number; eraCompletedAt?: number; tileSpawnCounts?: Record<string, number>; tileSpawnByTier?: Record<number, number> }): string {
-  const durationMs = h.eraStartedAt && h.eraCompletedAt ? h.eraCompletedAt - h.eraStartedAt : null;
-  const totalSpawned = h.tileSpawnCounts ? Object.values(h.tileSpawnCounts).reduce((a, b) => a + b, 0) : null;
+function renderEraStatCards(h: { actions: ActionLogEntry[]; discoveredItems: string[]; tileSpawnCounts?: Record<string, number>; tileSpawnByTier?: Record<number, number> }): string {
   const byTier = h.tileSpawnByTier;
   const topSpawn = h.tileSpawnCounts ? Object.entries(h.tileSpawnCounts).sort((a, b) => b[1] - a[1])[0] : null;
 
-  const statCards = [
-    durationMs !== null ? `<div class="era-stat"><div class="era-stat-value">${formatDuration(durationMs)}</div><div class="era-stat-label">Time</div></div>` : '',
-    totalSpawned !== null ? `<div class="era-stat"><div class="era-stat-value">${totalSpawned}</div><div class="era-stat-label">Tiles Placed</div></div>` : '',
-    `<div class="era-stat"><div class="era-stat-value">${h.actions.length}</div><div class="era-stat-label">Combos</div></div>`,
-    `<div class="era-stat"><div class="era-stat-value">${h.discoveredItems.length}</div><div class="era-stat-label">Discovered</div></div>`,
-  ].filter(Boolean).join('');
+  // Determine which tiers have any data
+  const activeTiers = ([1, 2, 3, 4, 5] as const).filter(t =>
+    (byTier?.[t] ?? 0) > 0 || h.actions.some(a => a.resultTier === t)
+  );
 
-  const tierRow = byTier
-    ? `<div class="era-stat-tier-row">${[1, 2, 3, 4, 5].filter(t => byTier[t]).map(t => `<span class="era-stat-tier-chip">gen${t}: ${byTier[t]}</span>`).join('')}</div>`
-    : '';
+  let tierTable = '';
+  if (activeTiers.length > 0) {
+    const headerCells = activeTiers.map(t => `<th>Tier ${t}</th>`).join('');
+    const placedCells = activeTiers.map(t => `<td>${byTier?.[t] ?? 0}</td>`).join('');
+    const combosCells = activeTiers.map(t => `<td>${t === 1 ? '' : h.actions.filter(a => a.resultTier === t).length}</td>`).join('');
+    const discoveredCells = activeTiers.map(t => `<td>${t === 1 ? '' : new Set(h.actions.filter(a => a.resultTier === t).map(a => a.result)).size}</td>`).join('');
+    const totalCells = activeTiers.map(t => {
+      const placed = byTier?.[t] ?? 0;
+      const combos = t === 1 ? 0 : h.actions.filter(a => a.resultTier === t).length;
+      const discovered = t === 1 ? 0 : new Set(h.actions.filter(a => a.resultTier === t).map(a => a.result)).size;
+      return `<td>${placed + combos + discovered}</td>`;
+    }).join('');
+    tierTable = `
+      <table class="era-tier-table">
+        <thead><tr><th></th>${headerCells}</tr></thead>
+        <tbody>
+          <tr><td class="era-tier-label">placed</td>${placedCells}</tr>
+          <tr><td class="era-tier-label">combos</td>${combosCells}</tr>
+          <tr><td class="era-tier-label">discovered</td>${discoveredCells}</tr>
+          <tr class="era-tier-total"><td class="era-tier-label">total</td>${totalCells}</tr>
+        </tbody>
+      </table>`;
+  }
 
   const favoriteRow = topSpawn
     ? `<div class="era-stat-favorite">\u2605 ${topSpawn[0]} &nbsp;<span class="era-stat-count">${topSpawn[1]}\u00D7</span></div>`
     : '';
 
-  return `<div class="era-stat-grid">${statCards}</div>${tierRow}${favoriteRow}`;
+  return `${tierTable}${favoriteRow}`;
 }
 
 function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: string, onContinue: () => void) {
@@ -754,15 +763,12 @@ function showScoreboard() {
     `;
   }).join('');
 
-  const totalMs = history.reduce((ms, h) =>
-    ms + (h.eraStartedAt && h.eraCompletedAt ? h.eraCompletedAt - h.eraStartedAt : 0), 0);
   const totalItems = history.reduce((n, h) => n + h.discoveredItems.length, 0);
 
   const totalsHtml = `
     <div class="scoreboard-totals-section">
-      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalMs > 0 ? formatDuration(totalMs) : '\u2014'}</div><div class="scoreboard-total-label">Time</div></div>
       <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalCombos}</div><div class="scoreboard-total-label">Combinations</div></div>
-      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalItems}</div><div class="scoreboard-total-label">Items Found</div></div>
+      <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${totalItems}</div><div class="scoreboard-total-label">Discoveries</div></div>
       <div class="scoreboard-total-stat"><div class="scoreboard-total-value">${erasCompleted}</div><div class="scoreboard-total-label">Eras</div></div>
     </div>
   `;
@@ -838,16 +844,12 @@ function showVictory() {
     .map((h, i) => {
       const seeds = h.startingSeeds.join("  ");
       const topItems = h.discoveredItems.slice(0, 8).join(", ");
-      const combineCount = h.actions.length;
       return `
         <div class="victory-era">
           <h4>${h.eraName}</h4>
           <div class="victory-seeds">Started with: ${seeds}</div>
+          ${renderEraStatCards(h)}
           <p class="victory-narrative">${h.advancementNarrative}</p>
-          <div class="victory-stats">
-            <span>${combineCount} combinations</span>
-            <span>${h.discoveredItems.length} items discovered</span>
-          </div>
           <div class="victory-items">${topItems}${h.discoveredItems.length > 8 ? "..." : ""}</div>
           <canvas class="victory-graph" id="victory-graph-${i}"></canvas>
         </div>
@@ -1018,6 +1020,7 @@ function showToast(msg: string, durationMs = 2000) {
 // Expose game reset to React auth layer (called on sign-out)
 authStore.setState({
   resetGame: () => {
+    restarting = true;
     clearSave();
     location.reload();
   },

@@ -17,16 +17,47 @@ export async function POST(req: NextRequest) {
   await db
     .update(user)
     .set({
-      // COALESCE keeps the existing anonId if already set — write-once
-      ...(anonId ? { anonId: sql`COALESCE(${user.anonId}, ${anonId})` } : {}),
       lastActiveAt: now,
       updatedAt: now,
     })
     .where(eq(user.id, session.user.id));
+
+  if (anonId) {
+    try {
+      await db
+        .update(user)
+        .set({
+          // Write once for this user, but let an existing unique anonId stand:
+          // a collision means this browser has already been seen before.
+          anonId: sql`COALESCE(${user.anonId}, ${anonId})`,
+          updatedAt: now,
+        })
+        .where(eq(user.id, session.user.id));
+    } catch (error) {
+      if (!isUniqueAnonIdViolation(error)) {
+        throw error;
+      }
+    }
+  }
 
   const ph = getPostHogClient();
   ph.capture({ distinctId: session.user.id, event: 'session_started' });
   await ph.shutdown();
 
   return NextResponse.json({ ok: true });
+}
+
+function isUniqueAnonIdViolation(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const maybeError = error as {
+    cause?: { code?: string; constraint?: string };
+  };
+
+  return (
+    maybeError.cause?.code === "23505" &&
+    maybeError.cause?.constraint === "user_anon_id_unique"
+  );
 }

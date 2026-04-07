@@ -1,4 +1,4 @@
-# Tiered 2D Breeder
+# Bari the Architect
 
 An interactive element fusion game inspired by Infinite Craft. Combine base elements by dragging and dropping them together to discover new creations — powered by AI for unlimited combinations.
 

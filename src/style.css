@@ -769,50 +769,54 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* --- Shared era stat cards (scoreboard + era summary) --- */
-.era-stat-grid {
-  display: flex;
-  gap: 8px;
+/* --- Tier breakdown table (scoreboard + era summary + victory) --- */
+.era-tier-table {
+  width: 100%;
+  border-collapse: collapse;
   margin-bottom: 6px;
-  flex-wrap: wrap;
+  font-size: 11px;
 }
 
-.era-stat {
-  background: #16213e;
-  border-radius: 6px;
-  padding: 6px 12px;
-  min-width: 64px;
+.era-tier-table thead th {
+  color: #ffd700;
+  font-weight: 600;
   text-align: center;
-}
-
-.era-stat-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.1;
-}
-
-.era-stat-label {
-  font-size: 9px;
-  color: #666;
+  padding: 4px 10px;
+  border-bottom: 1px solid #2a3a5e;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  margin-top: 2px;
-}
-
-.era-stat-tier-row {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  margin-bottom: 5px;
-}
-
-.era-stat-tier-chip {
-  background: #1a2a4a;
-  color: #7af;
   font-size: 10px;
-  padding: 2px 7px;
-  border-radius: 4px;
+}
+
+.era-tier-table thead th:first-child {
+  text-align: left;
+}
+
+.era-tier-table tbody tr:nth-child(odd) {
+  background: #16213e;
+}
+
+.era-tier-table tbody td {
+  text-align: center;
+  padding: 4px 10px;
+  color: #ccc;
+  border-bottom: 1px solid #1a2a3a;
+}
+
+.era-tier-label {
+  text-align: left !important;
+  color: #888 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-size: 10px;
+  white-space: nowrap;
+  padding-right: 14px !important;
+}
+
+.era-tier-total td {
+  border-top: 1px solid #2a3a5e;
+  color: #fff !important;
+  font-weight: 600;
 }
 
 .era-stat-favorite {
