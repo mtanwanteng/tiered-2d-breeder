@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePostHog } from "posthog-js/react";
 import { authClient } from "../auth-client";
 import { authStore, useAuthStore } from "../../src/store/auth";
+import { isDiscordActivity } from "../../src/discord";
 import { AuthModal } from "./auth-modal";
 
 export function AuthOverlay() {
@@ -49,7 +50,7 @@ export function AuthOverlay() {
               <img src={avatarUrl} alt={name ?? "User"} className="auth-avatar" />
             )}
             <span className="auth-user-name">{name}</span>
-            {confirmingSignOut ? (
+            {!isDiscordActivity() && (confirmingSignOut ? (
               <div className="auth-signout-confirm">
                 <span className="auth-signout-warning">Progress will be lost</span>
                 <button className="auth-signout-confirm-btn" onClick={handleSignOut}>
@@ -63,7 +64,7 @@ export function AuthOverlay() {
               <button className="auth-signout-btn" onClick={() => setConfirmingSignOut(true)}>
                 Sign out
               </button>
-            )}
+            ))}
           </div>
         ) : (
           <button
