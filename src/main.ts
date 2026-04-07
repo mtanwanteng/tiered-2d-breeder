@@ -112,18 +112,20 @@ app.innerHTML = `
   <button id="scoreboard-btn" title="View Scoreboard">\uD83D\uDCDC</button>
   <div id="era-summary-overlay">
     <div id="era-summary-panel">
-      <div class="era-summary-header">
-        <div class="era-summary-complete-badge">\u2714 Era Complete</div>
-        <h2 id="era-summary-era-name"></h2>
-      </div>
-      <div id="era-summary-stat-cards"></div>
-      <div id="era-summary-tile-detail"></div>
-      <p class="era-summary-narrative" id="era-summary-narrative"></p>
-      <div class="era-summary-discovered" id="era-summary-discovered"></div>
       <div class="era-summary-next">
-        <div class="era-summary-next-label">\u2193 Next Era</div>
+        <div class="era-summary-next-label">\u2191 Next Era</div>
         <h3 id="era-summary-next-name"></h3>
         <p class="era-summary-next-text" id="era-summary-next-text"></p>
+      </div>
+      <div class="era-summary-completed">
+        <div class="era-summary-completed-label">\u2714 Era Complete</div>
+        <div class="era-summary-header">
+          <h2 id="era-summary-era-name"></h2>
+        </div>
+        <div id="era-summary-stat-cards"></div>
+        <div id="era-summary-tile-detail"></div>
+        <p class="era-summary-narrative" id="era-summary-narrative"></p>
+        <div class="era-summary-discovered" id="era-summary-discovered"></div>
       </div>
       <button id="era-summary-continue-btn"></button>
     </div>
@@ -631,7 +633,7 @@ async function doEraTransition(result: { narrative: string }) {
       return; // busy + eraAdvancing stay true until player clicks Continue Building
     }
 
-    showToast("Bari is charting the next age...", 5000);
+    showToast("Bari is charting the next age...", null);
     bari.classList.add("active");
     const choice = await eraManager.chooseNextEra(actionLog, inventory, selectedModel);
     bari.classList.remove("active");
@@ -681,16 +683,15 @@ function renderEraStatCards(h: { actions: ActionLogEntry[]; discoveredItems: str
 
   let tierTable = '';
   if (activeTiers.length > 0) {
-    const headerCells = activeTiers.map(t => `<th>Tier ${t}</th>`).join('');
-    const placedCells = activeTiers.map(t => `<td>${byTier?.[t] ?? 0}</td>`).join('');
-    const combosCells = activeTiers.map(t => `<td>${t === 1 ? '' : h.actions.filter(a => a.resultTier === t).length}</td>`).join('');
-    const discoveredCells = activeTiers.map(t => `<td>${t === 1 ? '' : new Set(h.actions.filter(a => a.resultTier === t).map(a => a.result)).size}</td>`).join('');
-    const totalCells = activeTiers.map(t => {
-      const placed = byTier?.[t] ?? 0;
-      const combos = t === 1 ? 0 : h.actions.filter(a => a.resultTier === t).length;
-      const discovered = t === 1 ? 0 : new Set(h.actions.filter(a => a.resultTier === t).map(a => a.result)).size;
-      return `<td>${placed + combos + discovered}</td>`;
-    }).join('');
+    const placedByTier = activeTiers.map(t => byTier?.[t] ?? 0);
+    const combosByTier = activeTiers.map(t => t === 1 ? 0 : h.actions.filter(a => a.resultTier === t).length);
+    const discoveredByTier = activeTiers.map(t => t === 1 ? 0 : new Set(h.actions.filter(a => a.resultTier === t).map(a => a.result)).size);
+
+    const headerCells = activeTiers.map(t => `<th>Tier ${t}</th>`).join('') + `<th class="era-tier-total-col">Total</th>`;
+    const placedCells = placedByTier.map(v => `<td>${v}</td>`).join('') + `<td class="era-tier-total-col">${placedByTier.reduce((a, b) => a + b, 0)}</td>`;
+    const combosCells = combosByTier.map((v, i) => `<td>${activeTiers[i] === 1 ? '' : v}</td>`).join('') + `<td class="era-tier-total-col">${combosByTier.reduce((a, b) => a + b, 0)}</td>`;
+    const discoveredCells = discoveredByTier.map((v, i) => `<td>${activeTiers[i] === 1 ? '' : v}</td>`).join('') + `<td class="era-tier-total-col">${discoveredByTier.reduce((a, b) => a + b, 0)}</td>`;
+
     tierTable = `
       <table class="era-tier-table">
         <thead><tr><th></th>${headerCells}</tr></thead>
@@ -698,19 +699,19 @@ function renderEraStatCards(h: { actions: ActionLogEntry[]; discoveredItems: str
           <tr><td class="era-tier-label">placed</td>${placedCells}</tr>
           <tr><td class="era-tier-label">combos</td>${combosCells}</tr>
           <tr><td class="era-tier-label">discovered</td>${discoveredCells}</tr>
-          <tr class="era-tier-total"><td class="era-tier-label">total</td>${totalCells}</tr>
         </tbody>
       </table>`;
   }
 
   const favoriteRow = topSpawn
-    ? `<div class="era-stat-favorite">\u2605 ${topSpawn[0]} &nbsp;<span class="era-stat-count">${topSpawn[1]}\u00D7</span></div>`
+    ? `<div class="era-stat-favorite"><span class="era-stat-favorite-label">Favorite:</span> ${topSpawn[0]} &nbsp;<span class="era-stat-count">${topSpawn[1]}\u00D7</span></div>`
     : '';
 
   return `${tierTable}${favoriteRow}`;
 }
 
 function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: string, onContinue: () => void) {
+  hideToast();
   document.getElementById("era-summary-era-name")!.textContent = record.eraName;
   document.getElementById("era-summary-stat-cards")!.innerHTML = renderEraStatCards(record);
   document.getElementById("era-summary-narrative")!.textContent = record.advancementNarrative;
@@ -1010,11 +1011,17 @@ function addToPaletteIfNew(entry: ElementData) {
 
 // --- Toast notification ---
 let toastTimer: number;
-function showToast(msg: string, durationMs = 2000) {
+function showToast(msg: string, durationMs: number | null = 2000) {
   toast.textContent = msg;
   toast.classList.add("visible");
   clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => toast.classList.remove("visible"), durationMs);
+  if (durationMs !== null) {
+    toastTimer = window.setTimeout(() => toast.classList.remove("visible"), durationMs);
+  }
+}
+function hideToast() {
+  clearTimeout(toastTimer);
+  toast.classList.remove("visible");
 }
 
 // Expose game reset to React auth layer (called on sign-out)

@@ -813,16 +813,24 @@ body {
   padding-right: 14px !important;
 }
 
-.era-tier-total td {
-  border-top: 1px solid #2a3a5e;
+.era-tier-total-col {
+  border-left: 1px solid #2a3a5e;
   color: #fff !important;
   font-weight: 600;
 }
 
 .era-stat-favorite {
-  font-size: 11px;
+  font-size: 13px;
   color: #ffd700;
+  margin-top: 6px;
   margin-bottom: 2px;
+}
+
+.era-stat-favorite-label {
+  color: #888;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .era-stat-count {
@@ -861,27 +869,33 @@ body {
   gap: 14px;
 }
 
-.era-summary-header {
-  text-align: center;
+.era-summary-completed {
+  background: #0f3460;
+  border-radius: 10px;
+  padding: 14px 18px;
+  border-left: 4px solid #5bc4e5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.era-summary-complete-badge {
-  display: inline-block;
-  background: rgba(255, 215, 0, 0.15);
-  color: #ffd700;
-  border: 1px solid rgba(255, 215, 0, 0.4);
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
+.era-summary-completed-label {
+  font-size: 10px;
+  color: #5bc4e5;
   text-transform: uppercase;
-  padding: 3px 12px;
-  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.era-summary-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 #era-summary-era-name {
   color: #ffd700;
-  font-size: 26px;
+  font-size: 17px;
+  margin: 0;
 }
 
 .era-summary-narrative {
@@ -893,7 +907,7 @@ body {
 
 .era-summary-discovered {
   font-size: 11px;
-  color: #556;
+  color: #778;
   line-height: 1.5;
 }
 
@@ -901,12 +915,12 @@ body {
   background: #0f3460;
   border-radius: 10px;
   padding: 14px 18px;
-  border-left: 4px solid #e94560;
+  border-left: 4px solid #ffd700;
 }
 
 .era-summary-next-label {
   font-size: 10px;
-  color: #e94560;
+  color: #ffd700;
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 4px;
@@ -914,7 +928,7 @@ body {
 
 .era-summary-next h3 {
   color: #fff;
-  font-size: 17px;
+  font-size: 26px;
   margin-bottom: 6px;
 }
 
