@@ -37,17 +37,18 @@ export function DiscordActivityProvider() {
       if (cancelled) return
 
       const user = auth.user
+      const displayName = user.global_name ?? user.username
       authStore.setState({
         isLoggedIn: true,
         userId: user.id,
-        name: user.username,
+        name: displayName,
         avatarUrl: user.avatar
           ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
           : null,
         provider: 'discord',
       })
 
-      posthog.identify(user.id, { discord_username: user.username })
+      posthog.identify(user.id, { discord_username: user.username, discord_display_name: displayName })
     }
 
     init().catch((err) => console.error('[Discord] Activity init failed:', err))
