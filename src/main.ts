@@ -43,6 +43,7 @@ let eraSpawnByTier: Record<number, number> = {};
 let pendingCombines = 0;
 let eraAdvancing = false;
 let pendingEraResult: { narrative: string } | null = null;
+let victoryShown = false;
 let idCounter = 0;
 let dragItem: CombineItem | null = null;
 let dragOffsetX = 0;
@@ -132,6 +133,7 @@ app.innerHTML = `
       <div id="victory-timeline"></div>
       <div class="victory-actions">
         <button id="victory-share-btn">Share</button>
+        <button id="victory-continue-btn">Continue Building</button>
       </div>
     </div>
   </div>
@@ -548,6 +550,7 @@ function getDiscoveredItems(): string[] {
 }
 
 async function checkEraAdvancement() {
+  if (victoryShown) return; // Age of Plenty — free-build mode, no more advancement
   if (eraAdvancing) return;
   const hasAdvancedItem = eraActionLog.some((e) => e.resultTier >= 3);
   if (!hasAdvancedItem) return;
@@ -597,8 +600,9 @@ async function doEraTransition(result: { narrative: string }) {
     if (eraManager.isLastEra) {
       log.info("era", "VICTORY — Space Age completed!");
       clearSave();
+      victoryShown = true;
       showVictory();
-      return;
+      return; // busy + eraAdvancing stay true until player clicks Continue Building
     }
 
     showToast("Bari is charting the next age...", 5000);
@@ -940,6 +944,12 @@ const handleVictoryShare = async () => {
 };
 
 victoryShareBtn.addEventListener("click", handleVictoryShare);
+
+document.getElementById("victory-continue-btn")!.addEventListener("click", () => {
+  victoryOverlay.classList.remove("visible");
+  busy = false;
+  eraAdvancing = false;
+});
 
 // --- Palette management ---
 function addToPalette(entry: ElementData) {

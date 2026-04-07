@@ -579,6 +579,18 @@ body {
   background: #ffed4a;
 }
 
+#victory-continue-btn {
+  background: transparent;
+  color: #aaa;
+  border: 1px solid #2a3a5a;
+}
+
+#victory-continue-btn:hover {
+  background: #0f3460;
+  color: #fff;
+  border-color: #4a6a9a;
+}
+
 /* --- Era toast completed-era stats --- */
 #era-toast-stats {
   margin-bottom: 12px;
