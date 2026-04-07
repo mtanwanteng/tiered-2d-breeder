@@ -13,7 +13,7 @@ export default function PrivacyPage() {
       <div className={styles.card}>
         <div className={styles.cardHeader}>
           <h1 className={styles.title}>Privacy Policy</h1>
-          <p className={styles.date}>Last updated: May 08, 2024</p>
+          <p className={styles.date}>Last updated: April 07, 2026</p>
         </div>
         <div className={styles.scrollBody}>
           <p>
@@ -39,7 +39,7 @@ export default function PrivacyPage() {
             <li><strong>Device</strong> means any device that can access the Service such as a computer, a cellphone or a digital tablet.</li>
             <li><strong>Personal Data</strong> is any information that relates to an identified or identifiable individual.</li>
             <li><strong>Service</strong> refers to the Website.</li>
-            <li><strong>Website</strong> refers to Bari The Architect.</li>
+            <li><strong>Website</strong> refers to the Discord Activity Bari The Architect for the time being.</li>
             <li><strong>You</strong> means the individual accessing or using the Service, or the company, or other legal entity on behalf of which such individual is accessing or using the Service, as applicable.</li>
           </ul>
 
@@ -68,6 +68,17 @@ export default function PrivacyPage() {
             <li><strong>To manage Your Account:</strong> to manage Your registration as a user of the Service.</li>
             <li><strong>To contact You:</strong> To contact You by email, telephone calls, SMS, or other equivalent forms of electronic communication.</li>
             <li><strong>To manage Your requests:</strong> To attend and manage Your requests to Us.</li>
+          </ul>
+
+          <h3>Third-Party Service Providers</h3>
+          <p>
+            We use the following third-party services to operate the Service. Each receives limited personal data as necessary to perform their function:
+          </p>
+          <ul>
+            <li><strong>PostHog</strong> — analytics and product telemetry. Receives a pseudonymous identifier and gameplay event data. <a href="https://posthog.com/privacy">PostHog Privacy Policy</a>.</li>
+            <li><strong>Discord</strong> — identity and authentication when accessing the Service as a Discord Activity. Receives your Discord user ID, username, and display name. <a href="https://discord.com/privacy">Discord Privacy Policy</a>.</li>
+            <li><strong>Google</strong> — identity and authentication when signing in with Google. Receives your Google account name and email address. <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.</li>
+            <li><strong>Neon / Vercel</strong> — database and hosting infrastructure. Your account data is stored on servers operated by these providers in the United States.</li>
           </ul>
 
           <h3>Retention of Your Personal Data</h3>
