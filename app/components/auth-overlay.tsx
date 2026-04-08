@@ -28,10 +28,16 @@ export function AuthOverlay() {
         setFromVictory(true);
         setIsModalOpen(true);
       },
+      resetPlayer: async () => {
+        if (authStore.getState().isLoggedIn) {
+          await authClient.signOut();
+        }
+        authStore.getState().resetGame?.();
+      },
     });
 
     return () => {
-      authStore.setState({ openLogin: null, openLoginFromVictory: null });
+      authStore.setState({ openLogin: null, openLoginFromVictory: null, resetPlayer: null });
     };
   }, [posthog]);
 

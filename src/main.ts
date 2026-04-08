@@ -89,7 +89,20 @@ app.innerHTML = `
     <h2>Inventory</h2>
     <div id="palette-items"></div>
     <div id="bari"><span id="bari-char">\uD83D\uDC66</span><span id="bari-tool">\uD83D\uDD28</span></div>
-    <button id="restart-btn">Restart Game</button>
+    <div class="palette-actions">
+      <button id="restart-btn">Restart Game</button>
+      <button id="demo-reset-btn">Reset Player</button>
+    </div>
+  </div>
+  <div id="demo-reset-overlay">
+    <div id="demo-reset-modal">
+      <h3>Reset Player?</h3>
+      <p>This will erase all game progress and sign you out if you're logged in.</p>
+      <div class="demo-reset-actions">
+        <button id="demo-reset-cancel-btn">Cancel</button>
+        <button id="demo-reset-confirm-btn">Reset</button>
+      </div>
+    </div>
   </div>
   <div id="workspace"></div>
   <div id="result-toast"></div>
@@ -158,6 +171,10 @@ const victoryPanel = document.getElementById("victory-panel")!;
 const victoryTimeline = document.getElementById("victory-timeline")!;
 const victoryShareBtn = document.getElementById("victory-share-btn")!;
 const restartButton = document.getElementById("restart-btn")!;
+const demoResetBtn = document.getElementById("demo-reset-btn")!;
+const demoResetOverlay = document.getElementById("demo-reset-overlay")!;
+const demoResetConfirmBtn = document.getElementById("demo-reset-confirm-btn")!;
+const demoResetCancelBtn = document.getElementById("demo-reset-cancel-btn")!;
 const scoreboardOverlay = document.getElementById("scoreboard-overlay")!;
 const scoreboardTimeline = document.getElementById("scoreboard-timeline")!;
 const eraSummaryOverlay = document.getElementById("era-summary-overlay")!;
@@ -185,9 +202,27 @@ const handleRestart = () => {
   location.reload();
 };
 
+const handleDemoReset = () => demoResetOverlay.classList.add("visible");
+const handleDemoResetConfirm = () => {
+  restarting = true;
+  posthog.reset();
+  localStorage.removeItem('bari-anon-id');
+  const resetPlayer = authStore.getState().resetPlayer;
+  if (resetPlayer) {
+    resetPlayer().catch(() => { restarting = true; clearSave(); location.reload(); });
+  } else {
+    clearSave();
+    location.reload();
+  }
+};
+const handleDemoResetCancel = () => demoResetOverlay.classList.remove("visible");
+
 modelSelect.addEventListener("change", handleModelChange);
 eraToastBtn.addEventListener("click", handleEraToastClose);
 restartButton.addEventListener("click", handleRestart);
+demoResetBtn.addEventListener("click", handleDemoReset);
+demoResetConfirmBtn.addEventListener("click", handleDemoResetConfirm);
+demoResetCancelBtn.addEventListener("click", handleDemoResetCancel);
 scoreboardBtn.addEventListener("click", showScoreboard);
 scoreboardCloseBtn.addEventListener("click", () => scoreboardOverlay.classList.remove("visible"));
 
@@ -1048,6 +1083,9 @@ return () => {
   modelSelect.removeEventListener("change", handleModelChange);
   eraToastBtn.removeEventListener("click", handleEraToastClose);
   restartButton.removeEventListener("click", handleRestart);
+  demoResetBtn.removeEventListener("click", handleDemoReset);
+  demoResetConfirmBtn.removeEventListener("click", handleDemoResetConfirm);
+  demoResetCancelBtn.removeEventListener("click", handleDemoResetCancel);
   victoryShareBtn.removeEventListener("click", handleVictoryShare);
   scoreboardBtn.removeEventListener("click", showScoreboard);
   document.removeEventListener("keydown", handleKeyDown);

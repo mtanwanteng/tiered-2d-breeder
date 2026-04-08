@@ -25,8 +25,14 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow-y: auto;
+  overflow: hidden;
   border-right: 2px solid #0f3460;
+}
+
+#palette-items {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 #palette h2 {
@@ -330,7 +336,6 @@ body {
 
 /* --- Bari avatar --- */
 #bari {
-  margin-top: auto;
   text-align: center;
   padding: 12px;
   display: flex;
@@ -365,9 +370,14 @@ body {
   100% { transform: rotate(30deg); }
 }
 
+.palette-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 #restart-btn {
-  display: block;
-  margin: 0 auto 8px;
+  flex: 1;
   background: none;
   border: 1px solid #333;
   color: #555;
@@ -380,6 +390,96 @@ body {
 #restart-btn:hover {
   border-color: #e94560;
   color: #e94560;
+}
+
+#demo-reset-btn {
+  flex: 1;
+  background: none;
+  border: 1px solid #333;
+  color: #888;
+  padding: 6px 4px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+#demo-reset-btn:hover {
+  border-color: #a855f7;
+  color: #a855f7;
+}
+
+/* --- Demo reset modal --- */
+#demo-reset-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 900;
+  align-items: center;
+  justify-content: center;
+}
+
+#demo-reset-overlay.visible {
+  display: flex;
+}
+
+#demo-reset-modal {
+  background: #0f1a2e;
+  border: 1px solid #1d3550;
+  border-radius: 10px;
+  padding: 28px 32px;
+  max-width: 340px;
+  width: 90%;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+}
+
+#demo-reset-modal h3 {
+  font-size: 16px;
+  color: #e8e8e8;
+  margin-bottom: 10px;
+}
+
+#demo-reset-modal p {
+  font-size: 13px;
+  color: #8aaccc;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.demo-reset-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+#demo-reset-cancel-btn {
+  background: none;
+  border: 1px solid #333;
+  color: #888;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#demo-reset-cancel-btn:hover {
+  border-color: #555;
+  color: #aaa;
+}
+
+#demo-reset-confirm-btn {
+  background: #a855f7;
+  border: none;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#demo-reset-confirm-btn:hover {
+  background: #9333ea;
 }
 
 /* --- Result toast --- */
