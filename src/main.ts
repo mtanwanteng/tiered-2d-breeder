@@ -89,10 +89,7 @@ app.innerHTML = `
     <h2>Inventory</h2>
     <div id="palette-items"></div>
     <div id="bari"><span id="bari-char">\uD83D\uDC66</span><span id="bari-tool">\uD83D\uDD28</span></div>
-    <div class="palette-actions">
-      <button id="restart-btn">Restart Game</button>
-      <button id="demo-reset-btn">Reset Player</button>
-    </div>
+    <button id="restart-btn">Restart Game</button>
   </div>
   <div id="demo-reset-overlay">
     <div id="demo-reset-modal">
@@ -171,7 +168,6 @@ const victoryPanel = document.getElementById("victory-panel")!;
 const victoryTimeline = document.getElementById("victory-timeline")!;
 const victoryShareBtn = document.getElementById("victory-share-btn")!;
 const restartButton = document.getElementById("restart-btn")!;
-const demoResetBtn = document.getElementById("demo-reset-btn")!;
 const demoResetOverlay = document.getElementById("demo-reset-overlay")!;
 const demoResetConfirmBtn = document.getElementById("demo-reset-confirm-btn")!;
 const demoResetCancelBtn = document.getElementById("demo-reset-cancel-btn")!;
@@ -220,7 +216,6 @@ const handleDemoResetCancel = () => demoResetOverlay.classList.remove("visible")
 modelSelect.addEventListener("change", handleModelChange);
 eraToastBtn.addEventListener("click", handleEraToastClose);
 restartButton.addEventListener("click", handleRestart);
-demoResetBtn.addEventListener("click", handleDemoReset);
 demoResetConfirmBtn.addEventListener("click", handleDemoResetConfirm);
 demoResetCancelBtn.addEventListener("click", handleDemoResetCancel);
 scoreboardBtn.addEventListener("click", showScoreboard);
@@ -300,6 +295,7 @@ function restoreGame(save: SaveData) {
 
 // --- Initialize ---
 initDebugConsole({
+  resetPlayer: handleDemoReset,
   testVictory: () => {
     // Inject mock history if none exists
     if (eraManager.history.length === 0) {
@@ -1083,7 +1079,6 @@ return () => {
   modelSelect.removeEventListener("change", handleModelChange);
   eraToastBtn.removeEventListener("click", handleEraToastClose);
   restartButton.removeEventListener("click", handleRestart);
-  demoResetBtn.removeEventListener("click", handleDemoReset);
   demoResetConfirmBtn.removeEventListener("click", handleDemoResetConfirm);
   demoResetCancelBtn.removeEventListener("click", handleDemoResetCancel);
   victoryShareBtn.removeEventListener("click", handleVictoryShare);

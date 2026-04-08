@@ -21,6 +21,7 @@ const ALL_CATEGORIES: LogCategory[] = ["player", "api", "game", "era", "system"]
 
 export interface DebugActions {
   testVictory?: () => void;
+  resetPlayer?: () => void;
 }
 
 export function initDebugConsole(actions?: DebugActions) {
@@ -45,6 +46,7 @@ export function initDebugConsole(actions?: DebugActions) {
       </div>
       <button id="debug-clear">Clear</button>
       <button id="debug-test-victory">Test Victory</button>
+      <button id="debug-reset-player">Reset Player</button>
     </div>
     <div id="debug-log"></div>
   `;
@@ -108,6 +110,11 @@ export function initDebugConsole(actions?: DebugActions) {
   document.getElementById("debug-test-victory")!.addEventListener("click", () => {
     if (actions?.testVictory) actions.testVictory();
     else log.warn("system", "No testVictory callback registered");
+  });
+
+  document.getElementById("debug-reset-player")!.addEventListener("click", () => {
+    if (actions?.resetPlayer) actions.resetPlayer();
+    else log.warn("system", "No resetPlayer callback registered");
   });
 
   log.info("system", "Debug console initialized");

@@ -25,14 +25,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow: hidden;
-  border-right: 2px solid #0f3460;
-}
-
-#palette-items {
-  flex: 1;
   overflow-y: auto;
-  min-height: 0;
+  border-right: 2px solid #0f3460;
 }
 
 #palette h2 {
@@ -336,6 +330,7 @@ body {
 
 /* --- Bari avatar --- */
 #bari {
+  margin-top: auto;
   text-align: center;
   padding: 12px;
   display: flex;
@@ -370,14 +365,9 @@ body {
   100% { transform: rotate(30deg); }
 }
 
-.palette-actions {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
 #restart-btn {
-  flex: 1;
+  display: block;
+  margin: 0 auto 8px;
   background: none;
   border: 1px solid #333;
   color: #555;
@@ -390,22 +380,6 @@ body {
 #restart-btn:hover {
   border-color: #e94560;
   color: #e94560;
-}
-
-#demo-reset-btn {
-  flex: 1;
-  background: none;
-  border: 1px solid #333;
-  color: #888;
-  padding: 6px 4px;
-  border-radius: 4px;
-  font-size: 10px;
-  cursor: pointer;
-}
-
-#demo-reset-btn:hover {
-  border-color: #a855f7;
-  color: #a855f7;
 }
 
 /* --- Demo reset modal --- */
