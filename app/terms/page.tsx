@@ -13,7 +13,7 @@ export default function TermsPage() {
       <div className={styles.card}>
         <div className={styles.cardHeader}>
           <h1 className={styles.title}>Terms and Conditions</h1>
-          <p className={styles.date}>Last updated: May 08, 2024</p>
+          <p className={styles.date}>Last updated: April 7, 2026</p>
         </div>
         <div className={styles.scrollBody}>
           <p>Please read these terms and conditions carefully before using Our Service.</p>
