@@ -136,6 +136,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  touch-action: none;
   padding: 8px 10px;
   background: #0f3460;
   border-radius: 8px;
