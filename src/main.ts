@@ -282,10 +282,11 @@ function restoreGame(save: SaveData) {
     goalStates: save.eraGoalStates,
   });
 
-  // Rebuild palette
+  // Rebuild palette — re-identify seeds by matching against current era's seed names
+  const seedNames = new Set(eraManager.getSeeds().map((s) => s.name));
   paletteItems.innerHTML = "";
   for (const entry of save.paletteItems) {
-    addToPalette(entry);
+    addToPalette(entry, seedNames.has(entry.name));
   }
 
   renderEraName();
@@ -366,7 +367,7 @@ if (savedGame) {
   const initialSeeds = eraManager.getSeeds();
   log.info("era", `Starting ${eraManager.current.name} with seeds: ${initialSeeds.map((s) => s.name).join(", ")}`);
   for (const entry of initialSeeds) {
-    addToPalette(entry);
+    addToPalette(entry, true);
   }
   posthog.capture('game_started', { era_name: eraManager.current.name });
 }
@@ -686,7 +687,7 @@ async function doEraTransition(result: { narrative: string }) {
         paletteItems.innerHTML = "";
         const newSeeds = eraManager.getSeeds();
         log.info("era", `Seeds: ${newSeeds.map((s) => s.name).join(", ")}`);
-        for (const seed of newSeeds) addToPalette(seed);
+        for (const seed of newSeeds) addToPalette(seed, true);
         renderEraName();
         renderGoals();
         persistGame();
@@ -1002,10 +1003,11 @@ document.getElementById("victory-continue-btn")!.addEventListener("click", () =>
 });
 
 // --- Palette management ---
-function addToPalette(entry: ElementData) {
+function addToPalette(entry: ElementData, isSeed = false) {
   const div = document.createElement("div");
   div.className = "palette-item";
   div.dataset.name = entry.name;
+  if (isSeed) div.dataset.seed = "true";
   div.innerHTML = `
     <span class="palette-emoji">${entry.emoji}</span>
     <span class="palette-label">${entry.name}</span>
@@ -1034,10 +1036,16 @@ function addToPalette(entry: ElementData) {
   paletteItems.appendChild(div);
 }
 
+const MAX_DISCOVERED_SLOTS = 3;
+
 function addToPaletteIfNew(entry: ElementData) {
   const exists = paletteItems.querySelector(`[data-name="${entry.name}"]`);
   if (exists) return;
-  addToPalette(entry);
+  const discovered = paletteItems.querySelectorAll(".palette-item:not([data-seed])");
+  if (discovered.length >= MAX_DISCOVERED_SLOTS) {
+    discovered[0].remove();
+  }
+  addToPalette(entry, false);
 }
 
 // --- Toast notification ---
