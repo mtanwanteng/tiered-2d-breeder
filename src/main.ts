@@ -82,10 +82,6 @@ app.innerHTML = `
       <div id="era-name"></div>
       <div id="era-goals"></div>
     </div>
-    <div id="model-selector">
-      <label for="model-select">Model</label>
-      <select id="model-select">${modelOptions}</select>
-    </div>
     <h2>Inventory</h2>
     <div id="palette-items"></div>
     <div id="bari"><span id="bari-char">\uD83D\uDC66</span><span id="bari-tool">\uD83D\uDD28</span></div>
@@ -157,7 +153,6 @@ const paletteItems = document.getElementById("palette-items")!;
 const workspace = document.getElementById("workspace")!;
 const toast = document.getElementById("result-toast")!;
 const bari = document.getElementById("bari")!;
-const modelSelect = document.getElementById("model-select") as HTMLSelectElement;
 const eraToast = document.getElementById("era-toast")!;
 const eraToastTitle = document.getElementById("era-toast-title")!;
 const eraToastText = document.getElementById("era-toast-text")!;
@@ -168,6 +163,7 @@ const victoryPanel = document.getElementById("victory-panel")!;
 const victoryTimeline = document.getElementById("victory-timeline")!;
 const victoryShareBtn = document.getElementById("victory-share-btn")!;
 const restartButton = document.getElementById("restart-btn")!;
+let modelSelect: HTMLSelectElement | null = null;
 const demoResetOverlay = document.getElementById("demo-reset-overlay")!;
 const demoResetConfirmBtn = document.getElementById("demo-reset-confirm-btn")!;
 const demoResetCancelBtn = document.getElementById("demo-reset-cancel-btn")!;
@@ -177,8 +173,8 @@ const eraSummaryOverlay = document.getElementById("era-summary-overlay")!;
 const scoreboardBtn = document.getElementById("scoreboard-btn")!;
 const scoreboardCloseBtn = document.getElementById("scoreboard-close-btn")!;
 
-const handleModelChange = () => {
-  selectedModel = modelSelect.value as ModelId;
+const handleModelChange = (id: string) => {
+  selectedModel = id as ModelId;
   log.info("system", `Model switched to ${selectedModel}`);
   posthog.capture('model_changed', { model: selectedModel });
 };
@@ -213,7 +209,6 @@ const handleDemoResetConfirm = () => {
 };
 const handleDemoResetCancel = () => demoResetOverlay.classList.remove("visible");
 
-modelSelect.addEventListener("change", handleModelChange);
 eraToastBtn.addEventListener("click", handleEraToastClose);
 restartButton.addEventListener("click", handleRestart);
 demoResetConfirmBtn.addEventListener("click", handleDemoResetConfirm);
@@ -267,7 +262,7 @@ function restoreGame(save: SaveData) {
   log.info("system", "Restoring saved game...");
 
   selectedModel = save.selectedModel;
-  modelSelect.value = save.selectedModel;
+  if (modelSelect) modelSelect.value = save.selectedModel;
 
   actionLog.length = 0;
   actionLog.push(...save.actionLog);
@@ -295,7 +290,9 @@ function restoreGame(save: SaveData) {
 }
 
 // --- Initialize ---
-initDebugConsole({
+({ modelSelect } = initDebugConsole({
+  modelOptions,
+  onModelChange: handleModelChange,
   resetPlayer: handleDemoReset,
   testVictory: () => {
     // Inject mock history if none exists
@@ -348,7 +345,7 @@ initDebugConsole({
     busy = true;
     showVictory();
   },
-});
+}));
 
 const savedGame = loadGame();
 if (savedGame) {
@@ -1106,7 +1103,6 @@ return () => {
   clearTimeout(toastTimer);
   document.removeEventListener("pointermove", handlePointerMove);
   document.removeEventListener("pointerup", handlePointerUp);
-  modelSelect.removeEventListener("change", handleModelChange);
   eraToastBtn.removeEventListener("click", handleEraToastClose);
   restartButton.removeEventListener("click", handleRestart);
   demoResetConfirmBtn.removeEventListener("click", handleDemoResetConfirm);
