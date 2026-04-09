@@ -119,6 +119,37 @@ export async function getAccessToken(): Promise<string> {
   }
 }
 
+export async function callGeminiImage(
+  token: string,
+  prompt: string,
+): Promise<{ base64: string; mimeType: string }> {
+  const url = `${VERTEX_BASE}/google/models/gemini-2.5-flash-image:generateContent`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generation_config: {
+        response_modalities: ["TEXT", "IMAGE"],
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Gemini image API error ${response.status}: ${text}`);
+  }
+
+  const json = await response.json();
+  const parts: { inlineData?: { mimeType: string; data: string } }[] = json.candidates?.[0]?.content?.parts ?? [];
+  const imgPart = parts.find((p) => p.inlineData?.mimeType?.startsWith("image/"));
+  if (!imgPart?.inlineData) throw new Error("No image in Gemini response");
+  return { base64: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType };
+}
+
 export async function callGemini(
   token: string,
   model: string,
