@@ -631,7 +631,10 @@ async function checkEraAdvancement() {
   log.debug("era", "Checking era advancement...");
 
   const tier5Count = eraActionLog.filter((e) => e.resultTier === 5).length;
-  const inventory = getDiscoveredItems();
+  const inventory = Array.from(
+    paletteItems.querySelectorAll<HTMLElement>("[data-name][data-tier]"),
+    (el) => ({ name: el.dataset.name!, tier: Number(el.dataset.tier) }),
+  ).filter((item) => item.tier > 1).map((item) => item.name);
 
   const result = await eraManager.checkAdvancement(
     eraActionLog,
@@ -1021,6 +1024,7 @@ function addToPalette(entry: ElementData, isSeed = false) {
   const div = document.createElement("div");
   div.className = "palette-item";
   div.dataset.name = entry.name;
+  div.dataset.tier = String(entry.tier);
   if (isSeed) div.dataset.seed = "true";
   div.innerHTML = `
     <span class="palette-emoji">${entry.emoji}</span>
