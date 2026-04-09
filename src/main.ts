@@ -373,13 +373,16 @@ if (savedGame) {
 }
 
 // --- Document-level pointer drag handlers ---
+// Items use position:fixed while being dragged so they render above the palette
+// sidebar regardless of stacking context. On drop they convert back to absolute.
 const handlePointerMove = (e: PointerEvent) => {
   if (!dragItem) return;
+  dragItem.el.style.left = `${e.clientX - dragOffsetX}px`;
+  dragItem.el.style.top = `${e.clientY - dragOffsetY}px`;
+  // Keep workspace-relative coords in sync for overlap detection
   const rect = workspace.getBoundingClientRect();
-  dragItem.x = e.clientX - rect.left - dragOffsetX;
-  dragItem.y = e.clientY - rect.top - dragOffsetY;
-  dragItem.el.style.left = `${dragItem.x}px`;
-  dragItem.el.style.top = `${dragItem.y}px`;
+  dragItem.x = e.clientX - dragOffsetX - rect.left;
+  dragItem.y = e.clientY - dragOffsetY - rect.top;
   updateOverlapGlow(dragItem);
 };
 
@@ -387,17 +390,24 @@ const handlePointerUp = (e: PointerEvent) => {
   if (!dragItem) return;
   const item = dragItem;
   dragItem = null;
-  item.el.style.zIndex = "1";
   clearAllGlow();
 
-  // If released outside the workspace, remove the item
   const rect = workspace.getBoundingClientRect();
+
+  // If released outside the workspace, remove the item
   if (e.clientX < rect.left || e.clientX > rect.right ||
       e.clientY < rect.top || e.clientY > rect.bottom) {
     removeItem(item);
     return;
   }
 
+  // Convert from fixed back to absolute positioning within the workspace
+  item.x = e.clientX - dragOffsetX - rect.left;
+  item.y = e.clientY - dragOffsetY - rect.top;
+  item.el.style.position = 'absolute';
+  item.el.style.left = `${item.x}px`;
+  item.el.style.top = `${item.y}px`;
+  item.el.style.zIndex = "1";
   checkOverlap(item);
 };
 
@@ -442,6 +452,10 @@ function spawnItem(data: ElementData, x: number, y: number): CombineItem {
     dragItem = item;
     dragOffsetX = e.clientX - item.x - workspace.getBoundingClientRect().left;
     dragOffsetY = e.clientY - item.y - workspace.getBoundingClientRect().top;
+    // Switch to fixed so the tile renders above the palette during drag
+    el.style.position = 'fixed';
+    el.style.left = `${e.clientX - dragOffsetX}px`;
+    el.style.top = `${e.clientY - dragOffsetY}px`;
     el.style.zIndex = "10";
   });
 
@@ -1031,6 +1045,10 @@ function addToPalette(entry: ElementData, isSeed = false) {
     dragItem = item;
     dragOffsetX = 36;
     dragOffsetY = 36;
+    // Switch to fixed immediately so the tile is visible over the palette
+    item.el.style.position = 'fixed';
+    item.el.style.left = `${e.clientX - 36}px`;
+    item.el.style.top = `${e.clientY - 36}px`;
     item.el.style.zIndex = "10";
   });
   paletteItems.appendChild(div);
