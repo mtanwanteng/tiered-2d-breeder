@@ -62,7 +62,7 @@ function renderGoals() {
   if (!goal) { goalsEl.innerHTML = ""; return; }
   const metCount = goal.conditions.filter((c) => c.met).length;
   goalsEl.innerHTML = `
-    <div class="era-goal-header">Complete ${goal.requiredCount} of ${goal.conditions.length} (${metCount}/${goal.requiredCount})</div>
+    <div class="era-goal-header">Complete all tasks (${metCount}/${goal.conditions.length})</div>
     ${goal.conditions
       .map((c) => `
         <div class="era-goal${c.met ? " met" : ""}">${c.description}</div>
