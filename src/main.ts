@@ -56,6 +56,41 @@ const modelOptions = MODELS.map(
   (m) => `<option value="${m.id}">${m.label}</option>`
 ).join("");
 
+function renderEraProgress() {
+  const el = document.getElementById("era-progress");
+  if (!el) return;
+  if (victoryShown) { el.innerHTML = ""; return; }
+
+  const goal = eraManager.current.goals[0];
+  const metCount = goal ? goal.conditions.filter((c) => c.met).length : 0;
+  const dotCount = goal ? goal.conditions.length : 5;
+
+  let html = "";
+
+  // Completed eras: dim cube + all-lit dots
+  for (const h of eraManager.history) {
+    html += `<div class="era-cube era-cube--done" title="${h.eraName}"></div>`;
+    html += `<div class="era-dots">${`<span class="era-dot era-dot--lit"></span>`.repeat(5)}</div>`;
+  }
+
+  // Current era: bright glowing cube + progress dots
+  html += `<div class="era-cube era-cube--active" title="${eraManager.current.name}"></div>`;
+  html += `<div class="era-dots">`;
+  for (let i = 0; i < dotCount; i++) {
+    html += `<span class="era-dot${i < metCount ? " era-dot--lit" : ""}"></span>`;
+  }
+  html += `</div>`;
+
+  // Unknown next era (only if not last)
+  if (!eraManager.isLastEra) {
+    html += `<div class="era-cube era-cube--unknown" title="???"></div>`;
+  }
+
+  el.innerHTML = html;
+  // Scroll right so active cube is always visible
+  el.scrollLeft = el.scrollWidth;
+}
+
 function renderGoals() {
   const goalsEl = document.getElementById("era-goals")!;
   const goal = eraManager.current.goals[0];
@@ -70,6 +105,7 @@ function renderGoals() {
       `)
       .join("")}
   `;
+  renderEraProgress();
 }
 
 function renderEraName() {
@@ -97,7 +133,7 @@ app.innerHTML = `
       </div>
     </div>
   </div>
-  <div id="workspace"></div>
+  <div id="workspace"><div id="era-progress"></div></div>
   <div id="result-toast"></div>
   <div id="era-toast">
     <h3 id="era-toast-title"></h3>

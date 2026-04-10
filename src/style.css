@@ -1389,3 +1389,82 @@ body {
   font-size: 13px;
   color: #4caf50;
 }
+
+/* --- Era progress bar --- */
+#era-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 10;
+}
+#era-progress::-webkit-scrollbar { display: none; }
+
+.era-cube {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: linear-gradient(135deg,
+    #d0dcf0 0%,
+    #8090b0 40%,
+    #506080 70%,
+    #a0b8d0 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  position: relative;
+}
+.era-cube::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border-radius: 4px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.35) 0%, transparent 60%);
+}
+
+.era-cube--done {
+  opacity: 0.35;
+}
+
+.era-cube--active {
+  opacity: 1;
+  box-shadow:
+    0 0 12px 4px rgba(160, 200, 255, 0.6),
+    0 0 24px 8px rgba(100, 160, 255, 0.3);
+}
+
+.era-cube--unknown {
+  opacity: 0.22;
+  filter: grayscale(0.5);
+}
+
+.era-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.era-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2a3a50;
+  border: 1px solid #3a5070;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.era-dot--lit {
+  background: #ffd700;
+  border-color: #ffaa00;
+  box-shadow: 0 0 6px 2px rgba(255, 200, 0, 0.7);
+}
