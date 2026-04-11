@@ -131,7 +131,7 @@ export class EraManager {
     }
 
     const metCount = goal.conditions.filter((c) => c.met).length;
-    if (metCount < goal.requiredCount) return null;
+    if (metCount < goal.conditions.length) return null;
 
     return {
       narrative: `Your civilization has achieved all the milestones of the ${this.current.name}. A new chapter begins.`,

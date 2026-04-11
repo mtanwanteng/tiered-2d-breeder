@@ -29,7 +29,7 @@
       { "description": "Build a shelter or permanent dwelling", "met": false },
       { "description": "Create clothing or protection from the elements", "met": false },
       { "description": "Discover a method of food preservation or cooking", "met": false }
-    ], "fallbackTier5Count": 5 }]
+    ], "fallbackTier5Count": 3 }]
   },
   {
     "name": "Bronze Age",
@@ -57,7 +57,7 @@
       { "description": "Build a city, temple, or monument", "met": false },
       { "description": "Establish irrigation or large-scale farming", "met": false },
       { "description": "Create pottery, textiles, or a craft tradition", "met": false }
-    ], "fallbackTier5Count": 7 }]
+    ], "fallbackTier5Count": 4 }]
   },
   {
     "name": "Iron Age",
@@ -84,7 +84,7 @@
       { "description": "Establish a currency or economic system", "met": false },
       { "description": "Create a legal code or system of justice", "met": false },
       { "description": "Build a navy or establish sea routes", "met": false }
-    ], "fallbackTier5Count": 8 }]
+    ], "fallbackTier5Count": 5 }]
   },
   {
     "name": "Classical Age",
@@ -111,7 +111,7 @@
       { "description": "Build large-scale infrastructure like roads or aqueducts", "met": false },
       { "description": "Advance mathematics, astronomy, or natural philosophy", "met": false },
       { "description": "Establish a system of education or a great library", "met": false }
-    ], "fallbackTier5Count": 8 }]
+    ], "fallbackTier5Count": 5 }]
   },
   {
     "name": "Medieval Age",
@@ -139,7 +139,7 @@
       { "description": "Develop feudal governance or a system of allegiance", "met": false },
       { "description": "Create a mechanical innovation like a mill, clock, or press", "met": false },
       { "description": "Survive or overcome a crisis like famine, plague, or invasion", "met": false }
-    ], "fallbackTier5Count": 8 }]
+    ], "fallbackTier5Count": 5 }]
   },
   {
     "name": "Renaissance",
@@ -166,7 +166,7 @@
       { "description": "Establish a financial institution or banking system", "met": false },
       { "description": "Create a masterwork of visual art, music, or literature", "met": false },
       { "description": "Advance navigation, cartography, or exploration capability", "met": false }
-    ], "fallbackTier5Count": 8 }]
+    ], "fallbackTier5Count": 5 }]
   },
   {
     "name": "Age of Exploration",
@@ -194,7 +194,7 @@
       { "description": "Create a new form of diplomacy or international agreement", "met": false },
       { "description": "Develop advanced navigation or shipbuilding", "met": false },
       { "description": "Exchange crops, animals, or ideas between distant cultures", "met": false }
-    ], "fallbackTier5Count": 8 }]
+    ], "fallbackTier5Count": 5 }]
   },
   {
     "name": "Industrial Age",
@@ -222,7 +222,7 @@
       { "description": "Harness a new energy source for industry", "met": false },
       { "description": "Build critical infrastructure like bridges, tunnels, or networks", "met": false },
       { "description": "Create a mass-market consumer product or service", "met": false }
-    ], "fallbackTier5Count": 8 }]
+    ], "fallbackTier5Count": 5 }]
   },
   {
     "name": "Modern Age",
@@ -250,7 +250,7 @@
       { "description": "Split the atom or unlock a fundamental force of nature", "met": false },
       { "description": "Establish international cooperation or a global institution", "met": false },
       { "description": "Build a megastructure or transform the urban landscape", "met": false }
-    ], "fallbackTier5Count": 8 }]
+    ], "fallbackTier5Count": 5 }]
   },
   {
     "name": "Information Age",
@@ -278,7 +278,7 @@
       { "description": "Transition to renewable or sustainable energy", "met": false },
       { "description": "Create a virtual world, digital economy, or online society", "met": false },
       { "description": "Automate a major industry or human activity", "met": false }
-    ], "fallbackTier5Count": 8 }]
+    ], "fallbackTier5Count": 5 }]
   },
   {
     "name": "Space Age",
@@ -307,6 +307,6 @@
       { "description": "Make first contact or detect extraterrestrial life", "met": false },
       { "description": "Terraform or colonize another planet", "met": false },
       { "description": "Achieve a post-scarcity economy or unlimited clean energy", "met": false }
-    ], "fallbackTier5Count": 8 }]
+    ], "fallbackTier5Count": 5 }]
   }
 ]

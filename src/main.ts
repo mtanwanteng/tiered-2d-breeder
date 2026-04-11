@@ -56,13 +56,48 @@ const modelOptions = MODELS.map(
   (m) => `<option value="${m.id}">${m.label}</option>`
 ).join("");
 
+function renderEraProgress() {
+  const el = document.getElementById("era-progress");
+  if (!el) return;
+  if (victoryShown) { el.innerHTML = ""; return; }
+
+  const goal = eraManager.current.goals[0];
+  const metCount = goal ? goal.conditions.filter((c) => c.met).length : 0;
+  const dotCount = goal ? goal.conditions.length : 5;
+
+  let html = "";
+
+  // Completed eras: dim cube + all-lit dots
+  for (const h of eraManager.history) {
+    html += `<div class="era-cube era-cube--done" title="${h.eraName}"></div>`;
+    html += `<div class="era-dots">${`<span class="era-dot era-dot--lit"></span>`.repeat(5)}</div>`;
+  }
+
+  // Current era: bright glowing cube + progress dots
+  html += `<div class="era-cube era-cube--active" title="${eraManager.current.name}"></div>`;
+  html += `<div class="era-dots">`;
+  for (let i = 0; i < dotCount; i++) {
+    html += `<span class="era-dot${i < metCount ? " era-dot--lit" : ""}"></span>`;
+  }
+  html += `</div>`;
+
+  // Unknown next era (only if not last)
+  if (!eraManager.isLastEra) {
+    html += `<div class="era-cube era-cube--unknown" title="???"></div>`;
+  }
+
+  el.innerHTML = html;
+  // Scroll right so active cube is always visible
+  el.scrollLeft = el.scrollWidth;
+}
+
 function renderGoals() {
   const goalsEl = document.getElementById("era-goals")!;
   const goal = eraManager.current.goals[0];
   if (!goal) { goalsEl.innerHTML = ""; return; }
   const metCount = goal.conditions.filter((c) => c.met).length;
   goalsEl.innerHTML = `
-    <div class="era-goal-header">Complete ${goal.requiredCount} of ${goal.conditions.length} (${metCount}/${goal.requiredCount})</div>
+    <div class="era-goal-header">Complete all tasks (${metCount}/${goal.conditions.length})</div>
     ${goal.conditions
       .map((c) => `
         <div class="era-goal${c.met ? " met" : ""}">${c.description}</div>
@@ -70,6 +105,7 @@ function renderGoals() {
       `)
       .join("")}
   `;
+  renderEraProgress();
 }
 
 function renderEraName() {
@@ -79,12 +115,11 @@ function renderEraName() {
 app.innerHTML = `
   <div id="palette">
     <div id="era-display">
-      <div id="era-name"></div>
+      <button id="era-name-toggle" aria-expanded="true">
+        <span id="era-name"></span>
+        <span id="era-toggle-icon">\u25BE</span>
+      </button>
       <div id="era-goals"></div>
-    </div>
-    <div id="model-selector">
-      <label for="model-select">Model</label>
-      <select id="model-select">${modelOptions}</select>
     </div>
     <h2>Inventory</h2>
     <div id="palette-items"></div>
@@ -101,7 +136,7 @@ app.innerHTML = `
       </div>
     </div>
   </div>
-  <div id="workspace"></div>
+  <div id="workspace"><div id="era-progress"></div></div>
   <div id="heatmap-overlay">
     <div id="heatmap-modal">
       <div id="heatmap-header">
@@ -178,7 +213,6 @@ const paletteItems = document.getElementById("palette-items")!;
 const workspace = document.getElementById("workspace")!;
 const toast = document.getElementById("result-toast")!;
 const bari = document.getElementById("bari")!;
-const modelSelect = document.getElementById("model-select") as HTMLSelectElement;
 const eraToast = document.getElementById("era-toast")!;
 const eraToastTitle = document.getElementById("era-toast-title")!;
 const eraToastText = document.getElementById("era-toast-text")!;
@@ -189,6 +223,7 @@ const victoryPanel = document.getElementById("victory-panel")!;
 const victoryTimeline = document.getElementById("victory-timeline")!;
 const victoryShareBtn = document.getElementById("victory-share-btn")!;
 const restartButton = document.getElementById("restart-btn")!;
+let modelSelect: HTMLSelectElement | null = null;
 const demoResetOverlay = document.getElementById("demo-reset-overlay")!;
 const demoResetConfirmBtn = document.getElementById("demo-reset-confirm-btn")!;
 const demoResetCancelBtn = document.getElementById("demo-reset-cancel-btn")!;
@@ -204,8 +239,8 @@ const heatmapOverlay = document.getElementById("heatmap-overlay")!;
 const heatmapCanvas = document.getElementById("heatmap-canvas") as HTMLCanvasElement;
 const heatmapClose = document.getElementById("heatmap-close")!;
 
-const handleModelChange = () => {
-  selectedModel = modelSelect.value as ModelId;
+const handleModelChange = (id: string) => {
+  selectedModel = id as ModelId;
   log.info("system", `Model switched to ${selectedModel}`);
   posthog.capture('model_changed', { model: selectedModel });
 };
@@ -417,9 +452,26 @@ const handleDemoResetConfirm = () => {
 };
 const handleDemoResetCancel = () => demoResetOverlay.classList.remove("visible");
 
-modelSelect.addEventListener("change", handleModelChange);
 eraToastBtn.addEventListener("click", handleEraToastClose);
 restartButton.addEventListener("click", handleRestart);
+
+// Era goals toggle — collapse by default if viewport height < 700px
+const eraGoalsEl = document.getElementById("era-goals")!;
+const eraToggleBtn = document.getElementById("era-name-toggle")!;
+const eraToggleIcon = document.getElementById("era-toggle-icon")!;
+let eraGoalsCollapsed = window.innerHeight < 700;
+
+function applyEraGoalsState() {
+  eraGoalsEl.classList.toggle("era-goals--collapsed", eraGoalsCollapsed);
+  eraToggleIcon.textContent = eraGoalsCollapsed ? "\u25B8" : "\u25BE";
+  eraToggleBtn.setAttribute("aria-expanded", String(!eraGoalsCollapsed));
+}
+applyEraGoalsState();
+
+eraToggleBtn.addEventListener("click", () => {
+  eraGoalsCollapsed = !eraGoalsCollapsed;
+  applyEraGoalsState();
+});
 demoResetConfirmBtn.addEventListener("click", handleDemoResetConfirm);
 demoResetCancelBtn.addEventListener("click", handleDemoResetCancel);
 scoreboardBtn.addEventListener("click", showScoreboard);
@@ -485,7 +537,7 @@ function restoreGame(save: SaveData) {
   log.info("system", "Restoring saved game...");
 
   selectedModel = save.selectedModel;
-  modelSelect.value = save.selectedModel;
+  if (modelSelect) modelSelect.value = save.selectedModel;
 
   actionLog.length = 0;
   actionLog.push(...save.actionLog);
@@ -513,7 +565,9 @@ function restoreGame(save: SaveData) {
 }
 
 // --- Initialize ---
-initDebugConsole({
+({ modelSelect } = initDebugConsole({
+  modelOptions,
+  onModelChange: handleModelChange,
   resetPlayer: handleDemoReset,
   showHeatmap,
   testVictory: () => {
@@ -567,7 +621,7 @@ initDebugConsole({
     busy = true;
     showVictory();
   },
-});
+}));
 
 const savedGame = loadGame();
 if (savedGame) {
@@ -1329,7 +1383,6 @@ return () => {
   clearTimeout(toastTimer);
   document.removeEventListener("pointermove", handlePointerMove);
   document.removeEventListener("pointerup", handlePointerUp);
-  modelSelect.removeEventListener("change", handleModelChange);
   eraToastBtn.removeEventListener("click", handleEraToastClose);
   restartButton.removeEventListener("click", handleRestart);
   demoResetConfirmBtn.removeEventListener("click", handleDemoResetConfirm);

@@ -22,10 +22,12 @@ const ALL_CATEGORIES: LogCategory[] = ["player", "api", "game", "era", "system"]
 export interface DebugActions {
   testVictory?: () => void;
   resetPlayer?: () => void;
+  modelOptions?: string;
+  onModelChange?: (modelId: string) => void;
   showHeatmap?: () => void;
 }
 
-export function initDebugConsole(actions?: DebugActions) {
+export function initDebugConsole(actions?: DebugActions): { modelSelect: HTMLSelectElement | null } {
   // Toggle button
   const toggle = document.createElement("button");
   toggle.id = "debug-toggle";
@@ -45,6 +47,7 @@ export function initDebugConsole(actions?: DebugActions) {
         </select>
         ${ALL_CATEGORIES.map((c) => `<label class="debug-cat-label"><input type="checkbox" data-cat="${c}" checked><span style="color:${CATEGORY_COLORS[c]}">${c}</span></label>`).join("")}
       </div>
+      ${actions?.modelOptions ? `<select id="debug-model-select">${actions.modelOptions}</select>` : ''}
       <button id="debug-clear">Clear</button>
       <button id="debug-test-victory">Test Victory</button>
       <button id="debug-reset-player">Reset Player</button>
@@ -105,6 +108,11 @@ export function initDebugConsole(actions?: DebugActions) {
     });
   }
 
+  const modelSelect = document.getElementById("debug-model-select") as HTMLSelectElement | null;
+  if (modelSelect && actions?.onModelChange) {
+    modelSelect.addEventListener("change", () => actions.onModelChange!(modelSelect.value));
+  }
+
   document.getElementById("debug-clear")!.addEventListener("click", () => {
     logEl.innerHTML = "";
   });
@@ -125,6 +133,7 @@ export function initDebugConsole(actions?: DebugActions) {
   });
 
   log.info("system", "Debug console initialized");
+  return { modelSelect };
 }
 
 function escapeHtml(s: string): string {
