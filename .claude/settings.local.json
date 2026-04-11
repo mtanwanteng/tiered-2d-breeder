@@ -14,7 +14,45 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(npm run:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(cat /c/projects/tiered-2d-breeder/terraform/*.tf)",
+      "WebFetch(domain:zustand.docs.pmnd.rs)",
+      "WebFetch(domain:zustand-demo.pmnd.rs)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:pmnd.rs)",
+      "Bash(git checkout:*)",
+      "Bash(npx better-auth:*)",
+      "Bash(./node_modules/.bin/better-auth generate:*)",
+      "WebFetch(domain:www.better-auth.com)",
+      "Bash(mkdir -p app/api/auth/\\\\[...all\\\\])",
+      "Bash(npx auth@latest generate)",
+      "Bash(npx auth@latest generate --output src/db/schema.ts)",
+      "Bash(npx next:*)",
+      "WebFetch(domain:orm.drizzle.team)",
+      "Bash(npm show:*)",
+      "Bash(npx drizzle-kit:*)",
+      "Bash(npm audit:*)",
+      "Bash(echo \"EXIT:$?\")",
+      "WebFetch(domain:discord.com)",
+      "WebFetch(domain:docs.discord.com)",
+      "WebFetch(domain:robojs.dev)",
+      "WebFetch(domain:docs.cloud.google.com)",
+      "WebFetch(domain:ai.google.dev)"
+    ]
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -Command \"[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms'); [System.Windows.Forms.MessageBox]::Show('Claude Code needs your attention', 'Claude Code')\""
+          }
+        ]
+      }
     ]
   }
 }
