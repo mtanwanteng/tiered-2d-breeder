@@ -115,7 +115,10 @@ function renderEraName() {
 app.innerHTML = `
   <div id="palette">
     <div id="era-display">
-      <div id="era-name"></div>
+      <button id="era-name-toggle" aria-expanded="true">
+        <span id="era-name"></span>
+        <span id="era-toggle-icon">\u25BE</span>
+      </button>
       <div id="era-goals"></div>
     </div>
     <h2>Inventory</h2>
@@ -247,6 +250,24 @@ const handleDemoResetCancel = () => demoResetOverlay.classList.remove("visible")
 
 eraToastBtn.addEventListener("click", handleEraToastClose);
 restartButton.addEventListener("click", handleRestart);
+
+// Era goals toggle — collapse by default if viewport height < 700px
+const eraGoalsEl = document.getElementById("era-goals")!;
+const eraToggleBtn = document.getElementById("era-name-toggle")!;
+const eraToggleIcon = document.getElementById("era-toggle-icon")!;
+let eraGoalsCollapsed = window.innerHeight < 700;
+
+function applyEraGoalsState() {
+  eraGoalsEl.classList.toggle("era-goals--collapsed", eraGoalsCollapsed);
+  eraToggleIcon.textContent = eraGoalsCollapsed ? "\u25B8" : "\u25BE";
+  eraToggleBtn.setAttribute("aria-expanded", String(!eraGoalsCollapsed));
+}
+applyEraGoalsState();
+
+eraToggleBtn.addEventListener("click", () => {
+  eraGoalsCollapsed = !eraGoalsCollapsed;
+  applyEraGoalsState();
+});
 demoResetConfirmBtn.addEventListener("click", handleDemoResetConfirm);
 demoResetCancelBtn.addEventListener("click", handleDemoResetCancel);
 scoreboardBtn.addEventListener("click", showScoreboard);
