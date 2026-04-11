@@ -32,12 +32,45 @@ body {
   border-right: 2px solid #0f3460;
 }
 
+#inventory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 #palette h2 {
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: #e94560;
   margin-bottom: 4px;
+}
+
+#palette-zoom-controls {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+#palette-zoom-controls button {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  color: #aaa;
+  font-size: 14px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+#palette-zoom-controls button:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: #3a5070;
+  color: #eee;
 }
 
 /* --- Era display --- */
@@ -47,28 +80,49 @@ body {
   margin-bottom: 4px;
 }
 
-#era-name-toggle {
+#era-name-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 0;
-  margin-bottom: 6px;
-  cursor: pointer;
   gap: 6px;
+  margin-bottom: 6px;
+}
+
+#era-name-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+#era-name-toggle {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid #1e3a5f;
+  border-radius: 6px;
+  padding: 2px 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+#era-name-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #3a5070;
 }
 #era-name-toggle:hover #era-toggle-icon {
   color: #ffd700;
+}
+
+#era-goal-counter {
+  font-size: 11px;
+  color: #888;
+  font-weight: 500;
 }
 
 #era-name {
   font-size: 16px;
   font-weight: 700;
   color: #ffd700;
-  text-align: left;
-  flex: 1;
 }
 
 #era-toggle-icon {

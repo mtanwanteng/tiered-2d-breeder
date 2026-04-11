@@ -96,6 +96,8 @@ function renderGoals() {
   const goal = eraManager.current.goals[0];
   if (!goal) { goalsEl.innerHTML = ""; return; }
   const metCount = goal.conditions.filter((c) => c.met).length;
+  const counterEl = document.getElementById("era-goal-counter");
+  if (counterEl) counterEl.textContent = `(${metCount}/${goal.conditions.length})`;
   goalsEl.innerHTML = `
     <div class="era-goal-header">Complete all tasks (${metCount}/${goal.conditions.length})</div>
     ${goal.conditions
@@ -115,13 +117,24 @@ function renderEraName() {
 app.innerHTML = `
   <div id="palette">
     <div id="era-display">
-      <button id="era-name-toggle" aria-expanded="true">
+      <div id="era-name-row">
         <span id="era-name"></span>
-        <span id="era-toggle-icon">\u25BE</span>
-      </button>
+        <div id="era-name-right">
+          <span id="era-goal-counter"></span>
+          <button id="era-name-toggle" aria-expanded="true">
+            <span id="era-toggle-icon">\u25BE</span>
+          </button>
+        </div>
+      </div>
       <div id="era-goals"></div>
     </div>
-    <h2>Inventory</h2>
+    <div id="inventory-header">
+      <h2>Inventory</h2>
+      <div id="palette-zoom-controls">
+        <button id="palette-zoom-out">&#8722;</button>
+        <button id="palette-zoom-in">&#43;</button>
+      </div>
+    </div>
     <div id="palette-items"></div>
     <div id="bari"><span id="bari-char">\uD83D\uDC66</span><span id="bari-tool">\uD83D\uDD28</span></div>
     <button id="restart-btn">Restart Game</button>
@@ -455,11 +468,11 @@ const handleDemoResetCancel = () => demoResetOverlay.classList.remove("visible")
 eraToastBtn.addEventListener("click", handleEraToastClose);
 restartButton.addEventListener("click", handleRestart);
 
-// Era goals toggle — collapse by default if viewport height < 700px
+// Era goals toggle
 const eraGoalsEl = document.getElementById("era-goals")!;
 const eraToggleBtn = document.getElementById("era-name-toggle")!;
 const eraToggleIcon = document.getElementById("era-toggle-icon")!;
-let eraGoalsCollapsed = window.innerHeight < 700;
+let eraGoalsCollapsed = false;
 
 function applyEraGoalsState() {
   eraGoalsEl.classList.toggle("era-goals--collapsed", eraGoalsCollapsed);
@@ -471,6 +484,26 @@ applyEraGoalsState();
 eraToggleBtn.addEventListener("click", () => {
   eraGoalsCollapsed = !eraGoalsCollapsed;
   applyEraGoalsState();
+});
+
+// Palette zoom
+const palette = document.getElementById("palette")!;
+let paletteZoom = 1.0;
+const PALETTE_ZOOM_STEP = 0.1;
+const PALETTE_ZOOM_MIN = 0.5;
+const PALETTE_ZOOM_MAX = 1.5;
+
+function applyPaletteZoom() {
+  palette.style.zoom = String(paletteZoom);
+}
+
+document.getElementById("palette-zoom-in")!.addEventListener("click", () => {
+  paletteZoom = Math.min(PALETTE_ZOOM_MAX, Math.round((paletteZoom + PALETTE_ZOOM_STEP) * 10) / 10);
+  applyPaletteZoom();
+});
+document.getElementById("palette-zoom-out")!.addEventListener("click", () => {
+  paletteZoom = Math.max(PALETTE_ZOOM_MIN, Math.round((paletteZoom - PALETTE_ZOOM_STEP) * 10) / 10);
+  applyPaletteZoom();
 });
 demoResetConfirmBtn.addEventListener("click", handleDemoResetConfirm);
 demoResetCancelBtn.addEventListener("click", handleDemoResetCancel);
