@@ -10,12 +10,14 @@ body {
   background: #1a1a2e;
   color: #eee;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
 #app {
   display: flex;
   height: 100vh;
+  height: 100dvh;
 }
 
 /* --- Palette sidebar --- */
