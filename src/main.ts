@@ -137,6 +137,19 @@ app.innerHTML = `
     </div>
   </div>
   <div id="workspace"><div id="era-progress"></div></div>
+  <div id="heatmap-overlay">
+    <div id="heatmap-modal">
+      <div id="heatmap-header">
+        <span id="heatmap-title">Tile Density Map</span>
+        <button id="heatmap-close">&times;</button>
+      </div>
+      <div id="heatmap-filter-bar">
+        <button id="heatmap-filter-all">None</button>
+        <div id="heatmap-filters"></div>
+      </div>
+      <canvas id="heatmap-canvas"></canvas>
+    </div>
+  </div>
   <div id="result-toast"></div>
   <div id="era-toast">
     <h3 id="era-toast-title"></h3>
@@ -186,6 +199,14 @@ app.innerHTML = `
       </div>
     </div>
   </div>
+  <div id="tapestry-overlay">
+    <div id="tapestry-modal">
+      <button id="tapestry-close">&times;</button>
+      <div id="tapestry-content">
+        <div id="tapestry-spinner">Weaving the tapestry\u2026</div>
+      </div>
+    </div>
+  </div>
 `;
 
 const paletteItems = document.getElementById("palette-items")!;
@@ -211,6 +232,12 @@ const scoreboardTimeline = document.getElementById("scoreboard-timeline")!;
 const eraSummaryOverlay = document.getElementById("era-summary-overlay")!;
 const scoreboardBtn = document.getElementById("scoreboard-btn")!;
 const scoreboardCloseBtn = document.getElementById("scoreboard-close-btn")!;
+const tapestryOverlay = document.getElementById("tapestry-overlay")!;
+const tapestryContent = document.getElementById("tapestry-content")!;
+const tapestryClose = document.getElementById("tapestry-close")!;
+const heatmapOverlay = document.getElementById("heatmap-overlay")!;
+const heatmapCanvas = document.getElementById("heatmap-canvas") as HTMLCanvasElement;
+const heatmapClose = document.getElementById("heatmap-close")!;
 
 const handleModelChange = (id: string) => {
   selectedModel = id as ModelId;
@@ -221,6 +248,183 @@ const handleModelChange = (id: string) => {
 const handleEraToastClose = () => {
   eraToast.classList.remove("visible");
 };
+
+// --- Tapestry ---
+let tapestryPromise: Promise<{ base64: string; mimeType: string } | null> | null = null;
+
+function startTapestryGeneration(narrative: string, eraName: string, nextEraName: string) {
+  tapestryPromise = fetch("/api/generate-tapestry", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ narrative, eraName, nextEraName }),
+  })
+    .then((r) => (r.ok ? r.json() : null))
+    .catch(() => null);
+}
+
+async function showTapestry() {
+  tapestryContent.innerHTML = `<div id="tapestry-spinner">Weaving the tapestry\u2026</div>`;
+  tapestryOverlay.classList.add("visible");
+
+  const result = await tapestryPromise;
+  tapestryPromise = null;
+
+  if (!result?.base64) {
+    tapestryOverlay.classList.remove("visible");
+    return;
+  }
+
+  tapestryContent.innerHTML = `<img id="tapestry-img" src="data:${result.mimeType};base64,${result.base64}" alt="Era tapestry">`;
+}
+
+function closeTapestry() {
+  tapestryOverlay.classList.remove("visible");
+  tapestryContent.innerHTML = "";
+}
+
+// --- Heatmap ---
+let heatmapFilter: Set<string> | null = null; // null = all tiles
+
+function renderHeatmapCanvas() {
+  const wsRect = workspace.getBoundingClientRect();
+  const W = wsRect.width;
+  const H = wsRect.height;
+
+  heatmapCanvas.width = W;
+  heatmapCanvas.height = H;
+  const ctx = heatmapCanvas.getContext("2d")!;
+  ctx.clearRect(0, 0, W, H);
+
+  const visible = heatmapFilter
+    ? items.filter((it) => heatmapFilter!.has(it.name))
+    : items;
+
+  document.getElementById("heatmap-title")!.textContent =
+    `Tile Density Map — ${visible.length} tile${visible.length !== 1 ? "s" : ""}${heatmapFilter ? ` (filtered)` : ""}`;
+
+  if (visible.length === 0) {
+    ctx.fillStyle = "#8090b0";
+    ctx.font = "16px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("No tiles match the filter", W / 2, H / 2);
+    return;
+  }
+
+  // Pass 1 — accumulate intensity into a Float32 buffer (no clipping)
+  const radius = Math.max(60, Math.min(W, H) * 0.14);
+  const buf = new Float32Array(W * H);
+
+  for (const item of visible) {
+    const cx = item.x + 32;
+    const cy = item.y + 32;
+    const x0 = Math.max(0, Math.floor(cx - radius));
+    const x1 = Math.min(W - 1, Math.ceil(cx + radius));
+    const y0 = Math.max(0, Math.floor(cy - radius));
+    const y1 = Math.min(H - 1, Math.ceil(cy + radius));
+    for (let py = y0; py <= y1; py++) {
+      for (let px = x0; px <= x1; px++) {
+        const dx = px - cx, dy = py - cy;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d >= radius) continue;
+        // Gaussian-like falloff: 1 at center → 0 at radius
+        const t = 1 - d / radius;
+        buf[py * W + px] += t * t;
+      }
+    }
+  }
+
+  // Find max for normalization
+  let maxVal = 0;
+  for (let i = 0; i < buf.length; i++) if (buf[i] > maxVal) maxVal = buf[i];
+  if (maxVal === 0) return;
+
+  // Pass 2 — apply normalized color ramp: blue→cyan→green→yellow→red
+  const outData = ctx.createImageData(W, H);
+  const dst = outData.data;
+
+  for (let i = 0; i < buf.length; i++) {
+    if (buf[i] === 0) continue;
+    const intensity = buf[i] / maxVal; // 0..1 relative to densest point
+
+    let r = 0, g = 0, b = 0;
+    if (intensity < 0.25) {
+      const t = intensity / 0.25;
+      r = 0; g = Math.round(255 * t); b = 255;
+    } else if (intensity < 0.5) {
+      const t = (intensity - 0.25) / 0.25;
+      r = 0; g = 255; b = Math.round(255 * (1 - t));
+    } else if (intensity < 0.75) {
+      const t = (intensity - 0.5) / 0.25;
+      r = Math.round(255 * t); g = 255; b = 0;
+    } else {
+      const t = (intensity - 0.75) / 0.25;
+      r = 255; g = Math.round(255 * (1 - t)); b = 0;
+    }
+
+    const p = i * 4;
+    dst[p] = r;
+    dst[p + 1] = g;
+    dst[p + 2] = b;
+    dst[p + 3] = Math.round(intensity * 200 + 30);
+  }
+
+  ctx.putImageData(outData, 0, 0);
+
+  // Pass 3 — white dot at each tile center for reference
+  ctx.fillStyle = "rgba(255,255,255,0.75)";
+  for (const item of visible) {
+    ctx.beginPath();
+    ctx.arc(item.x + 32, item.y + 32, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function showHeatmap() {
+  // Build filter UI from unique tile names currently on field
+  const unique = [...new Map(items.map((it) => [it.name, it])).values()]
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  heatmapFilter = null; // reset to all on open
+
+  const filterEl = document.getElementById("heatmap-filters")!;
+  filterEl.innerHTML = unique.map((it) =>
+    `<label class="heatmap-filter-label" title="${it.name}">
+      <input type="checkbox" data-tile="${it.name}" checked>
+      <span>${it.emoji}</span>
+      <span class="heatmap-filter-name">${it.name}</span>
+    </label>`
+  ).join("");
+
+  // "All" toggle
+  const allBtn = document.getElementById("heatmap-filter-all")!;
+  allBtn.textContent = "All";
+
+  function syncFilter() {
+    const checked = [...filterEl.querySelectorAll<HTMLInputElement>("input[data-tile]:checked")]
+      .map((cb) => cb.dataset.tile!);
+    const all = checked.length === unique.length;
+    heatmapFilter = all ? null : new Set(checked);
+    allBtn.textContent = all ? "None" : "All";
+    renderHeatmapCanvas();
+  }
+
+  allBtn.onclick = () => {
+    const allChecked = heatmapFilter === null;
+    filterEl.querySelectorAll<HTMLInputElement>("input[data-tile]").forEach((cb) => {
+      cb.checked = !allChecked;
+    });
+    syncFilter();
+  };
+
+  filterEl.addEventListener("change", syncFilter);
+
+  renderHeatmapCanvas();
+  heatmapOverlay.classList.add("visible");
+}
+
+function closeHeatmap() {
+  heatmapOverlay.classList.remove("visible");
+}
 
 const handleRestart = () => {
   if (!confirm("Start a new game? All progress will be lost.")) return;
@@ -274,11 +478,25 @@ scoreboardBtn.addEventListener("click", showScoreboard);
 scoreboardCloseBtn.addEventListener("click", () => scoreboardOverlay.classList.remove("visible"));
 
 const handleKeyDown = (e: KeyboardEvent) => {
-  if (e.key === "Escape" && scoreboardOverlay.classList.contains("visible")) {
+  if (e.key === "Escape" && tapestryOverlay.classList.contains("visible")) {
+    closeTapestry();
+  } else if (e.key === "Escape" && heatmapOverlay.classList.contains("visible")) {
+    closeHeatmap();
+  } else if (e.key === "Escape" && scoreboardOverlay.classList.contains("visible")) {
     scoreboardOverlay.classList.remove("visible");
   }
 };
 document.addEventListener("keydown", handleKeyDown);
+
+tapestryClose.addEventListener("click", closeTapestry);
+tapestryOverlay.addEventListener("click", (e) => {
+  if (e.target === tapestryOverlay) closeTapestry();
+});
+
+heatmapClose.addEventListener("click", closeHeatmap);
+heatmapOverlay.addEventListener("click", (e) => {
+  if (e.target === heatmapOverlay) closeHeatmap();
+});
 
 // --- Save/Load ---
 function persistGame() {
@@ -351,6 +569,7 @@ function restoreGame(save: SaveData) {
   modelOptions,
   onModelChange: handleModelChange,
   resetPlayer: handleDemoReset,
+  showHeatmap,
   testVictory: () => {
     // Inject mock history if none exists
     if (eraManager.history.length === 0) {
@@ -730,6 +949,7 @@ async function doEraTransition(result: { narrative: string }) {
 
     if (eraManager.isLastEra) {
       log.info("era", "VICTORY — Space Age completed!");
+      startTapestryGeneration(result.narrative, fromEra, "the Age of Plenty");
       clearSave();
       victoryShown = true;
       showVictory();
@@ -744,6 +964,7 @@ async function doEraTransition(result: { narrative: string }) {
     const nextEra = eraManager.advanceTo(choice.era.name);
     if (nextEra) {
       log.info("era", `Era advanced to: ${nextEra.name}`);
+      startTapestryGeneration(result.narrative, fromEra, nextEra.name);
       posthog.capture('era_advanced', {
         from_era: fromEra,
         to_era: nextEra.name,
@@ -753,7 +974,7 @@ async function doEraTransition(result: { narrative: string }) {
       });
 
       const completedRecord = eraManager.history[eraManager.history.length - 1];
-      showEraSummary(completedRecord!, nextEra.name, choice.narrative, () => {
+      showEraSummary(completedRecord!, nextEra.name, choice.narrative, async () => {
         for (const item of [...items]) removeItem(item);
         paletteItems.innerHTML = "";
         const newSeeds = eraManager.getSeeds();
@@ -764,6 +985,7 @@ async function doEraTransition(result: { narrative: string }) {
         persistGame();
         busy = false;
         eraAdvancing = false;
+        await showTapestry();
       });
     }
   } catch (err) {
@@ -1067,10 +1289,11 @@ const handleVictoryShare = async () => {
 
 victoryShareBtn.addEventListener("click", handleVictoryShare);
 
-document.getElementById("victory-continue-btn")!.addEventListener("click", () => {
+document.getElementById("victory-continue-btn")!.addEventListener("click", async () => {
   victoryOverlay.classList.remove("visible");
   busy = false;
   eraAdvancing = false;
+  await showTapestry();
 });
 
 // --- Palette management ---
