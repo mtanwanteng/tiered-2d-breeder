@@ -31,12 +31,27 @@ Tracking spec lives at `docs/analytics-tracking.md`. It is divided into four con
 
 **Never expose raw error messages to the player console in production.**
 
-When logging errors that include `err.message` or `String(err)` from network calls or external APIs, gate the detail behind `import.meta.env.PROD`:
+When logging errors that include `err.message` or `String(err)` from network calls or external APIs, gate the detail behind `process.env.NEXT_PUBLIC_VERCEL_ENV`:
 
 ```ts
-log.error("api", `[TAG] Something failed${!import.meta.env.PROD ? `: ${err.message}` : ""}`);
+log.error("api", `[TAG] Something failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err.message}` : ""}`);
 ```
 
-In production the log reads `"[TAG] Something failed"` — no internal URLs, model names, GCP project IDs, or stack traces. Full detail is still available in dev.
+In production the log reads `"[TAG] Something failed"` — no internal URLs, model names, GCP project IDs, or stack traces. Full detail is still available in dev and preview deployments.
 
 **Each error site must have a unique short tag** (e.g. `[CMB]`, `[ERA-CHK]`, `[ERA-CHO]`, `[ERA-TRN]`) so player bug reports can be grepped directly back to the originating line of code.
+
+---
+
+## CSS — Viewport Height Units
+
+**Always use `dvh` (dynamic viewport height) alongside `vh` for Safari compatibility.**
+
+Safari's `100vh` includes the browser chrome (address bar, tab bar), causing elements to be clipped. Use `dvh` as a second declaration so supporting browsers use the correct value:
+
+```css
+max-height: 90vh;
+max-height: 90dvh;
+```
+
+Apply this to any property using `vh`: `height`, `max-height`, `min-height`, `calc()` expressions, etc.

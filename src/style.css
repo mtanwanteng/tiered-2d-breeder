@@ -661,6 +661,7 @@ body {
   max-width: 90vw;
   width: 90vw;
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
   text-align: center;
 }
@@ -856,6 +857,7 @@ body {
   max-width: 90vw;
   width: 90vw;
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
   text-align: center;
 }
@@ -1039,6 +1041,7 @@ body {
   padding: 28px 36px;
   width: min(680px, 92vw);
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1558,6 +1561,8 @@ body {
   height: auto;
   max-width: 90vw;
   max-height: 90vh;
+  max-height: 90dvh;
+  max-height: 90dvh;
 }
 
 .htp-steps {
@@ -1834,6 +1839,7 @@ body {
   flex-direction: column;
   max-width: min(95vw, 1000px);
   max-height: 90vh;
+  max-height: 90dvh;
   background: #0d1b2e;
   border: 2px solid #3a5070;
   border-radius: 12px;
@@ -1934,6 +1940,7 @@ body {
   display: block;
   max-width: 100%;
   max-height: calc(90vh - 96px);
+  max-height: calc(90dvh - 96px);
   object-fit: contain;
   background: #0a1420;
 }
@@ -1956,6 +1963,7 @@ body {
   position: relative;
   max-width: min(90vw, 900px);
   max-height: 90vh;
+  max-height: 90dvh;
   background: #0d1b2e;
   border: 2px solid #3a5070;
   border-radius: 12px;
@@ -1997,6 +2005,7 @@ body {
   display: block;
   max-width: 100%;
   max-height: 85vh;
+  max-height: 85dvh;
   object-fit: contain;
 }
 
