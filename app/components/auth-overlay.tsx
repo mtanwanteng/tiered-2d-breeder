@@ -156,7 +156,7 @@ export function AuthOverlay() {
 
               <ol className="htp-steps">
                 <li>Drag two tiles together to <strong>combine</strong> them into something new.</li>
-                <li>Discover new ideas and build up your civilization.</li>
+                <li>Discover new <strong>ideas</strong> and build up your civilization.</li>
                 <li>Complete era goals to <strong>advance through history</strong>.</li>
                 <li>Reach the <strong>Age of Plenty</strong> to win.</li>
               </ol>
