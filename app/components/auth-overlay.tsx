@@ -34,10 +34,12 @@ function VideoModal({ onClose }: { onClose: () => void }) {
 export function AuthOverlay() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fromVictory, setFromVictory] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [htpOpen, setHtpOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const htpRef = useRef<HTMLDivElement>(null);
+  const accountRef = useRef<HTMLDivElement>(null);
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const name = useAuthStore((s) => s.name);
   const avatarUrl = useAuthStore((s) => s.avatarUrl);
@@ -47,37 +49,40 @@ export function AuthOverlay() {
   useEffect(() => {
     if (!htpOpen) return;
     const handler = (e: MouseEvent) => {
-      if (htpRef.current && !htpRef.current.contains(e.target as Node)) {
-        setHtpOpen(false);
-      }
+      if (htpRef.current && !htpRef.current.contains(e.target as Node)) setHtpOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [htpOpen]);
 
+  // Close account dropdown when clicking outside
+  useEffect(() => {
+    if (!accountOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
+        setAccountOpen(false);
+        setConfirmingSignOut(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [accountOpen]);
+
   // Register callbacks in the store so vanilla TS (main.ts) can invoke them
   useEffect(() => {
     authStore.setState({
-      openLogin: () => {
-        setFromVictory(false);
-        setIsModalOpen(true);
-      },
+      openLogin: () => { setFromVictory(false); setIsModalOpen(true); },
       openLoginFromVictory: () => {
         posthog?.capture("auth_from_victory");
         setFromVictory(true);
         setIsModalOpen(true);
       },
       resetPlayer: async () => {
-        if (authStore.getState().isLoggedIn) {
-          await authClient.signOut();
-        }
+        if (authStore.getState().isLoggedIn) await authClient.signOut();
         authStore.getState().resetGame?.();
       },
     });
-
-    return () => {
-      authStore.setState({ openLogin: null, openLoginFromVictory: null, resetPlayer: null });
-    };
+    return () => authStore.setState({ openLogin: null, openLoginFromVictory: null, resetPlayer: null });
   }, [posthog]);
 
   const handleSignOut = async () => {
@@ -92,42 +97,56 @@ export function AuthOverlay() {
     setHtpOpen(false);
   };
 
+  const initials = name ? name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 3) : "?";
+
   return (
     <>
       <div className="auth-overlay">
         {isLoggedIn ? (
-          <div className="auth-user-chip">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={name ?? "User"}
-                className="auth-avatar"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  const placeholder = e.currentTarget.nextElementSibling as HTMLElement | null;
-                  if (placeholder?.classList.contains("auth-avatar-placeholder")) placeholder.style.display = "flex";
-                }}
-              />
-            ) : null}
-            <span className="auth-avatar-placeholder" style={{ display: avatarUrl ? "none" : "flex" }}>
-              {(name ?? "?")[0].toUpperCase()}
-            </span>
-            <span className="auth-user-name">{name}</span>
-            {!isDiscordActivity() && (confirmingSignOut ? (
-              <div className="auth-signout-confirm">
-                <span className="auth-signout-warning">Progress will be lost</span>
-                <button className="auth-signout-confirm-btn" onClick={handleSignOut}>
-                  End &amp; sign out
-                </button>
-                <button className="auth-signout-cancel-btn" onClick={() => setConfirmingSignOut(false)}>
-                  Cancel
-                </button>
+          <div className="account-wrapper" ref={accountRef}>
+            <button
+              className={`auth-user-chip${accountOpen ? " auth-user-chip--open" : ""}`}
+              onClick={() => { setAccountOpen((v) => !v); setConfirmingSignOut(false); }}
+            >
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={name ?? "User"}
+                  className="auth-avatar"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    const placeholder = e.currentTarget.nextElementSibling as HTMLElement | null;
+                    if (placeholder?.classList.contains("auth-avatar-placeholder")) placeholder.style.display = "flex";
+                  }}
+                />
+              ) : null}
+              <span className="auth-avatar-placeholder" style={{ display: avatarUrl ? "none" : "flex" }}>
+                {(name ?? "?")[0].toUpperCase()}
+              </span>
+              <span className="auth-user-name">{initials}</span>
+            </button>
+
+            {accountOpen && !isDiscordActivity() && (
+              <div className="account-dropdown">
+                <div className="account-dropdown-tail" />
+                <div className="account-dropdown-name">{name}</div>
+                {confirmingSignOut ? (
+                  <>
+                    <p className="account-signout-warning">Progress will be lost</p>
+                    <button className="auth-signout-confirm-btn account-signout-confirm-btn" onClick={handleSignOut}>
+                      End &amp; sign out
+                    </button>
+                    <button className="auth-signout-cancel-btn" onClick={() => setConfirmingSignOut(false)}>
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button className="account-signout-btn" onClick={() => setConfirmingSignOut(true)}>
+                    Sign out
+                  </button>
+                )}
               </div>
-            ) : (
-              <button className="auth-signout-btn" onClick={() => setConfirmingSignOut(true)}>
-                Sign out
-              </button>
-            ))}
+            )}
           </div>
         ) : !isDiscordActivity() ? (
           <button className="auth-login-btn" onClick={openLogin}>
@@ -138,17 +157,16 @@ export function AuthOverlay() {
         {/* How to Play */}
         <div className="htp-wrapper" ref={htpRef}>
           <button
-            className="htp-btn"
+            className={`htp-btn${htpOpen ? " htp-btn--active" : ""}`}
             onClick={() => setHtpOpen((v) => !v)}
             aria-label="How to play"
           >
-            How-To-Play
+            How-To-Play{htpOpen && <span className="htp-btn-arrow"> ▲</span>}
           </button>
 
           {htpOpen && (
             <div className="htp-popup">
               <div className="htp-tail" />
-              <h3 className="htp-title">How to Play</h3>
 
               <button className="htp-play-btn" onClick={() => setVideoOpen(true)}>
                 ▶ Play Video

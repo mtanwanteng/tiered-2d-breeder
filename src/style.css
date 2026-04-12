@@ -1282,6 +1282,10 @@ body {
   background: rgba(255, 255, 255, 0.18);
 }
 
+.account-wrapper {
+  position: relative;
+}
+
 .auth-user-chip {
   display: flex;
   align-items: center;
@@ -1290,6 +1294,75 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 20px;
   padding: 4px 10px 4px 4px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.auth-user-chip:hover,
+.auth-user-chip--open {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 160px;
+  background: #16213e;
+  border: 1px solid #3a5070;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-dropdown-tail {
+  position: absolute;
+  top: -7px;
+  right: 16px;
+  width: 12px;
+  height: 12px;
+  background: #16213e;
+  border-left: 1px solid #3a5070;
+  border-top: 1px solid #3a5070;
+  transform: rotate(45deg);
+}
+
+.account-dropdown-name {
+  font-size: 12px;
+  color: #90a4ae;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #2a3f5f;
+}
+
+.account-signout-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-align: left;
+}
+
+.account-signout-btn:hover {
+  color: #fff;
+}
+
+.account-signout-confirm-btn {
+  width: 100%;
+}
+
+.account-signout-warning {
+  font-size: 11px;
+  color: #f0a500;
 }
 
 .auth-avatar {
@@ -1321,32 +1394,6 @@ body {
   white-space: nowrap;
 }
 
-.auth-signout-btn {
-  background: none;
-  border: none;
-  color: #888;
-  font-size: 12px;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 2px;
-}
-
-.auth-signout-btn:hover {
-  color: #ccc;
-}
-
-.auth-signout-confirm {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: 4px;
-}
-
-.auth-signout-warning {
-  font-size: 11px;
-  color: #f0a500;
-  white-space: nowrap;
-}
 
 .auth-signout-confirm-btn {
   background: #c0392b;
@@ -1388,7 +1435,6 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #eee;
   font-size: 13px;
-  font-weight: 600;
   padding: 5px 12px;
   border-radius: 6px;
   cursor: pointer;
@@ -1403,11 +1449,19 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
+.htp-btn--active {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
 .htp-popup {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
   width: 280px;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 80px);
+  overflow-y: auto;
   background: #16213e;
   border: 1px solid #3a5070;
   border-radius: 12px;
@@ -1429,11 +1483,10 @@ body {
   transform: rotate(45deg);
 }
 
-.htp-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #eee;
-  margin-bottom: 12px;
+.htp-btn-arrow {
+  font-size: 9px;
+  opacity: 0.6;
+  vertical-align: middle;
 }
 
 .htp-play-btn {
@@ -1442,9 +1495,9 @@ body {
   border: 1px solid #3a5070;
   border-radius: 8px;
   color: #eee;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 14px;
+  padding: 10px;
   margin-bottom: 12px;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
