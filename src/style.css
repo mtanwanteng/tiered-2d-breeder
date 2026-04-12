@@ -73,6 +73,18 @@ body {
   color: #eee;
 }
 
+/* --- Selectable text in modals --- */
+#era-summary-panel, #era-summary-panel *,
+#scoreboard-panel, #scoreboard-panel *,
+#victory-panel, #victory-panel *,
+#era-toast, #era-toast *,
+#tapestry-modal, #tapestry-modal *,
+#heatmap-modal, #heatmap-modal *,
+#demo-reset-modal, #demo-reset-modal *,
+#debug-panel, #debug-panel * {
+  user-select: text;
+}
+
 /* --- Era display --- */
 #era-display {
   padding-bottom: 8px;
@@ -1248,10 +1260,11 @@ body {
   position: absolute;
   top: 12px;
   right: 12px;
-  z-index: 50;
+  z-index: 450;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
 }
 
 .auth-login-btn {
@@ -1284,6 +1297,19 @@ body {
   height: 24px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.auth-avatar-placeholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #2a4a7f;
+  color: #eee;
+  font-size: 11px;
+  font-weight: 600;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .auth-user-name {
@@ -1349,6 +1375,187 @@ body {
 
 .auth-signout-cancel-btn:hover {
   color: #ccc;
+}
+
+/* --- How to Play --- */
+
+.htp-wrapper {
+  position: relative;
+}
+
+.htp-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #eee;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.htp-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.htp-popup {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  background: #16213e;
+  border: 1px solid #3a5070;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  z-index: 500;
+  user-select: text;
+}
+
+.htp-tail {
+  position: absolute;
+  top: -7px;
+  right: 9px;
+  width: 12px;
+  height: 12px;
+  background: #16213e;
+  border-left: 1px solid #3a5070;
+  border-top: 1px solid #3a5070;
+  transform: rotate(45deg);
+}
+
+.htp-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #eee;
+  margin-bottom: 12px;
+}
+
+.htp-play-btn {
+  width: 100%;
+  background: #0d1b2e;
+  border: 1px solid #3a5070;
+  border-radius: 8px;
+  color: #eee;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 14px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.htp-play-btn:hover {
+  background: #1a2e50;
+  border-color: #5a80a0;
+}
+
+.htp-video-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.htp-video-modal {
+  position: relative;
+  background: #0d1b2e;
+  border: 2px solid #3a5070;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(0, 100, 200, 0.3);
+  display: inline-flex;
+}
+
+.htp-video-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #3a5070;
+  color: #eee;
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.htp-video-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.htp-video-player {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.htp-steps {
+  padding-left: 18px;
+  color: #b0bec5;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+.htp-steps li {
+  margin-bottom: 4px;
+}
+
+.htp-steps strong {
+  color: #eee;
+}
+
+.htp-cta {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #2a3f5f;
+  text-align: center;
+}
+
+.htp-cta-text {
+  font-size: 12px;
+  color: #90a4ae;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.htp-cta-text strong {
+  color: #eee;
+}
+
+.htp-cta-btn {
+  background: linear-gradient(135deg, #1a6bb5, #0d4a8a);
+  border: 1px solid #2a7fd4;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s;
+}
+
+.htp-cta-btn:hover {
+  background: linear-gradient(135deg, #2179c9, #1a5fa0);
 }
 
 /* --- Auth modal --- */

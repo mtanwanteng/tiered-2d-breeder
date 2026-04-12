@@ -48,3 +48,4 @@ class Logger {
 
 export const log = new Logger();
 export type { LogEntry };
+

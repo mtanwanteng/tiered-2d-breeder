@@ -24,3 +24,19 @@ Tracking spec lives at `docs/analytics-tracking.md`. It is divided into four con
 - **Cost** — AI API usage and cost-per-combination tracking
 
 **When adding a new game mechanic:** if the mechanic creates player behavior worth measuring, add an entry to the `## TODO — Mechanics to instrument` section in `docs/analytics-tracking.md`. Include the proposed event name, where it fires, and what insight it enables (scoreboard display, game design, market, or cost).
+
+---
+
+## Error Logging — Sanitize in Production
+
+**Never expose raw error messages to the player console in production.**
+
+When logging errors that include `err.message` or `String(err)` from network calls or external APIs, gate the detail behind `import.meta.env.PROD`:
+
+```ts
+log.error("api", `[TAG] Something failed${!import.meta.env.PROD ? `: ${err.message}` : ""}`);
+```
+
+In production the log reads `"[TAG] Something failed"` — no internal URLs, model names, GCP project IDs, or stack traces. Full detail is still available in dev.
+
+**Each error site must have a unique short tag** (e.g. `[CMB]`, `[ERA-CHK]`, `[ERA-CHO]`, `[ERA-TRN]`) so player bug reports can be grepped directly back to the originating line of code.

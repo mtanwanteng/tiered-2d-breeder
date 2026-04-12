@@ -126,7 +126,8 @@ export class EraManager {
           log.warn("api", `Era check API error: ${res.status}`);
         }
       } catch (err) {
-        log.error("api", `Era check failed: ${err instanceof Error ? err.message : String(err)}`);
+        const checkDetail = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : "";
+        log.error("api", `[ERA-CHK] Era check failed${checkDetail}`);
       }
     }
 
@@ -178,7 +179,8 @@ export class EraManager {
         }
       }
     } catch (err) {
-      log.error("api", `Choose era failed: ${err instanceof Error ? err.message : String(err)}`);
+      const chooseDetail = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : "";
+      log.error("api", `[ERA-CHO] Choose era failed${chooseDetail}`);
     }
 
     // Fallback: pick the first eligible era

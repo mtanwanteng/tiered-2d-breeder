@@ -850,7 +850,7 @@ async function combine(a: CombineItem, b: CombineItem) {
       log.info("api", `Result: ${result.emoji} ${result.name} (${result.color})`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      log.error("api", `Combine failed: ${msg}`);
+      log.error("api", `[CMB] Combine failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${msg}` : ""}`);
       if (msg.includes("gcloud auth") || msg.includes("invalid_grant") || msg.includes("RAPT")) {
         showEraToast("\u26A0\uFE0F Auth Expired", "GCP credentials have expired. Run this in your terminal:\n\ngcloud auth application-default login\n\nThen try combining again.");
       }
@@ -1022,7 +1022,7 @@ async function doEraTransition(result: { narrative: string }) {
       });
     }
   } catch (err) {
-    log.error("era", `Era transition failed: ${err}`);
+    log.error("era", `[ERA-TRN] Era transition failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : ""}`);
     busy = false;
     eraAdvancing = false;
     pendingEraResult = null;
