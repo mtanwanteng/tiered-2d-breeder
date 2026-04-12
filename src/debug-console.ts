@@ -28,6 +28,8 @@ export interface DebugActions {
 }
 
 export function initDebugConsole(actions?: DebugActions): { modelSelect: HTMLSelectElement | null } {
+  const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+
   // Toggle button
   const toggle = document.createElement("button");
   toggle.id = "debug-toggle";
@@ -49,8 +51,8 @@ export function initDebugConsole(actions?: DebugActions): { modelSelect: HTMLSel
       </div>
       ${actions?.modelOptions ? `<select id="debug-model-select">${actions.modelOptions}</select>` : ''}
       <button id="debug-clear">Clear</button>
-      <button id="debug-test-victory">Test Victory</button>
-      <button id="debug-reset-player">Reset Player</button>
+      ${!isProd ? `<button id="debug-test-victory">Test Victory</button>` : ''}
+      ${!isProd ? `<button id="debug-reset-player">Reset Player</button>` : ''}
       <button id="debug-heatmap">Heatmap</button>
     </div>
     <div id="debug-log"></div>
@@ -117,15 +119,17 @@ export function initDebugConsole(actions?: DebugActions): { modelSelect: HTMLSel
     logEl.innerHTML = "";
   });
 
-  document.getElementById("debug-test-victory")!.addEventListener("click", () => {
-    if (actions?.testVictory) actions.testVictory();
-    else log.warn("system", "No testVictory callback registered");
-  });
+  if (!isProd) {
+    document.getElementById("debug-test-victory")!.addEventListener("click", () => {
+      if (actions?.testVictory) actions.testVictory();
+      else log.warn("system", "No testVictory callback registered");
+    });
 
-  document.getElementById("debug-reset-player")!.addEventListener("click", () => {
-    if (actions?.resetPlayer) actions.resetPlayer();
-    else log.warn("system", "No resetPlayer callback registered");
-  });
+    document.getElementById("debug-reset-player")!.addEventListener("click", () => {
+      if (actions?.resetPlayer) actions.resetPlayer();
+      else log.warn("system", "No resetPlayer callback registered");
+    });
+  }
 
   document.getElementById("debug-heatmap")!.addEventListener("click", () => {
     if (actions?.showHeatmap) actions.showHeatmap();

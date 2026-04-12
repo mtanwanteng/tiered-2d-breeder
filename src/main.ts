@@ -299,9 +299,21 @@ function closeTapestry() {
 let heatmapFilter: Set<string> | null = null; // null = all tiles
 
 function renderHeatmapCanvas() {
+  // Use the canvas's actual CSS layout size so the buffer exactly matches the display —
+  // this avoids the fractional-pixel bug where getBoundingClientRect() returns non-integer
+  // workspace dimensions, causing buf[py * W + px] indexing to drift off the ImageData bounds.
+  // clientWidth/clientHeight are always integers and reflect the post-flex-layout dimensions.
+  const W = heatmapCanvas.clientWidth;
+  const H = heatmapCanvas.clientHeight;
+
+  if (W === 0 || H === 0) return;
+
+  // Scale tile coordinates from workspace space into canvas space
   const wsRect = workspace.getBoundingClientRect();
-  const W = wsRect.width;
-  const H = wsRect.height;
+  const wsW = wsRect.width || W;
+  const wsH = wsRect.height || H;
+  const scaleX = W / wsW;
+  const scaleY = H / wsH;
 
   heatmapCanvas.width = W;
   heatmapCanvas.height = H;
@@ -319,7 +331,7 @@ function renderHeatmapCanvas() {
     ctx.fillStyle = "#8090b0";
     ctx.font = "16px system-ui";
     ctx.textAlign = "center";
-    ctx.fillText("No tiles match the filter", W / 2, H / 2);
+    ctx.fillText("No tiles on workspace — drag tiles from the palette first", W / 2, H / 2);
     return;
   }
 
@@ -328,8 +340,8 @@ function renderHeatmapCanvas() {
   const buf = new Float32Array(W * H);
 
   for (const item of visible) {
-    const cx = item.x + 32;
-    const cy = item.y + 32;
+    const cx = (item.x + 32) * scaleX;
+    const cy = (item.y + 32) * scaleY;
     const x0 = Math.max(0, Math.floor(cx - radius));
     const x1 = Math.min(W - 1, Math.ceil(cx + radius));
     const y0 = Math.max(0, Math.floor(cy - radius));
@@ -387,7 +399,7 @@ function renderHeatmapCanvas() {
   ctx.fillStyle = "rgba(255,255,255,0.75)";
   for (const item of visible) {
     ctx.beginPath();
-    ctx.arc(item.x + 32, item.y + 32, 3, 0, Math.PI * 2);
+    ctx.arc((item.x + 32) * scaleX, (item.y + 32) * scaleY, 3, 0, Math.PI * 2);
     ctx.fill();
   }
 }
@@ -431,8 +443,9 @@ function showHeatmap() {
 
   filterEl.addEventListener("change", syncFilter);
 
-  renderHeatmapCanvas();
+  // Show the modal first so the canvas has layout dimensions, then render
   heatmapOverlay.classList.add("visible");
+  requestAnimationFrame(() => renderHeatmapCanvas());
 }
 
 function closeHeatmap() {
