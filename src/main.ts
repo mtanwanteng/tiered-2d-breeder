@@ -135,6 +135,7 @@ app.innerHTML = `
     <div id="inventory-header">
       <h2>Inventory</h2>
       <div id="palette-zoom-controls">
+        <span id="palette-zoom-icon">\uD83D\uDD0D</span>
         <button id="palette-zoom-out">&#8722;</button>
         <button id="palette-zoom-in">&#43;</button>
       </div>
@@ -518,7 +519,7 @@ eraToggleBtn.addEventListener("click", () => {
 const palette = document.getElementById("palette")!;
 let paletteZoom = 1.0;
 const PALETTE_ZOOM_STEP = 0.1;
-const PALETTE_ZOOM_MIN = 0.5;
+const PALETTE_ZOOM_MIN = 0.25;
 const PALETTE_ZOOM_MAX = 1.5;
 
 function applyPaletteZoom() {

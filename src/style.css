@@ -48,8 +48,17 @@ body {
 
 #palette-zoom-controls {
   display: flex;
+  align-items: center;
   gap: 3px;
   margin-bottom: 4px;
+}
+
+#palette-zoom-icon {
+  font-size: 13px;
+  opacity: 0.5;
+  margin-right: 1px;
+  line-height: 1;
+  user-select: none;
 }
 
 #palette-zoom-controls button {
