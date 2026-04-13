@@ -122,6 +122,21 @@ export function AuthOverlay() {
     authStore.getState().resetGame?.();
   };
 
+  const openTapestryPreview = (src: string) => {
+    const overlay = document.getElementById("tapestry-overlay");
+    const content = document.getElementById("tapestry-content");
+    if (!overlay || !content) return;
+    const img = document.createElement("img");
+    img.id = "tapestry-img";
+    img.src = src;
+    img.alt = "Tapestry preview";
+    content.innerHTML = "";
+    content.appendChild(img);
+    const actions = document.getElementById("tapestry-actions");
+    if (actions) actions.style.display = "none";
+    overlay.classList.add("visible");
+  };
+
   const openLogin = () => {
     setFromVictory(false);
     setIsModalOpen(true);
@@ -219,13 +234,13 @@ export function AuthOverlay() {
                       src="/tapestry1.png"
                       alt="Tapestry example"
                       className="htp-tapestry-img"
-                      onClick={() => authStore.getState().showStaticTapestry?.("/tapestry1.png")}
+                      onClick={() => openTapestryPreview("/tapestry1.png")}
                     />
                     <img
                       src="/tapestry2.png"
                       alt="Tapestry example"
                       className="htp-tapestry-img"
-                      onClick={() => authStore.getState().showStaticTapestry?.("/tapestry2.png")}
+                      onClick={() => openTapestryPreview("/tapestry2.png")}
                     />
                   </div>
                   <p className="htp-tapestry-text">Collect Tapestries reflecting your civilization&apos;s progression through the Ages!</p>

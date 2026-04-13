@@ -1497,22 +1497,12 @@ function hideToast() {
   toast.classList.remove("visible");
 }
 
-// Expose game reset and static tapestry preview to React auth layer
+// Expose game reset to React auth layer (called on sign-out)
 authStore.setState({
   resetGame: () => {
     restarting = true;
     clearSave();
     location.reload();
-  },
-  showStaticTapestry: (src: string) => {
-    const img = document.createElement("img");
-    img.id = "tapestry-img";
-    img.src = src;
-    img.alt = "Tapestry preview";
-    tapestryContent.innerHTML = "";
-    tapestryContent.appendChild(img);
-    tapestryActions.style.display = "none";
-    tapestryOverlay.classList.add("visible");
   },
 });
 
@@ -1524,7 +1514,7 @@ const unsubAuth = authStore.subscribe(
 
 return () => {
   unsubAuth();
-  authStore.setState({ resetGame: null, showStaticTapestry: null });
+  authStore.setState({ resetGame: null });
   clearTimeout(toastTimer);
   document.removeEventListener("pointermove", handlePointerMove);
   document.removeEventListener("pointerup", handlePointerUp);
