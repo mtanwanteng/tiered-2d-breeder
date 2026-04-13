@@ -758,6 +758,11 @@ const handlePointerUp = (e: PointerEvent) => {
 document.addEventListener("pointermove", handlePointerMove);
 document.addEventListener("pointerup", handlePointerUp);
 
+// --- HTML escape — always use for AI-generated content inserted via innerHTML ---
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
 // --- Tier stars helper ---
 function tierStars(tier: Tier): string {
   return "\u2B50".repeat(tier);
@@ -771,12 +776,12 @@ function spawnItem(data: ElementData, x: number, y: number): CombineItem {
   el.style.left = `${x}px`;
   el.style.top = `${y}px`;
   el.innerHTML = `
-    <span class="item-emoji">${data.emoji}</span>
-    <span class="item-name">${data.name}</span>
+    <span class="item-emoji">${esc(data.emoji)}</span>
+    <span class="item-name">${esc(data.name)}</span>
     <span class="tier-stars">${tierStars(data.tier)}</span>
     <div class="tooltip">
-      <div class="tooltip-desc">${data.description}</div>
-      <div class="tooltip-narrative">${data.narrative}</div>
+      <div class="tooltip-desc">${esc(data.description)}</div>
+      <div class="tooltip-narrative">${esc(data.narrative)}</div>
     </div>
   `;
   workspace.appendChild(el);
@@ -1100,7 +1105,7 @@ function renderEraStatCards(h: { actions: ActionLogEntry[]; discoveredItems: str
   }
 
   const favoriteRow = topSpawn
-    ? `<div class="era-stat-favorite"><span class="era-stat-favorite-label">Favorite:</span> ${topSpawn[0]} &nbsp;<span class="era-stat-count">${topSpawn[1]}\u00D7</span></div>`
+    ? `<div class="era-stat-favorite"><span class="era-stat-favorite-label">Favorite:</span> ${esc(topSpawn[0])} &nbsp;<span class="era-stat-count">${topSpawn[1]}\u00D7</span></div>`
     : '';
 
   return `${tierTable}${favoriteRow}`;
@@ -1146,14 +1151,14 @@ function showScoreboard() {
   }
 
   const timelineHtml = history.map((h, i) => {
-    const seeds = h.startingSeeds.join('\u00A0\u00A0');
-    const topItems = h.discoveredItems.slice(0, 8).join(', ');
+    const seeds = h.startingSeeds.map(esc).join('\u00A0\u00A0');
+    const topItems = h.discoveredItems.slice(0, 8).map(esc).join(', ');
     return `
       <div class="victory-era">
-        <h4>${h.eraName}</h4>
+        <h4>${esc(h.eraName)}</h4>
         <div class="victory-seeds">Started with: ${seeds}</div>
         ${renderEraStatCards(h)}
-        <p class="victory-narrative">${h.advancementNarrative}</p>
+        <p class="victory-narrative">${esc(h.advancementNarrative)}</p>
         <div class="victory-items">${topItems}${h.discoveredItems.length > 8 ? '\u2026' : ''}</div>
         <canvas class="victory-graph" id="scoreboard-graph-${i}"></canvas>
       </div>
@@ -1261,14 +1266,14 @@ function showVictory() {
   // Build timeline
   victoryTimeline.innerHTML = eraManager.history
     .map((h, i) => {
-      const seeds = h.startingSeeds.join("  ");
-      const topItems = h.discoveredItems.slice(0, 8).join(", ");
+      const seeds = h.startingSeeds.map(esc).join("  ");
+      const topItems = h.discoveredItems.slice(0, 8).map(esc).join(", ");
       return `
         <div class="victory-era">
-          <h4>${h.eraName}</h4>
+          <h4>${esc(h.eraName)}</h4>
           <div class="victory-seeds">Started with: ${seeds}</div>
           ${renderEraStatCards(h)}
-          <p class="victory-narrative">${h.advancementNarrative}</p>
+          <p class="victory-narrative">${esc(h.advancementNarrative)}</p>
           <div class="victory-items">${topItems}${h.discoveredItems.length > 8 ? "..." : ""}</div>
           <canvas class="victory-graph" id="victory-graph-${i}"></canvas>
         </div>
@@ -1397,12 +1402,12 @@ function addToPalette(entry: ElementData, isSeed = false) {
   div.dataset.tier = String(entry.tier);
   if (isSeed) div.dataset.seed = "true";
   div.innerHTML = `
-    <span class="palette-emoji">${entry.emoji}</span>
-    <span class="palette-label">${entry.name}</span>
+    <span class="palette-emoji">${esc(entry.emoji)}</span>
+    <span class="palette-label">${esc(entry.name)}</span>
     <span class="palette-stars">${tierStars(entry.tier)}</span>
     <div class="tooltip">
-      <div class="tooltip-desc">${entry.description}</div>
-      <div class="tooltip-narrative">${entry.narrative}</div>
+      <div class="tooltip-desc">${esc(entry.description)}</div>
+      <div class="tooltip-narrative">${esc(entry.narrative)}</div>
     </div>
   `;
   // Spawn a workspace item at cursor and start dragging immediately

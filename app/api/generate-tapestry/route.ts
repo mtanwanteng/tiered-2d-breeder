@@ -23,7 +23,10 @@ Story: ${narrative}`;
     const { base64, mimeType } = await callGeminiImage(token, prompt);
     return NextResponse.json({ base64, mimeType });
   } catch (error) {
-    console.error("Tapestry generation error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error("[TAP] Tapestry generation failed:", error);
+    return NextResponse.json(
+      { error: `Generation failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${error instanceof Error ? error.message : String(error)}` : ""}` },
+      { status: 500 },
+    );
   }
 }
