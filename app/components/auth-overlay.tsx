@@ -122,6 +122,21 @@ export function AuthOverlay() {
     authStore.getState().resetGame?.();
   };
 
+  const openTapestryPreview = (src: string) => {
+    const overlay = document.getElementById("tapestry-overlay");
+    const content = document.getElementById("tapestry-content");
+    if (!overlay || !content) return;
+    const img = document.createElement("img");
+    img.id = "tapestry-img";
+    img.src = src;
+    img.alt = "Tapestry preview";
+    content.innerHTML = "";
+    content.appendChild(img);
+    const actions = document.getElementById("tapestry-actions");
+    if (actions) actions.style.display = "none";
+    overlay.classList.add("visible");
+  };
+
   const openLogin = () => {
     setFromVictory(false);
     setIsModalOpen(true);
@@ -199,16 +214,38 @@ export function AuthOverlay() {
             <div className="htp-popup">
               <div className="htp-tail" />
 
-              <button className="htp-play-btn" onClick={() => setVideoOpen(true)}>
-                ▶ Play Video
-              </button>
+              <div className="htp-layout">
+                <div className="htp-col-main">
+                  <button className="htp-play-btn" onClick={() => setVideoOpen(true)}>
+                    ▶ Play Video
+                  </button>
 
-              <ol className="htp-steps">
-                <li>Drag two tiles together to <strong>combine</strong> them into something new.</li>
-                <li>Discover new <strong>ideas</strong> and build up your civilization.</li>
-                <li>Complete era goals to <strong>advance through history</strong>.</li>
-                <li>Reach the <strong>Age of Plenty</strong> to win.</li>
-              </ol>
+                  <ol className="htp-steps">
+                    <li>Drag two tiles together to <strong>combine</strong> them into something new.</li>
+                    <li>Discover new <strong>ideas</strong> and build up your civilization.</li>
+                    <li>Complete era goals to <strong>advance through history</strong>.</li>
+                    <li>Reach the <strong>Age of Plenty</strong> to win.</li>
+                  </ol>
+                </div>
+
+                <div className="htp-tapestry-promo">
+                  <div className="htp-tapestry-images">
+                    <img
+                      src="/tapestry1.png"
+                      alt="Tapestry example"
+                      className="htp-tapestry-img"
+                      onClick={() => openTapestryPreview("/tapestry1.png")}
+                    />
+                    <img
+                      src="/tapestry2.png"
+                      alt="Tapestry example"
+                      className="htp-tapestry-img"
+                      onClick={() => openTapestryPreview("/tapestry2.png")}
+                    />
+                  </div>
+                  <p className="htp-tapestry-text">Collect Tapestries reflecting your civilization&apos;s unique progression through the Ages!</p>
+                </div>
+              </div>
 
               {!isLoggedIn && !isDiscordActivity() && (
                 <div className="htp-cta">
