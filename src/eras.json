@@ -5,280 +5,1376 @@
     "required": true,
     "seeds": [],
     "seedPool": [
-      { "name": "Fire",   "color": "#e94560", "tier": 1, "emoji": "\uD83D\uDD25", "description": "Raw, untamed flame.",                      "narrative": "The first gift. Stolen from lightning, feared by beasts, worshipped by the wise." },
-      { "name": "Stone",  "color": "#6c757d", "tier": 1, "emoji": "\uD83E\uDEA8", "description": "Hard, cold, and ancient.",                 "narrative": "The bones of the earth, exposed. The first tools were shaped from stone." },
-      { "name": "Water",  "color": "#0f86a1", "tier": 1, "emoji": "\uD83D\uDCA7", "description": "The source of all life.",                  "narrative": "Before anything grew, water was there. It carves canyons and cradles civilizations." },
-      { "name": "Beast",  "color": "#8b4513", "tier": 1, "emoji": "\uD83E\uDDAC", "description": "A wild creature, wary and powerful.",      "narrative": "Before domestication, every animal was a threat or a meal." },
-      { "name": "Wood",   "color": "#8b6914", "tier": 1, "emoji": "\uD83E\uDEB5", "description": "A fallen branch, dry and sturdy.",         "narrative": "The first handle, the first lever, the first fuel." },
-      { "name": "Seed",   "color": "#6b8e23", "tier": 1, "emoji": "\uD83C\uDF31", "description": "A tiny promise of future abundance.",      "narrative": "Inside every seed is a forest waiting to happen." },
-      { "name": "Bone",   "color": "#f5f5dc", "tier": 1, "emoji": "\uD83E\uDDB4", "description": "The frame of what once lived.",            "narrative": "Harder than wood, sharper when broken. Bone was the first recycled material." },
-      { "name": "Clay",   "color": "#c67a4b", "tier": 1, "emoji": "\uD83C\uDFFA", "description": "Wet earth that holds any shape.",          "narrative": "From clay came pots, tablets, and bricks." },
-      { "name": "Vine",   "color": "#2d6a4f", "tier": 1, "emoji": "\uD83C\uDF3F", "description": "Flexible green rope from the forest.",     "narrative": "Before cord, before rope, vines bound the first tools together." },
-      { "name": "Hide",   "color": "#a0522d", "tier": 1, "emoji": "\uD83E\uDE93", "description": "Tough animal skin, scraped and dried.",    "narrative": "The first clothing, the first shelter wall." },
-      { "name": "Flint",  "color": "#555555", "tier": 1, "emoji": "\uD83D\uDD2A", "description": "Glassy stone that fractures into blades.", "narrative": "Strike it right and flint gives you fire. Strike it wrong and it gives you a knife." },
-      { "name": "Berry",  "color": "#8b0000", "tier": 1, "emoji": "\uD83C\uDF53", "description": "Small, bright fruit from the undergrowth.","narrative": "The first food that didn't fight back." },
-      { "name": "Mud",    "color": "#8b6914", "tier": 1, "emoji": "\uD83D\uDFE4", "description": "Wet earth that swallows footprints.",      "narrative": "The first building material. Civilization began when someone shaped mud with intent." },
-      { "name": "River",  "color": "#2196f3", "tier": 1, "emoji": "\uD83C\uDF0A", "description": "Flowing water carving paths through land.","narrative": "Every great settlement began beside a river." },
-      { "name": "Cave",   "color": "#3a3a3a", "tier": 1, "emoji": "\u26F0\uFE0F", "description": "A dark hollow in the rock face.",          "narrative": "The first home. Walls of stone kept out wind, rain, and teeth." },
-      { "name": "Sun",    "color": "#ffd700", "tier": 1, "emoji": "\u2600\uFE0F", "description": "The burning eye that governs all seasons.","narrative": "Worshipped, feared, and depended upon." }
+      {
+        "name": "Fire",
+        "color": "#e94560",
+        "tier": 1,
+        "emoji": "🔥",
+        "description": "Raw, untamed flame.",
+        "narrative": "The first gift. Stolen from lightning, feared by beasts, worshipped by the wise."
+      },
+      {
+        "name": "Stone",
+        "color": "#6c757d",
+        "tier": 1,
+        "emoji": "🪨",
+        "description": "Hard, cold, and ancient.",
+        "narrative": "The bones of the earth, exposed. The first tools were shaped from stone."
+      },
+      {
+        "name": "Water",
+        "color": "#0f86a1",
+        "tier": 1,
+        "emoji": "💧",
+        "description": "The source of all life.",
+        "narrative": "Before anything grew, water was there. It carves canyons and cradles civilizations."
+      },
+      {
+        "name": "Beast",
+        "color": "#8b4513",
+        "tier": 1,
+        "emoji": "🦬",
+        "description": "A wild creature, wary and powerful.",
+        "narrative": "Before domestication, every animal was a threat or a meal."
+      },
+      {
+        "name": "Wood",
+        "color": "#8b6914",
+        "tier": 1,
+        "emoji": "🪵",
+        "description": "A fallen branch, dry and sturdy.",
+        "narrative": "The first handle, the first lever, the first fuel."
+      },
+      {
+        "name": "Seed",
+        "color": "#6b8e23",
+        "tier": 1,
+        "emoji": "🌱",
+        "description": "A tiny promise of future abundance.",
+        "narrative": "Inside every seed is a forest waiting to happen."
+      },
+      {
+        "name": "Bone",
+        "color": "#f5f5dc",
+        "tier": 1,
+        "emoji": "🦴",
+        "description": "The frame of what once lived.",
+        "narrative": "Harder than wood, sharper when broken. Bone was the first recycled material."
+      },
+      {
+        "name": "Clay",
+        "color": "#c67a4b",
+        "tier": 1,
+        "emoji": "🏺",
+        "description": "Wet earth that holds any shape.",
+        "narrative": "From clay came pots, tablets, and bricks."
+      },
+      {
+        "name": "Vine",
+        "color": "#2d6a4f",
+        "tier": 1,
+        "emoji": "🌿",
+        "description": "Flexible green rope from the forest.",
+        "narrative": "Before cord, before rope, vines bound the first tools together."
+      },
+      {
+        "name": "Hide",
+        "color": "#a0522d",
+        "tier": 1,
+        "emoji": "🪓",
+        "description": "Tough animal skin, scraped and dried.",
+        "narrative": "The first clothing, the first shelter wall."
+      },
+      {
+        "name": "Flint",
+        "color": "#555555",
+        "tier": 1,
+        "emoji": "🔪",
+        "description": "Glassy stone that fractures into blades.",
+        "narrative": "Strike it right and flint gives you fire. Strike it wrong and it gives you a knife."
+      },
+      {
+        "name": "Berry",
+        "color": "#8b0000",
+        "tier": 1,
+        "emoji": "🍓",
+        "description": "Small, bright fruit from the undergrowth.",
+        "narrative": "The first food that didn't fight back."
+      },
+      {
+        "name": "Mud",
+        "color": "#8b6914",
+        "tier": 1,
+        "emoji": "🟤",
+        "description": "Wet earth that swallows footprints.",
+        "narrative": "The first building material. Civilization began when someone shaped mud with intent."
+      },
+      {
+        "name": "River",
+        "color": "#2196f3",
+        "tier": 1,
+        "emoji": "🌊",
+        "description": "Flowing water carving paths through land.",
+        "narrative": "Every great settlement began beside a river."
+      },
+      {
+        "name": "Cave",
+        "color": "#3a3a3a",
+        "tier": 1,
+        "emoji": "⛰️",
+        "description": "A dark hollow in the rock face.",
+        "narrative": "The first home. Walls of stone kept out wind, rain, and teeth."
+      },
+      {
+        "name": "Sun",
+        "color": "#ffd700",
+        "tier": 1,
+        "emoji": "☀️",
+        "description": "The burning eye that governs all seasons.",
+        "narrative": "Worshipped, feared, and depended upon."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Create a tool or weapon", "met": false },
-      { "description": "Develop agriculture or animal husbandry", "met": false },
-      { "description": "Build a shelter or permanent dwelling", "met": false },
-      { "description": "Create clothing or protection from the elements", "met": false },
-      { "description": "Discover a method of food preservation or cooking", "met": false }
-    ], "fallbackTier5Count": 3 }]
+    "goals": [
+      {
+        "requiredCount": 3,
+        "conditions": [
+          {
+            "description": "Create a tool or weapon",
+            "met": false
+          },
+          {
+            "description": "Develop agriculture or animal husbandry",
+            "met": false
+          },
+          {
+            "description": "Build a shelter or permanent dwelling",
+            "met": false
+          },
+          {
+            "description": "Create clothing or protection from the elements",
+            "met": false
+          },
+          {
+            "description": "Discover a method of food preservation or cooking",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 3
+      }
+    ]
   },
   {
     "name": "Bronze Age",
     "order": 1,
     "seeds": [],
     "seedPool": [
-      { "name": "Copper",  "color": "#b87333", "tier": 1, "emoji": "\uD83E\uDE99", "description": "Soft metal, easy to shape.",              "narrative": "The first metal humans mastered." },
-      { "name": "Grain",   "color": "#daa520", "tier": 1, "emoji": "\uD83C\uDF3E", "description": "Golden stalks from cultivated fields.",   "narrative": "When humans stopped chasing food and started growing it, history began." },
-      { "name": "Clay",    "color": "#c67a4b", "tier": 1, "emoji": "\uD83C\uDFFA", "description": "Malleable earth waiting for purpose.",    "narrative": "From clay came pots, tablets, and bricks." },
-      { "name": "Ox",      "color": "#8b4513", "tier": 1, "emoji": "\uD83D\uDC02", "description": "Domesticated power on four legs.",        "narrative": "Once predator and prey, now partners." },
-      { "name": "River",   "color": "#2196f3", "tier": 1, "emoji": "\uD83C\uDF0A", "description": "Flowing water carving paths.",            "narrative": "Every great city began beside a river." },
-      { "name": "Sun",     "color": "#ffd700", "tier": 1, "emoji": "\u2600\uFE0F", "description": "The burning eye above.",                  "narrative": "The sun decides when crops grow." },
-      { "name": "Tin",     "color": "#aaa9ad", "tier": 1, "emoji": "\u2699\uFE0F", "description": "A rare, silvery metal.",                  "narrative": "Useless alone, but mixed with copper it creates bronze." },
-      { "name": "Kiln",    "color": "#d2691e", "tier": 1, "emoji": "\uD83D\uDD25", "description": "Controlled heat for shaping materials.",  "narrative": "Fire tamed and directed." },
-      { "name": "Wheel",   "color": "#6c757d", "tier": 1, "emoji": "\u2699\uFE0F", "description": "A circle that conquers friction.",        "narrative": "The wheel moved everything forward." },
-      { "name": "Loom",    "color": "#deb887", "tier": 1, "emoji": "\uD83E\uDDF5", "description": "A frame for weaving thread into cloth.",  "narrative": "The loom turned fiber into fabric." },
-      { "name": "Brick",   "color": "#a0522d", "tier": 1, "emoji": "\uD83E\uDDF1", "description": "Fired clay, stacked into permanence.",   "narrative": "Brick by brick, villages became cities." },
-      { "name": "Reed",    "color": "#8fbc8f", "tier": 1, "emoji": "\uD83C\uDF3E", "description": "Tall grass from the riverbank.",          "narrative": "Woven into baskets, pressed into paper, bundled into boats." }
+      {
+        "name": "Copper",
+        "color": "#b87333",
+        "tier": 1,
+        "emoji": "🪙",
+        "description": "Soft metal, easy to shape.",
+        "narrative": "The first metal humans mastered."
+      },
+      {
+        "name": "Grain",
+        "color": "#daa520",
+        "tier": 1,
+        "emoji": "🌾",
+        "description": "Golden stalks from cultivated fields.",
+        "narrative": "When humans stopped chasing food and started growing it, history began."
+      },
+      {
+        "name": "Clay",
+        "color": "#c67a4b",
+        "tier": 1,
+        "emoji": "🏺",
+        "description": "Malleable earth waiting for purpose.",
+        "narrative": "From clay came pots, tablets, and bricks."
+      },
+      {
+        "name": "Ox",
+        "color": "#8b4513",
+        "tier": 1,
+        "emoji": "🐂",
+        "description": "Domesticated power on four legs.",
+        "narrative": "Once predator and prey, now partners."
+      },
+      {
+        "name": "River",
+        "color": "#2196f3",
+        "tier": 1,
+        "emoji": "🌊",
+        "description": "Flowing water carving paths.",
+        "narrative": "Every great city began beside a river."
+      },
+      {
+        "name": "Sun",
+        "color": "#ffd700",
+        "tier": 1,
+        "emoji": "☀️",
+        "description": "The burning eye above.",
+        "narrative": "The sun decides when crops grow."
+      },
+      {
+        "name": "Tin",
+        "color": "#aaa9ad",
+        "tier": 1,
+        "emoji": "⚙️",
+        "description": "A rare, silvery metal.",
+        "narrative": "Useless alone, but mixed with copper it creates bronze."
+      },
+      {
+        "name": "Kiln",
+        "color": "#d2691e",
+        "tier": 1,
+        "emoji": "🔥",
+        "description": "Controlled heat for shaping materials.",
+        "narrative": "Fire tamed and directed."
+      },
+      {
+        "name": "Wheel",
+        "color": "#6c757d",
+        "tier": 1,
+        "emoji": "⚙️",
+        "description": "A circle that conquers friction.",
+        "narrative": "The wheel moved everything forward."
+      },
+      {
+        "name": "Loom",
+        "color": "#deb887",
+        "tier": 1,
+        "emoji": "🧵",
+        "description": "A frame for weaving thread into cloth.",
+        "narrative": "The loom turned fiber into fabric."
+      },
+      {
+        "name": "Brick",
+        "color": "#a0522d",
+        "tier": 1,
+        "emoji": "🧱",
+        "description": "Fired clay, stacked into permanence.",
+        "narrative": "Brick by brick, villages became cities."
+      },
+      {
+        "name": "Reed",
+        "color": "#8fbc8f",
+        "tier": 1,
+        "emoji": "🌾",
+        "description": "Tall grass from the riverbank.",
+        "narrative": "Woven into baskets, pressed into paper, bundled into boats."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Create a system of writing or record-keeping", "met": false },
-      { "description": "Develop organized trade or commerce", "met": false },
-      { "description": "Create an alloy or advance metalworking", "met": false },
-      { "description": "Build a city, temple, or monument", "met": false },
-      { "description": "Establish irrigation or large-scale farming", "met": false },
-      { "description": "Create pottery, textiles, or a craft tradition", "met": false }
-    ], "fallbackTier5Count": 4 }]
+    "goals": [
+      {
+        "requiredCount": 4,
+        "conditions": [
+          {
+            "description": "Create a system of writing or record-keeping",
+            "met": false
+          },
+          {
+            "description": "Develop organized trade or commerce",
+            "met": false
+          },
+          {
+            "description": "Create an alloy or advance metalworking",
+            "met": false
+          },
+          {
+            "description": "Build a city, temple, or monument",
+            "met": false
+          },
+          {
+            "description": "Establish irrigation or large-scale farming",
+            "met": false
+          },
+          {
+            "description": "Create pottery, textiles, or a craft tradition",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 4
+      }
+    ]
   },
   {
     "name": "Iron Age",
     "order": 2,
     "seeds": [],
     "seedPool": [
-      { "name": "Iron",    "color": "#434343", "tier": 1, "emoji": "\u2694\uFE0F", "description": "Dark metal forged in hotter flames.",     "narrative": "Iron democratized warfare and farming alike." },
-      { "name": "Script",  "color": "#f5f5dc", "tier": 1, "emoji": "\uD83D\uDCDC", "description": "Marks on surfaces that outlast memory.",  "narrative": "What is written persists beyond the writer." },
-      { "name": "Horse",   "color": "#8b6914", "tier": 1, "emoji": "\uD83D\uDC0E", "description": "Speed and power, tamed.",                "narrative": "Empires rose on horseback." },
-      { "name": "Harbor",  "color": "#4682b4", "tier": 1, "emoji": "\u2693",       "description": "Where land meets sea and trade begins.", "narrative": "A harbor is a door between worlds." },
-      { "name": "Temple",  "color": "#deb887", "tier": 1, "emoji": "\uD83C\uDFDB\uFE0F", "description": "Stone raised in devotion.",         "narrative": "Temples organized people around shared belief." },
-      { "name": "Field",   "color": "#228b22", "tier": 1, "emoji": "\uD83C\uDF3E", "description": "Tended earth yielding surplus.",          "narrative": "Surplus created time. Time created thinkers." },
-      { "name": "Coin",    "color": "#ffd700", "tier": 1, "emoji": "\uD83E\uDE99", "description": "Stamped metal representing value.",       "narrative": "Before coins, trade was barter. After coins, trade was empire." },
-      { "name": "Plow",    "color": "#6b4226", "tier": 1, "emoji": "\uD83D\uDEE0\uFE0F", "description": "Iron blade that tears open earth.", "narrative": "The plow turned forests into farmland." },
-      { "name": "Forge",   "color": "#ff4500", "tier": 1, "emoji": "\uD83D\uDD25", "description": "A furnace hot enough to shape iron.",     "narrative": "The forge is where raw ore becomes sword, nail, and future." },
-      { "name": "Oath",    "color": "#dcdcdc", "tier": 1, "emoji": "\uD83E\uDD1D", "description": "A spoken bond between people.",           "narrative": "Before written law, oaths held societies together." },
-      { "name": "Wall",    "color": "#808080", "tier": 1, "emoji": "\uD83E\uDDF1", "description": "Stone stacked to keep the world out.",    "narrative": "Walls define who is inside and who is outside." },
-      { "name": "Sail",    "color": "#f0f0f0", "tier": 1, "emoji": "\u26F5",       "description": "Cloth that catches wind for travel.",     "narrative": "The sail turned oceans into bridges." }
+      {
+        "name": "Iron",
+        "color": "#434343",
+        "tier": 1,
+        "emoji": "⚔️",
+        "description": "Dark metal forged in hotter flames.",
+        "narrative": "Iron democratized warfare and farming alike."
+      },
+      {
+        "name": "Script",
+        "color": "#f5f5dc",
+        "tier": 1,
+        "emoji": "📜",
+        "description": "Marks on surfaces that outlast memory.",
+        "narrative": "What is written persists beyond the writer."
+      },
+      {
+        "name": "Horse",
+        "color": "#8b6914",
+        "tier": 1,
+        "emoji": "🐎",
+        "description": "Speed and power, tamed.",
+        "narrative": "Empires rose on horseback."
+      },
+      {
+        "name": "Harbor",
+        "color": "#4682b4",
+        "tier": 1,
+        "emoji": "⚓",
+        "description": "Where land meets sea and trade begins.",
+        "narrative": "A harbor is a door between worlds."
+      },
+      {
+        "name": "Temple",
+        "color": "#deb887",
+        "tier": 1,
+        "emoji": "🏛️",
+        "description": "Stone raised in devotion.",
+        "narrative": "Temples organized people around shared belief."
+      },
+      {
+        "name": "Field",
+        "color": "#228b22",
+        "tier": 1,
+        "emoji": "🌾",
+        "description": "Tended earth yielding surplus.",
+        "narrative": "Surplus created time. Time created thinkers."
+      },
+      {
+        "name": "Coin",
+        "color": "#ffd700",
+        "tier": 1,
+        "emoji": "🪙",
+        "description": "Stamped metal representing value.",
+        "narrative": "Before coins, trade was barter. After coins, trade was empire."
+      },
+      {
+        "name": "Plow",
+        "color": "#6b4226",
+        "tier": 1,
+        "emoji": "🛠️",
+        "description": "Iron blade that tears open earth.",
+        "narrative": "The plow turned forests into farmland."
+      },
+      {
+        "name": "Forge",
+        "color": "#ff4500",
+        "tier": 1,
+        "emoji": "🔥",
+        "description": "A furnace hot enough to shape iron.",
+        "narrative": "The forge is where raw ore becomes sword, nail, and future."
+      },
+      {
+        "name": "Oath",
+        "color": "#dcdcdc",
+        "tier": 1,
+        "emoji": "🤝",
+        "description": "A spoken bond between people.",
+        "narrative": "Before written law, oaths held societies together."
+      },
+      {
+        "name": "Wall",
+        "color": "#808080",
+        "tier": 1,
+        "emoji": "🧱",
+        "description": "Stone stacked to keep the world out.",
+        "narrative": "Walls define who is inside and who is outside."
+      },
+      {
+        "name": "Sail",
+        "color": "#f0f0f0",
+        "tier": 1,
+        "emoji": "⛵",
+        "description": "Cloth that catches wind for travel.",
+        "narrative": "The sail turned oceans into bridges."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Develop philosophy, logic, or abstract thought", "met": false },
-      { "description": "Build a military force or defensive fortification", "met": false },
-      { "description": "Establish a currency or economic system", "met": false },
-      { "description": "Create a legal code or system of justice", "met": false },
-      { "description": "Build a navy or establish sea routes", "met": false }
-    ], "fallbackTier5Count": 5 }]
+    "goals": [
+      {
+        "requiredCount": 4,
+        "conditions": [
+          {
+            "description": "Develop philosophy, logic, or abstract thought",
+            "met": false
+          },
+          {
+            "description": "Build a military force or defensive fortification",
+            "met": false
+          },
+          {
+            "description": "Establish a currency or economic system",
+            "met": false
+          },
+          {
+            "description": "Create a legal code or system of justice",
+            "met": false
+          },
+          {
+            "description": "Build a navy or establish sea routes",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 5
+      }
+    ]
   },
   {
     "name": "Classical Age",
     "order": 3,
     "seeds": [],
     "seedPool": [
-      { "name": "Senate",  "color": "#c9b037", "tier": 1, "emoji": "\uD83C\uDFDB\uFE0F", "description": "An assembly where citizens govern.",  "narrative": "Democracy began in a room full of arguments." },
-      { "name": "Legion",  "color": "#8b0000", "tier": 1, "emoji": "\u2694\uFE0F", "description": "Disciplined soldiers marching as one.",   "narrative": "The legion conquered through logistics." },
-      { "name": "Marble",  "color": "#f5f5f5", "tier": 1, "emoji": "\uD83C\uDFDB\uFE0F", "description": "White stone carved into beauty.",    "narrative": "Marble made the invisible visible." },
-      { "name": "Scroll",  "color": "#f5f5dc", "tier": 1, "emoji": "\uD83D\uDCDC", "description": "Rolled knowledge, portable and shareable.","narrative": "Libraries became the true seats of power." },
-      { "name": "Aqueduct","color": "#4682b4", "tier": 1, "emoji": "\uD83C\uDF09", "description": "Engineered water flowing uphill.",        "narrative": "Romans made water flow where nature said it shouldn't." },
-      { "name": "Forum",   "color": "#daa520", "tier": 1, "emoji": "\uD83D\uDDE3\uFE0F", "description": "A public square for debate and trade.","narrative": "Where citizens argued and philosophers annoyed everyone." },
-      { "name": "Amphora", "color": "#c67a4b", "tier": 1, "emoji": "\uD83C\uDFFA", "description": "Clay vessel for wine, oil, and trade.",   "narrative": "The shipping container of the ancient world." },
-      { "name": "Road",    "color": "#808080", "tier": 1, "emoji": "\uD83D\uDEE4\uFE0F", "description": "Paved stone connecting distant cities.","narrative": "All roads lead somewhere. The lasting ones were built by empires." },
-      { "name": "Olive",   "color": "#6b8e23", "tier": 1, "emoji": "\uD83E\uDED2", "description": "Oil, food, and a symbol of peace.",        "narrative": "Planting an olive tree is an act of faith in the future." },
-      { "name": "Theater", "color": "#8b4513", "tier": 1, "emoji": "\uD83C\uDFAD", "description": "A stage for stories that shape culture.",  "narrative": "Tragedy taught a city to weep together." },
-      { "name": "Compass", "color": "#4169e1", "tier": 1, "emoji": "\uD83E\uDDED", "description": "A needle that always finds north.",       "narrative": "The compass made coming home possible." },
-      { "name": "Algebra", "color": "#dcdcdc", "tier": 1, "emoji": "\uD83D\uDD22", "description": "Abstract symbols solving real problems.", "narrative": "When humans learned to think in variables, the universe became solvable." }
+      {
+        "name": "Senate",
+        "color": "#c9b037",
+        "tier": 1,
+        "emoji": "🏛️",
+        "description": "An assembly where citizens govern.",
+        "narrative": "Democracy began in a room full of arguments."
+      },
+      {
+        "name": "Legion",
+        "color": "#8b0000",
+        "tier": 1,
+        "emoji": "⚔️",
+        "description": "Disciplined soldiers marching as one.",
+        "narrative": "The legion conquered through logistics."
+      },
+      {
+        "name": "Marble",
+        "color": "#f5f5f5",
+        "tier": 1,
+        "emoji": "🏛️",
+        "description": "White stone carved into beauty.",
+        "narrative": "Marble made the invisible visible."
+      },
+      {
+        "name": "Scroll",
+        "color": "#f5f5dc",
+        "tier": 1,
+        "emoji": "📜",
+        "description": "Rolled knowledge, portable and shareable.",
+        "narrative": "Libraries became the true seats of power."
+      },
+      {
+        "name": "Aqueduct",
+        "color": "#4682b4",
+        "tier": 1,
+        "emoji": "🌉",
+        "description": "Engineered water flowing uphill.",
+        "narrative": "Romans made water flow where nature said it shouldn't."
+      },
+      {
+        "name": "Forum",
+        "color": "#daa520",
+        "tier": 1,
+        "emoji": "🗣️",
+        "description": "A public square for debate and trade.",
+        "narrative": "Where citizens argued and philosophers annoyed everyone."
+      },
+      {
+        "name": "Amphora",
+        "color": "#c67a4b",
+        "tier": 1,
+        "emoji": "🏺",
+        "description": "Clay vessel for wine, oil, and trade.",
+        "narrative": "The shipping container of the ancient world."
+      },
+      {
+        "name": "Road",
+        "color": "#808080",
+        "tier": 1,
+        "emoji": "🛤️",
+        "description": "Paved stone connecting distant cities.",
+        "narrative": "All roads lead somewhere. The lasting ones were built by empires."
+      },
+      {
+        "name": "Olive",
+        "color": "#6b8e23",
+        "tier": 1,
+        "emoji": "🫒",
+        "description": "Oil, food, and a symbol of peace.",
+        "narrative": "Planting an olive tree is an act of faith in the future."
+      },
+      {
+        "name": "Theater",
+        "color": "#8b4513",
+        "tier": 1,
+        "emoji": "🎭",
+        "description": "A stage for stories that shape culture.",
+        "narrative": "Tragedy taught a city to weep together."
+      },
+      {
+        "name": "Compass",
+        "color": "#4169e1",
+        "tier": 1,
+        "emoji": "🧭",
+        "description": "A needle that always finds north.",
+        "narrative": "The compass made coming home possible."
+      },
+      {
+        "name": "Algebra",
+        "color": "#dcdcdc",
+        "tier": 1,
+        "emoji": "🔢",
+        "description": "Abstract symbols solving real problems.",
+        "narrative": "When humans learned to think in variables, the universe became solvable."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Establish a system of law, governance, or democracy", "met": false },
-      { "description": "Create great works of art, architecture, or literature", "met": false },
-      { "description": "Build large-scale infrastructure like roads or aqueducts", "met": false },
-      { "description": "Advance mathematics, astronomy, or natural philosophy", "met": false },
-      { "description": "Establish a system of education or a great library", "met": false }
-    ], "fallbackTier5Count": 5 }]
+    "goals": [
+      {
+        "requiredCount": 4,
+        "conditions": [
+          {
+            "description": "Establish a system of law, governance, or democracy",
+            "met": false
+          },
+          {
+            "description": "Create great works of art, architecture, or literature",
+            "met": false
+          },
+          {
+            "description": "Build large-scale infrastructure like roads or aqueducts",
+            "met": false
+          },
+          {
+            "description": "Advance mathematics, astronomy, or natural philosophy",
+            "met": false
+          },
+          {
+            "description": "Establish a system of education or a great library",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 5
+      }
+    ]
   },
   {
     "name": "Medieval Age",
     "order": 4,
     "seeds": [],
     "seedPool": [
-      { "name": "Castle",  "color": "#808080", "tier": 1, "emoji": "\uD83C\uDFF0", "description": "Fortified stone seat of power.",          "narrative": "A castle is both home and weapon." },
-      { "name": "Faith",   "color": "#ffd700", "tier": 1, "emoji": "\u271D\uFE0F", "description": "Belief that moves mountains and armies.", "narrative": "Faith built cathedrals and launched crusades." },
-      { "name": "Parchment","color": "#f5f5dc","tier": 1, "emoji": "\uD83D\uDCDC", "description": "Animal skin prepared for writing.",       "narrative": "Monks copied the world's knowledge, one page at a time." },
-      { "name": "Mill",    "color": "#8b6914", "tier": 1, "emoji": "\uD83C\uDFE1", "description": "Water or wind grinding grain.",           "narrative": "The mill freed hands and fed cities." },
-      { "name": "Guild",   "color": "#4682b4", "tier": 1, "emoji": "\uD83E\uDD1D", "description": "Craftsmen organized for mutual benefit.", "narrative": "The first professional networks." },
-      { "name": "Knight",  "color": "#c0c0c0", "tier": 1, "emoji": "\u2694\uFE0F", "description": "Armored warrior bound by a code.",        "narrative": "Part soldier, part ideal." },
-      { "name": "Plague",  "color": "#4a4a4a", "tier": 1, "emoji": "\u2620\uFE0F", "description": "Disease that reshapes civilizations.",    "narrative": "The plague killed millions and freed the survivors." },
-      { "name": "Market",  "color": "#daa520", "tier": 1, "emoji": "\uD83C\uDFEA", "description": "A gathering place for buying and selling.","narrative": "Markets built the middle class." },
-      { "name": "Monastery","color": "#deb887","tier": 1, "emoji": "\uD83D\uDED0", "description": "A quiet place dedicated to learning.",    "narrative": "While kingdoms burned, monasteries preserved." },
-      { "name": "Crown",   "color": "#ffd700", "tier": 1, "emoji": "\uD83D\uDC51", "description": "Symbol of royal authority.",              "narrative": "The crown is just metal. The power is the story everyone agrees to believe." },
-      { "name": "Bow",     "color": "#8b4513", "tier": 1, "emoji": "\uD83C\uDFF9", "description": "Bent wood that launches death at range.", "narrative": "The bow made every peasant a threat." },
-      { "name": "Spice",   "color": "#d2691e", "tier": 1, "emoji": "\uD83E\uDDC2", "description": "Precious flavor from distant lands.",     "narrative": "Wars were fought over spice." }
+      {
+        "name": "Castle",
+        "color": "#808080",
+        "tier": 1,
+        "emoji": "🏰",
+        "description": "Fortified stone seat of power.",
+        "narrative": "A castle is both home and weapon."
+      },
+      {
+        "name": "Faith",
+        "color": "#ffd700",
+        "tier": 1,
+        "emoji": "✝️",
+        "description": "Belief that moves mountains and armies.",
+        "narrative": "Faith built cathedrals and launched crusades."
+      },
+      {
+        "name": "Parchment",
+        "color": "#f5f5dc",
+        "tier": 1,
+        "emoji": "📜",
+        "description": "Animal skin prepared for writing.",
+        "narrative": "Monks copied the world's knowledge, one page at a time."
+      },
+      {
+        "name": "Mill",
+        "color": "#8b6914",
+        "tier": 1,
+        "emoji": "🏡",
+        "description": "Water or wind grinding grain.",
+        "narrative": "The mill freed hands and fed cities."
+      },
+      {
+        "name": "Guild",
+        "color": "#4682b4",
+        "tier": 1,
+        "emoji": "🤝",
+        "description": "Craftsmen organized for mutual benefit.",
+        "narrative": "The first professional networks."
+      },
+      {
+        "name": "Knight",
+        "color": "#c0c0c0",
+        "tier": 1,
+        "emoji": "⚔️",
+        "description": "Armored warrior bound by a code.",
+        "narrative": "Part soldier, part ideal."
+      },
+      {
+        "name": "Plague",
+        "color": "#4a4a4a",
+        "tier": 1,
+        "emoji": "☠️",
+        "description": "Disease that reshapes civilizations.",
+        "narrative": "The plague killed millions and freed the survivors."
+      },
+      {
+        "name": "Market",
+        "color": "#daa520",
+        "tier": 1,
+        "emoji": "🏪",
+        "description": "A gathering place for buying and selling.",
+        "narrative": "Markets built the middle class."
+      },
+      {
+        "name": "Monastery",
+        "color": "#deb887",
+        "tier": 1,
+        "emoji": "🛐",
+        "description": "A quiet place dedicated to learning.",
+        "narrative": "While kingdoms burned, monasteries preserved."
+      },
+      {
+        "name": "Crown",
+        "color": "#ffd700",
+        "tier": 1,
+        "emoji": "👑",
+        "description": "Symbol of royal authority.",
+        "narrative": "The crown is just metal. The power is the story everyone agrees to believe."
+      },
+      {
+        "name": "Bow",
+        "color": "#8b4513",
+        "tier": 1,
+        "emoji": "🏹",
+        "description": "Bent wood that launches death at range.",
+        "narrative": "The bow made every peasant a threat."
+      },
+      {
+        "name": "Spice",
+        "color": "#d2691e",
+        "tier": 1,
+        "emoji": "🧂",
+        "description": "Precious flavor from distant lands.",
+        "narrative": "Wars were fought over spice."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Advance craftsmanship or establish a guild or trade network", "met": false },
-      { "description": "Build a fortification, castle, or walled city", "met": false },
-      { "description": "Establish a religious or educational institution", "met": false },
-      { "description": "Develop feudal governance or a system of allegiance", "met": false },
-      { "description": "Create a mechanical innovation like a mill, clock, or press", "met": false },
-      { "description": "Survive or overcome a crisis like famine, plague, or invasion", "met": false }
-    ], "fallbackTier5Count": 5 }]
+    "goals": [
+      {
+        "requiredCount": 4,
+        "conditions": [
+          {
+            "description": "Advance craftsmanship or establish a guild or trade network",
+            "met": false
+          },
+          {
+            "description": "Build a fortification, castle, or walled city",
+            "met": false
+          },
+          {
+            "description": "Establish a religious or educational institution",
+            "met": false
+          },
+          {
+            "description": "Develop feudal governance or a system of allegiance",
+            "met": false
+          },
+          {
+            "description": "Create a mechanical innovation like a mill, clock, or press",
+            "met": false
+          },
+          {
+            "description": "Survive or overcome a crisis like famine, plague, or invasion",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 5
+      }
+    ]
   },
   {
     "name": "Renaissance",
     "order": 5,
     "seeds": [],
     "seedPool": [
-      { "name": "Canvas",  "color": "#f5f5dc", "tier": 1, "emoji": "\uD83C\uDFA8", "description": "A blank surface waiting for vision.",     "narrative": "The canvas freed art from walls." },
-      { "name": "Lens",    "color": "#87ceeb", "tier": 1, "emoji": "\uD83D\uDD2D", "description": "Curved glass that bends light.",          "narrative": "The lens revealed both the impossibly small and the impossibly far." },
-      { "name": "Press",   "color": "#4a4a4a", "tier": 1, "emoji": "\uD83D\uDCF0", "description": "A machine that copies words at scale.",   "narrative": "The printing press spread revolution, science, and doubt." },
-      { "name": "Bank",    "color": "#c9b037", "tier": 1, "emoji": "\uD83C\uDFE6", "description": "An institution that lends and stores wealth.","narrative": "Banks turned gold into credit and credit into ambition." },
-      { "name": "Anatomy", "color": "#ff6b6b", "tier": 1, "emoji": "\uD83E\uDEC0", "description": "The study of the human body.",            "narrative": "Artists and doctors found the same truth inside." },
-      { "name": "Globe",   "color": "#4169e1", "tier": 1, "emoji": "\uD83C\uDF0D", "description": "A model of the whole world.",             "narrative": "The globe shrank the earth to something you could hold." },
-      { "name": "Ink",     "color": "#1a1a2e", "tier": 1, "emoji": "\uD83D\uDDA8\uFE0F", "description": "Dark fluid that carries ideas.",     "narrative": "Ink made thought permanent and portable." },
-      { "name": "Compass", "color": "#4169e1", "tier": 1, "emoji": "\uD83E\uDDED", "description": "A needle that always finds north.",       "narrative": "The compass made leaving home imaginable." },
-      { "name": "Patron",  "color": "#9370db", "tier": 1, "emoji": "\uD83D\uDC51", "description": "A wealthy supporter of arts and ideas.",  "narrative": "The Medici didn't paint — they made painting possible." },
-      { "name": "Gunpowder","color": "#555555","tier": 1, "emoji": "\uD83D\uDCA5", "description": "Explosive powder that changed warfare.",  "narrative": "Castle walls meant nothing once gunpowder arrived." },
-      { "name": "Ship",    "color": "#8b4513", "tier": 1, "emoji": "\u26F5",       "description": "A vessel built for ocean crossings.",     "narrative": "Ships connected continents." },
-      { "name": "University","color": "#4a4a4a","tier": 1, "emoji": "\uD83C\uDF93", "description": "An institution dedicated to knowledge.", "narrative": "Universities gave thinkers permission to disagree." }
+      {
+        "name": "Canvas",
+        "color": "#f5f5dc",
+        "tier": 1,
+        "emoji": "🎨",
+        "description": "A blank surface waiting for vision.",
+        "narrative": "The canvas freed art from walls."
+      },
+      {
+        "name": "Lens",
+        "color": "#87ceeb",
+        "tier": 1,
+        "emoji": "🔭",
+        "description": "Curved glass that bends light.",
+        "narrative": "The lens revealed both the impossibly small and the impossibly far."
+      },
+      {
+        "name": "Press",
+        "color": "#4a4a4a",
+        "tier": 1,
+        "emoji": "📰",
+        "description": "A machine that copies words at scale.",
+        "narrative": "The printing press spread revolution, science, and doubt."
+      },
+      {
+        "name": "Bank",
+        "color": "#c9b037",
+        "tier": 1,
+        "emoji": "🏦",
+        "description": "An institution that lends and stores wealth.",
+        "narrative": "Banks turned gold into credit and credit into ambition."
+      },
+      {
+        "name": "Anatomy",
+        "color": "#ff6b6b",
+        "tier": 1,
+        "emoji": "🫀",
+        "description": "The study of the human body.",
+        "narrative": "Artists and doctors found the same truth inside."
+      },
+      {
+        "name": "Globe",
+        "color": "#4169e1",
+        "tier": 1,
+        "emoji": "🌍",
+        "description": "A model of the whole world.",
+        "narrative": "The globe shrank the earth to something you could hold."
+      },
+      {
+        "name": "Ink",
+        "color": "#1a1a2e",
+        "tier": 1,
+        "emoji": "🖨️",
+        "description": "Dark fluid that carries ideas.",
+        "narrative": "Ink made thought permanent and portable."
+      },
+      {
+        "name": "Compass",
+        "color": "#4169e1",
+        "tier": 1,
+        "emoji": "🧭",
+        "description": "A needle that always finds north.",
+        "narrative": "The compass made leaving home imaginable."
+      },
+      {
+        "name": "Patron",
+        "color": "#9370db",
+        "tier": 1,
+        "emoji": "👑",
+        "description": "A wealthy supporter of arts and ideas.",
+        "narrative": "The Medici didn't paint — they made painting possible."
+      },
+      {
+        "name": "Gunpowder",
+        "color": "#555555",
+        "tier": 1,
+        "emoji": "💥",
+        "description": "Explosive powder that changed warfare.",
+        "narrative": "Castle walls meant nothing once gunpowder arrived."
+      },
+      {
+        "name": "Ship",
+        "color": "#8b4513",
+        "tier": 1,
+        "emoji": "⛵",
+        "description": "A vessel built for ocean crossings.",
+        "narrative": "Ships connected continents."
+      },
+      {
+        "name": "University",
+        "color": "#4a4a4a",
+        "tier": 1,
+        "emoji": "🎓",
+        "description": "An institution dedicated to knowledge.",
+        "narrative": "Universities gave thinkers permission to disagree."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Make a breakthrough in science, art, or medicine", "met": false },
-      { "description": "Enable the spread of knowledge or ideas at scale", "met": false },
-      { "description": "Establish a financial institution or banking system", "met": false },
-      { "description": "Create a masterwork of visual art, music, or literature", "met": false },
-      { "description": "Advance navigation, cartography, or exploration capability", "met": false }
-    ], "fallbackTier5Count": 5 }]
+    "goals": [
+      {
+        "requiredCount": 4,
+        "conditions": [
+          {
+            "description": "Make a breakthrough in science, art, or medicine",
+            "met": false
+          },
+          {
+            "description": "Enable the spread of knowledge or ideas at scale",
+            "met": false
+          },
+          {
+            "description": "Establish a financial institution or banking system",
+            "met": false
+          },
+          {
+            "description": "Create a masterwork of visual art, music, or literature",
+            "met": false
+          },
+          {
+            "description": "Advance navigation, cartography, or exploration capability",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 5
+      }
+    ]
   },
   {
     "name": "Age of Exploration",
     "order": 6,
     "seeds": [],
     "seedPool": [
-      { "name": "Caravel",  "color": "#8b4513", "tier": 1, "emoji": "\u26F5",       "description": "A fast ship built for discovery.",       "narrative": "The caravel shrank the world." },
-      { "name": "Map",      "color": "#f5f5dc", "tier": 1, "emoji": "\uD83D\uDDFA\uFE0F", "description": "The known world drawn on paper.",   "narrative": "Every blank space on the map was an invitation." },
-      { "name": "Spice",    "color": "#d2691e", "tier": 1, "emoji": "\uD83E\uDDC2", "description": "Precious flavor worth its weight in gold.","narrative": "The spice trade built and destroyed empires." },
-      { "name": "Colony",   "color": "#228b22", "tier": 1, "emoji": "\uD83C\uDFD8\uFE0F", "description": "A settlement in a distant land.",   "narrative": "Colonies exported resources and imported conflict." },
-      { "name": "Cannon",   "color": "#434343", "tier": 1, "emoji": "\uD83D\uDCA3", "description": "Heavy artillery that breaks walls.",      "narrative": "Cannons on ships turned merchants into conquerors." },
-      { "name": "Telescope","color": "#87ceeb", "tier": 1, "emoji": "\uD83D\uDD2D", "description": "A tube that brings the distant near.",   "narrative": "The telescope showed new lands and new worlds." },
-      { "name": "Tobacco",  "color": "#6b8e23", "tier": 1, "emoji": "\uD83C\uDF43", "description": "A new world plant with old world demand.","narrative": "A leaf that shaped history." },
-      { "name": "Gold",     "color": "#ffd700", "tier": 1, "emoji": "\uD83E\uDE99", "description": "The metal that drives men across oceans.","narrative": "Gold promised freedom and delivered slavery." },
-      { "name": "Compass",  "color": "#4169e1", "tier": 1, "emoji": "\uD83E\uDDED", "description": "A needle pointing toward the unknown.",  "narrative": "The compass said 'this way.' Courage said 'why not?'" },
-      { "name": "Treaty",   "color": "#dcdcdc", "tier": 1, "emoji": "\uD83D\uDCDC", "description": "A written agreement between powers.",    "narrative": "Treaties drew lines on maps and divided worlds." },
-      { "name": "Plantation","color": "#228b22","tier": 1, "emoji": "\uD83C\uDF3E", "description": "Large-scale farming in conquered lands.", "narrative": "Sugar was sweetened with suffering." },
-      { "name": "Astrolabe","color": "#c9b037", "tier": 1, "emoji": "\u2699\uFE0F", "description": "An instrument for reading the stars.",   "narrative": "The astrolabe turned the night sky into a navigation chart." }
+      {
+        "name": "Caravel",
+        "color": "#8b4513",
+        "tier": 1,
+        "emoji": "⛵",
+        "description": "A fast ship built for discovery.",
+        "narrative": "The caravel shrank the world."
+      },
+      {
+        "name": "Map",
+        "color": "#f5f5dc",
+        "tier": 1,
+        "emoji": "🗺️",
+        "description": "The known world drawn on paper.",
+        "narrative": "Every blank space on the map was an invitation."
+      },
+      {
+        "name": "Spice",
+        "color": "#d2691e",
+        "tier": 1,
+        "emoji": "🧂",
+        "description": "Precious flavor worth its weight in gold.",
+        "narrative": "The spice trade built and destroyed empires."
+      },
+      {
+        "name": "Colony",
+        "color": "#228b22",
+        "tier": 1,
+        "emoji": "🏘️",
+        "description": "A settlement in a distant land.",
+        "narrative": "Colonies exported resources and imported conflict."
+      },
+      {
+        "name": "Cannon",
+        "color": "#434343",
+        "tier": 1,
+        "emoji": "💣",
+        "description": "Heavy artillery that breaks walls.",
+        "narrative": "Cannons on ships turned merchants into conquerors."
+      },
+      {
+        "name": "Telescope",
+        "color": "#87ceeb",
+        "tier": 1,
+        "emoji": "🔭",
+        "description": "A tube that brings the distant near.",
+        "narrative": "The telescope showed new lands and new worlds."
+      },
+      {
+        "name": "Tobacco",
+        "color": "#6b8e23",
+        "tier": 1,
+        "emoji": "🍃",
+        "description": "A new world plant with old world demand.",
+        "narrative": "A leaf that shaped history."
+      },
+      {
+        "name": "Gold",
+        "color": "#ffd700",
+        "tier": 1,
+        "emoji": "🪙",
+        "description": "The metal that drives men across oceans.",
+        "narrative": "Gold promised freedom and delivered slavery."
+      },
+      {
+        "name": "Compass",
+        "color": "#4169e1",
+        "tier": 1,
+        "emoji": "🧭",
+        "description": "A needle pointing toward the unknown.",
+        "narrative": "The compass said 'this way.' Courage said 'why not?'"
+      },
+      {
+        "name": "Treaty",
+        "color": "#dcdcdc",
+        "tier": 1,
+        "emoji": "📜",
+        "description": "A written agreement between powers.",
+        "narrative": "Treaties drew lines on maps and divided worlds."
+      },
+      {
+        "name": "Plantation",
+        "color": "#228b22",
+        "tier": 1,
+        "emoji": "🌾",
+        "description": "Large-scale farming in conquered lands.",
+        "narrative": "Sugar was sweetened with suffering."
+      },
+      {
+        "name": "Astrolabe",
+        "color": "#c9b037",
+        "tier": 1,
+        "emoji": "⚙️",
+        "description": "An instrument for reading the stars.",
+        "narrative": "The astrolabe turned the night sky into a navigation chart."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Discover or connect with a new land or civilization", "met": false },
-      { "description": "Establish a global trade route or network", "met": false },
-      { "description": "Build a colonial settlement or overseas outpost", "met": false },
-      { "description": "Create a new form of diplomacy or international agreement", "met": false },
-      { "description": "Develop advanced navigation or shipbuilding", "met": false },
-      { "description": "Exchange crops, animals, or ideas between distant cultures", "met": false }
-    ], "fallbackTier5Count": 5 }]
+    "goals": [
+      {
+        "requiredCount": 4,
+        "conditions": [
+          {
+            "description": "Discover or connect with a new land or civilization",
+            "met": false
+          },
+          {
+            "description": "Establish a global trade route or network",
+            "met": false
+          },
+          {
+            "description": "Build a colonial settlement or overseas outpost",
+            "met": false
+          },
+          {
+            "description": "Create a new form of diplomacy or international agreement",
+            "met": false
+          },
+          {
+            "description": "Develop advanced navigation or shipbuilding",
+            "met": false
+          },
+          {
+            "description": "Exchange crops, animals, or ideas between distant cultures",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 5
+      }
+    ]
   },
   {
     "name": "Industrial Age",
     "order": 7,
     "seeds": [],
     "seedPool": [
-      { "name": "Steam",    "color": "#b0c4de", "tier": 1, "emoji": "\u2668\uFE0F", "description": "Pressurized vapor that moves machines.",  "narrative": "The industrial revolution ran on boiling water." },
-      { "name": "Coal",     "color": "#2f2f2f", "tier": 1, "emoji": "\u26AB",       "description": "Black rock that burns hot and long.",     "narrative": "Coal powered the factories and blackened the skies." },
-      { "name": "Rail",     "color": "#808080", "tier": 1, "emoji": "\uD83D\uDE82", "description": "Iron tracks connecting cities.",           "narrative": "Railroads collapsed distance." },
-      { "name": "Factory",  "color": "#696969", "tier": 1, "emoji": "\uD83C\uDFED", "description": "A building where goods are mass-produced.","narrative": "Factories turned craftsmen into workers." },
-      { "name": "Cotton",   "color": "#f5f5f5", "tier": 1, "emoji": "\uD83E\uDDF6", "description": "Soft fiber spun into thread and cloth.",  "narrative": "Cotton mills were the first factories." },
-      { "name": "Patent",   "color": "#f5f5dc", "tier": 1, "emoji": "\uD83D\uDCDC", "description": "Legal protection for an invention.",      "narrative": "Patents turned ideas into property." },
-      { "name": "Telegraph","color": "#daa520", "tier": 1, "emoji": "\u26A1",       "description": "Electrical signals across wires.",        "narrative": "The first time a message traveled faster than a person." },
-      { "name": "Union",    "color": "#dc143c", "tier": 1, "emoji": "\u270A",       "description": "Workers organized for their rights.",     "narrative": "Unions gave workers a voice factories couldn't ignore." },
-      { "name": "Dynamite", "color": "#ff4500", "tier": 1, "emoji": "\uD83E\uDDE8", "description": "Controlled explosion for construction.",  "narrative": "Its inventor funded the Peace Prize." },
-      { "name": "Newspaper","color": "#f5f5dc", "tier": 1, "emoji": "\uD83D\uDCF0", "description": "Daily printed news for the masses.",      "narrative": "Newspapers created public opinion." },
-      { "name": "Rubber",   "color": "#2f2f2f", "tier": 1, "emoji": "\u26AB",       "description": "Elastic material from tropical trees.",   "narrative": "Tires, gaskets, and erasers — all from tree sap." },
-      { "name": "Steel",    "color": "#c0c0c0", "tier": 1, "emoji": "\u2699\uFE0F", "description": "Iron refined to extraordinary strength.", "narrative": "Steel built the skyscrapers and bridges of the modern skyline." }
+      {
+        "name": "Steam",
+        "color": "#b0c4de",
+        "tier": 1,
+        "emoji": "♨️",
+        "description": "Pressurized vapor that moves machines.",
+        "narrative": "The industrial revolution ran on boiling water."
+      },
+      {
+        "name": "Coal",
+        "color": "#2f2f2f",
+        "tier": 1,
+        "emoji": "⚫",
+        "description": "Black rock that burns hot and long.",
+        "narrative": "Coal powered the factories and blackened the skies."
+      },
+      {
+        "name": "Rail",
+        "color": "#808080",
+        "tier": 1,
+        "emoji": "🚂",
+        "description": "Iron tracks connecting cities.",
+        "narrative": "Railroads collapsed distance."
+      },
+      {
+        "name": "Factory",
+        "color": "#696969",
+        "tier": 1,
+        "emoji": "🏭",
+        "description": "A building where goods are mass-produced.",
+        "narrative": "Factories turned craftsmen into workers."
+      },
+      {
+        "name": "Cotton",
+        "color": "#f5f5f5",
+        "tier": 1,
+        "emoji": "🧶",
+        "description": "Soft fiber spun into thread and cloth.",
+        "narrative": "Cotton mills were the first factories."
+      },
+      {
+        "name": "Patent",
+        "color": "#f5f5dc",
+        "tier": 1,
+        "emoji": "📜",
+        "description": "Legal protection for an invention.",
+        "narrative": "Patents turned ideas into property."
+      },
+      {
+        "name": "Telegraph",
+        "color": "#daa520",
+        "tier": 1,
+        "emoji": "⚡",
+        "description": "Electrical signals across wires.",
+        "narrative": "The first time a message traveled faster than a person."
+      },
+      {
+        "name": "Union",
+        "color": "#dc143c",
+        "tier": 1,
+        "emoji": "✊",
+        "description": "Workers organized for their rights.",
+        "narrative": "Unions gave workers a voice factories couldn't ignore."
+      },
+      {
+        "name": "Dynamite",
+        "color": "#ff4500",
+        "tier": 1,
+        "emoji": "🧨",
+        "description": "Controlled explosion for construction.",
+        "narrative": "Its inventor funded the Peace Prize."
+      },
+      {
+        "name": "Newspaper",
+        "color": "#f5f5dc",
+        "tier": 1,
+        "emoji": "📰",
+        "description": "Daily printed news for the masses.",
+        "narrative": "Newspapers created public opinion."
+      },
+      {
+        "name": "Rubber",
+        "color": "#2f2f2f",
+        "tier": 1,
+        "emoji": "⚫",
+        "description": "Elastic material from tropical trees.",
+        "narrative": "Tires, gaskets, and erasers — all from tree sap."
+      },
+      {
+        "name": "Steel",
+        "color": "#c0c0c0",
+        "tier": 1,
+        "emoji": "⚙️",
+        "description": "Iron refined to extraordinary strength.",
+        "narrative": "Steel built the skyscrapers and bridges of the modern skyline."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Mechanize production or transform how goods are made", "met": false },
-      { "description": "Connect distant regions through transportation or communication", "met": false },
-      { "description": "Organize labor or establish workers' rights", "met": false },
-      { "description": "Harness a new energy source for industry", "met": false },
-      { "description": "Build critical infrastructure like bridges, tunnels, or networks", "met": false },
-      { "description": "Create a mass-market consumer product or service", "met": false }
-    ], "fallbackTier5Count": 5 }]
+    "goals": [
+      {
+        "requiredCount": 4,
+        "conditions": [
+          {
+            "description": "Mechanize production or transform how goods are made",
+            "met": false
+          },
+          {
+            "description": "Connect distant regions through transportation or communication",
+            "met": false
+          },
+          {
+            "description": "Organize labor or establish workers' rights",
+            "met": false
+          },
+          {
+            "description": "Harness a new energy source for industry",
+            "met": false
+          },
+          {
+            "description": "Build critical infrastructure like bridges, tunnels, or networks",
+            "met": false
+          },
+          {
+            "description": "Create a mass-market consumer product or service",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 5
+      }
+    ]
   },
   {
     "name": "Modern Age",
     "order": 8,
     "seeds": [],
     "seedPool": [
-      { "name": "Electricity","color": "#ffff00","tier": 1, "emoji": "\u26A1",       "description": "Invisible force that powers everything.","narrative": "The modern world runs on lightning in wires." },
-      { "name": "Automobile","color": "#dc143c", "tier": 1, "emoji": "\uD83D\uDE97", "description": "A machine that moves people by engine.", "narrative": "The car rebuilt cities and paved the world." },
-      { "name": "Radio",    "color": "#daa520", "tier": 1, "emoji": "\uD83D\uDCFB", "description": "Sound broadcast through invisible waves.","narrative": "Radio put a voice in every home." },
-      { "name": "Vaccine",  "color": "#87ceeb", "tier": 1, "emoji": "\uD83D\uDC89", "description": "Medicine that prevents disease.",         "narrative": "Humanity's greatest collective achievement." },
-      { "name": "Film",     "color": "#2f2f2f", "tier": 1, "emoji": "\uD83C\uDFAC", "description": "Moving pictures that tell stories.",     "narrative": "Film showed humanity its own face." },
-      { "name": "Petroleum","color": "#2f2f2f", "tier": 1, "emoji": "\uD83D\uDEE2\uFE0F", "description": "Black liquid that powers the modern world.","narrative": "The 20th century ran on petroleum and regret." },
-      { "name": "Concrete", "color": "#808080", "tier": 1, "emoji": "\uD83C\uDFD7\uFE0F", "description": "Liquid stone that hardens into anything.","narrative": "More used than any material except water." },
-      { "name": "Atom",     "color": "#87ceeb", "tier": 1, "emoji": "\u269B\uFE0F", "description": "The smallest unit, containing enormous energy.","narrative": "Splitting the atom gave humanity godlike power." },
-      { "name": "Plastic",  "color": "#ff69b4", "tier": 1, "emoji": "\u267B\uFE0F", "description": "Synthetic material shaped into anything.","narrative": "Convenience with a thousand-year hangover." },
-      { "name": "Ballot",   "color": "#f5f5dc", "tier": 1, "emoji": "\uD83D\uDDF3\uFE0F", "description": "A vote cast in private.",            "narrative": "Change through counting instead of fighting." },
-      { "name": "Antibiotic","color": "#98fb98","tier": 1, "emoji": "\uD83D\uDC8A", "description": "Medicine that kills bacteria.",           "narrative": "A mold that saved millions." },
-      { "name": "Skyscraper","color": "#c0c0c0","tier": 1, "emoji": "\uD83C\uDFD9\uFE0F", "description": "A building that scrapes the sky.",  "narrative": "The skyline became humanity's signature." }
+      {
+        "name": "Electricity",
+        "color": "#ffff00",
+        "tier": 1,
+        "emoji": "⚡",
+        "description": "Invisible force that powers everything.",
+        "narrative": "The modern world runs on lightning in wires."
+      },
+      {
+        "name": "Automobile",
+        "color": "#dc143c",
+        "tier": 1,
+        "emoji": "🚗",
+        "description": "A machine that moves people by engine.",
+        "narrative": "The car rebuilt cities and paved the world."
+      },
+      {
+        "name": "Radio",
+        "color": "#daa520",
+        "tier": 1,
+        "emoji": "📻",
+        "description": "Sound broadcast through invisible waves.",
+        "narrative": "Radio put a voice in every home."
+      },
+      {
+        "name": "Vaccine",
+        "color": "#87ceeb",
+        "tier": 1,
+        "emoji": "💉",
+        "description": "Medicine that prevents disease.",
+        "narrative": "Humanity's greatest collective achievement."
+      },
+      {
+        "name": "Film",
+        "color": "#2f2f2f",
+        "tier": 1,
+        "emoji": "🎬",
+        "description": "Moving pictures that tell stories.",
+        "narrative": "Film showed humanity its own face."
+      },
+      {
+        "name": "Petroleum",
+        "color": "#2f2f2f",
+        "tier": 1,
+        "emoji": "🛢️",
+        "description": "Black liquid that powers the modern world.",
+        "narrative": "The 20th century ran on petroleum and regret."
+      },
+      {
+        "name": "Concrete",
+        "color": "#808080",
+        "tier": 1,
+        "emoji": "🏗️",
+        "description": "Liquid stone that hardens into anything.",
+        "narrative": "More used than any material except water."
+      },
+      {
+        "name": "Atom",
+        "color": "#87ceeb",
+        "tier": 1,
+        "emoji": "⚛️",
+        "description": "The smallest unit, containing enormous energy.",
+        "narrative": "Splitting the atom gave humanity godlike power."
+      },
+      {
+        "name": "Plastic",
+        "color": "#ff69b4",
+        "tier": 1,
+        "emoji": "♻️",
+        "description": "Synthetic material shaped into anything.",
+        "narrative": "Convenience with a thousand-year hangover."
+      },
+      {
+        "name": "Ballot",
+        "color": "#f5f5dc",
+        "tier": 1,
+        "emoji": "🗳️",
+        "description": "A vote cast in private.",
+        "narrative": "Change through counting instead of fighting."
+      },
+      {
+        "name": "Antibiotic",
+        "color": "#98fb98",
+        "tier": 1,
+        "emoji": "💊",
+        "description": "Medicine that kills bacteria.",
+        "narrative": "A mold that saved millions."
+      },
+      {
+        "name": "Skyscraper",
+        "color": "#c0c0c0",
+        "tier": 1,
+        "emoji": "🏙️",
+        "description": "A building that scrapes the sky.",
+        "narrative": "The skyline became humanity's signature."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Harness a new form of energy or revolutionize medicine", "met": false },
-      { "description": "Create mass media or reshape how people communicate", "met": false },
-      { "description": "Achieve powered flight or high-speed transportation", "met": false },
-      { "description": "Split the atom or unlock a fundamental force of nature", "met": false },
-      { "description": "Establish international cooperation or a global institution", "met": false },
-      { "description": "Build a megastructure or transform the urban landscape", "met": false }
-    ], "fallbackTier5Count": 5 }]
+    "goals": [
+      {
+        "requiredCount": 4,
+        "conditions": [
+          {
+            "description": "Harness a new form of energy or revolutionize medicine",
+            "met": false
+          },
+          {
+            "description": "Create mass media or reshape how people communicate",
+            "met": false
+          },
+          {
+            "description": "Achieve powered flight or high-speed transportation",
+            "met": false
+          },
+          {
+            "description": "Split the atom or unlock a fundamental force of nature",
+            "met": false
+          },
+          {
+            "description": "Establish international cooperation or a global institution",
+            "met": false
+          },
+          {
+            "description": "Build a megastructure or transform the urban landscape",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 5
+      }
+    ]
   },
   {
     "name": "Information Age",
     "order": 9,
     "seeds": [],
     "seedPool": [
-      { "name": "Computer", "color": "#4a4a4a", "tier": 1, "emoji": "\uD83D\uDCBB", "description": "A machine that thinks in numbers.",      "narrative": "Computers became extensions of the human mind." },
-      { "name": "Internet", "color": "#4169e1", "tier": 1, "emoji": "\uD83C\uDF10", "description": "A network connecting every screen.",     "narrative": "The internet made distance irrelevant for information." },
-      { "name": "Chip",     "color": "#228b22", "tier": 1, "emoji": "\uD83E\uDE9F", "description": "A sliver of silicon running billions of calculations.","narrative": "More computing power in your pocket than in moon rockets." },
-      { "name": "Satellite","color": "#87ceeb", "tier": 1, "emoji": "\uD83D\uDEF0\uFE0F", "description": "A machine orbiting Earth.",         "narrative": "Satellites watch the weather and guide your car." },
-      { "name": "Database", "color": "#4682b4", "tier": 1, "emoji": "\uD83D\uDDC4\uFE0F", "description": "Organized information at scale.",   "narrative": "Databases remember everything." },
-      { "name": "Algorithm","color": "#dcdcdc", "tier": 1, "emoji": "\uD83D\uDD22", "description": "A set of instructions that solves problems.","narrative": "Algorithms run the invisible infrastructure of modern life." },
-      { "name": "Fiber",    "color": "#ff69b4", "tier": 1, "emoji": "\uD83D\uDD0C", "description": "Glass threads carrying light as data.",  "narrative": "The backbone of the connected world." },
-      { "name": "Genome",   "color": "#98fb98", "tier": 1, "emoji": "\uD83E\uDDEC", "description": "The complete code of a living thing.",   "narrative": "Reading the genome gave humanity the source code of life." },
-      { "name": "Solar Cell","color": "#ffd700","tier": 1, "emoji": "\u2600\uFE0F", "description": "A panel that turns sunlight into power.", "narrative": "The sun has always been the answer." },
-      { "name": "Drone",    "color": "#808080", "tier": 1, "emoji": "\uD83D\uDEE9\uFE0F", "description": "An unmanned flying machine.",      "narrative": "The same technology, different intentions." },
-      { "name": "Blockchain","color": "#4a4a4a","tier": 1, "emoji": "\uD83D\uDD17", "description": "A ledger that no one controls.",          "narrative": "Blockchain replaced trust in institutions with trust in mathematics." },
-      { "name": "AI Model", "color": "#9370db", "tier": 1, "emoji": "\uD83E\uDD16", "description": "Software that learns from patterns.",    "narrative": "AI thinks like nothing that has ever existed before." }
+      {
+        "name": "Computer",
+        "color": "#4a4a4a",
+        "tier": 1,
+        "emoji": "💻",
+        "description": "A machine that thinks in numbers.",
+        "narrative": "Computers became extensions of the human mind."
+      },
+      {
+        "name": "Internet",
+        "color": "#4169e1",
+        "tier": 1,
+        "emoji": "🌐",
+        "description": "A network connecting every screen.",
+        "narrative": "The internet made distance irrelevant for information."
+      },
+      {
+        "name": "Chip",
+        "color": "#228b22",
+        "tier": 1,
+        "emoji": "🪟",
+        "description": "A sliver of silicon running billions of calculations.",
+        "narrative": "More computing power in your pocket than in moon rockets."
+      },
+      {
+        "name": "Satellite",
+        "color": "#87ceeb",
+        "tier": 1,
+        "emoji": "🛰️",
+        "description": "A machine orbiting Earth.",
+        "narrative": "Satellites watch the weather and guide your car."
+      },
+      {
+        "name": "Database",
+        "color": "#4682b4",
+        "tier": 1,
+        "emoji": "🗄️",
+        "description": "Organized information at scale.",
+        "narrative": "Databases remember everything."
+      },
+      {
+        "name": "Algorithm",
+        "color": "#dcdcdc",
+        "tier": 1,
+        "emoji": "🔢",
+        "description": "A set of instructions that solves problems.",
+        "narrative": "Algorithms run the invisible infrastructure of modern life."
+      },
+      {
+        "name": "Fiber",
+        "color": "#ff69b4",
+        "tier": 1,
+        "emoji": "🔌",
+        "description": "Glass threads carrying light as data.",
+        "narrative": "The backbone of the connected world."
+      },
+      {
+        "name": "Genome",
+        "color": "#98fb98",
+        "tier": 1,
+        "emoji": "🧬",
+        "description": "The complete code of a living thing.",
+        "narrative": "Reading the genome gave humanity the source code of life."
+      },
+      {
+        "name": "Solar Cell",
+        "color": "#ffd700",
+        "tier": 1,
+        "emoji": "☀️",
+        "description": "A panel that turns sunlight into power.",
+        "narrative": "The sun has always been the answer."
+      },
+      {
+        "name": "Drone",
+        "color": "#808080",
+        "tier": 1,
+        "emoji": "🛩️",
+        "description": "An unmanned flying machine.",
+        "narrative": "The same technology, different intentions."
+      },
+      {
+        "name": "Blockchain",
+        "color": "#4a4a4a",
+        "tier": 1,
+        "emoji": "🔗",
+        "description": "A ledger that no one controls.",
+        "narrative": "Blockchain replaced trust in institutions with trust in mathematics."
+      },
+      {
+        "name": "AI Model",
+        "color": "#9370db",
+        "tier": 1,
+        "emoji": "🤖",
+        "description": "Software that learns from patterns.",
+        "narrative": "AI thinks like nothing that has ever existed before."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Create artificial intelligence or autonomous systems", "met": false },
-      { "description": "Connect all of humanity through a global network or platform", "met": false },
-      { "description": "Decode or manipulate the building blocks of life", "met": false },
-      { "description": "Transition to renewable or sustainable energy", "met": false },
-      { "description": "Create a virtual world, digital economy, or online society", "met": false },
-      { "description": "Automate a major industry or human activity", "met": false }
-    ], "fallbackTier5Count": 5 }]
+    "goals": [
+      {
+        "requiredCount": 4,
+        "conditions": [
+          {
+            "description": "Create artificial intelligence or autonomous systems",
+            "met": false
+          },
+          {
+            "description": "Connect all of humanity through a global network or platform",
+            "met": false
+          },
+          {
+            "description": "Decode or manipulate the building blocks of life",
+            "met": false
+          },
+          {
+            "description": "Transition to renewable or sustainable energy",
+            "met": false
+          },
+          {
+            "description": "Create a virtual world, digital economy, or online society",
+            "met": false
+          },
+          {
+            "description": "Automate a major industry or human activity",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 5
+      }
+    ]
   },
   {
     "name": "Space Age",
@@ -286,27 +1382,135 @@
     "required": true,
     "seeds": [],
     "seedPool": [
-      { "name": "Rocket",   "color": "#dc143c", "tier": 1, "emoji": "\uD83D\uDE80", "description": "Controlled explosion aimed at the sky.", "narrative": "Every launch says 'we refuse to stay.'" },
-      { "name": "Orbit",    "color": "#191970", "tier": 1, "emoji": "\uD83C\uDF0C", "description": "The path of endless falling.",            "narrative": "Falling sideways fast enough to miss the ground." },
-      { "name": "Habitat",  "color": "#228b22", "tier": 1, "emoji": "\uD83C\uDFE0", "description": "A bubble of Earth in the void.",          "narrative": "Every breath is engineered, every drop recycled." },
-      { "name": "Fusion",   "color": "#ffff00", "tier": 1, "emoji": "\u2600\uFE0F", "description": "Starfire harnessed by human hands.",      "narrative": "Humanity no longer depends on its own planet for energy." },
-      { "name": "Rover",    "color": "#c0c0c0", "tier": 1, "emoji": "\uD83E\uDD16", "description": "A robot explorer on alien soil.",         "narrative": "Humanity's fingers, touching worlds our feet can't reach yet." },
-      { "name": "Telescope","color": "#87ceeb", "tier": 1, "emoji": "\uD83D\uDD2D", "description": "An eye that sees across the universe.",  "narrative": "Space telescopes see the past — light from billions of years ago." },
-      { "name": "Asteroid", "color": "#808080", "tier": 1, "emoji": "\u2604\uFE0F", "description": "A rock containing a fortune in metals.", "narrative": "Mining them could make scarcity obsolete." },
-      { "name": "Station",  "color": "#4682b4", "tier": 1, "emoji": "\uD83D\uDEF0\uFE0F", "description": "A permanent outpost in orbit.",    "narrative": "The first step to never needing Earth." },
-      { "name": "Quantum",  "color": "#9370db", "tier": 1, "emoji": "\u269B\uFE0F", "description": "Computing with the fabric of reality.",  "narrative": "Quantum computers solve problems classical machines can't describe." },
-      { "name": "Mars",     "color": "#dc143c", "tier": 1, "emoji": "\uD83D\uDD34", "description": "The red planet, waiting.",               "narrative": "Close enough to reach and hostile enough to test everything." },
-      { "name": "Cryogenics","color": "#87ceeb","tier": 1, "emoji": "\u2744\uFE0F", "description": "Preservation through extreme cold.",      "narrative": "Can we pause life and resume it later?" },
-      { "name": "Signal",   "color": "#98fb98", "tier": 1, "emoji": "\uD83D\uDCE1", "description": "A message sent into the cosmos.",         "narrative": "Someone, somewhere, might be listening." }
+      {
+        "name": "Rocket",
+        "color": "#dc143c",
+        "tier": 1,
+        "emoji": "🚀",
+        "description": "Controlled explosion aimed at the sky.",
+        "narrative": "Every launch says 'we refuse to stay.'"
+      },
+      {
+        "name": "Orbit",
+        "color": "#191970",
+        "tier": 1,
+        "emoji": "🌌",
+        "description": "The path of endless falling.",
+        "narrative": "Falling sideways fast enough to miss the ground."
+      },
+      {
+        "name": "Habitat",
+        "color": "#228b22",
+        "tier": 1,
+        "emoji": "🏠",
+        "description": "A bubble of Earth in the void.",
+        "narrative": "Every breath is engineered, every drop recycled."
+      },
+      {
+        "name": "Fusion",
+        "color": "#ffff00",
+        "tier": 1,
+        "emoji": "☀️",
+        "description": "Starfire harnessed by human hands.",
+        "narrative": "Humanity no longer depends on its own planet for energy."
+      },
+      {
+        "name": "Rover",
+        "color": "#c0c0c0",
+        "tier": 1,
+        "emoji": "🤖",
+        "description": "A robot explorer on alien soil.",
+        "narrative": "Humanity's fingers, touching worlds our feet can't reach yet."
+      },
+      {
+        "name": "Telescope",
+        "color": "#87ceeb",
+        "tier": 1,
+        "emoji": "🔭",
+        "description": "An eye that sees across the universe.",
+        "narrative": "Space telescopes see the past — light from billions of years ago."
+      },
+      {
+        "name": "Asteroid",
+        "color": "#808080",
+        "tier": 1,
+        "emoji": "☄️",
+        "description": "A rock containing a fortune in metals.",
+        "narrative": "Mining them could make scarcity obsolete."
+      },
+      {
+        "name": "Station",
+        "color": "#4682b4",
+        "tier": 1,
+        "emoji": "🛰️",
+        "description": "A permanent outpost in orbit.",
+        "narrative": "The first step to never needing Earth."
+      },
+      {
+        "name": "Quantum",
+        "color": "#9370db",
+        "tier": 1,
+        "emoji": "⚛️",
+        "description": "Computing with the fabric of reality.",
+        "narrative": "Quantum computers solve problems classical machines can't describe."
+      },
+      {
+        "name": "Mars",
+        "color": "#dc143c",
+        "tier": 1,
+        "emoji": "🔴",
+        "description": "The red planet, waiting.",
+        "narrative": "Close enough to reach and hostile enough to test everything."
+      },
+      {
+        "name": "Cryogenics",
+        "color": "#87ceeb",
+        "tier": 1,
+        "emoji": "❄️",
+        "description": "Preservation through extreme cold.",
+        "narrative": "Can we pause life and resume it later?"
+      },
+      {
+        "name": "Signal",
+        "color": "#98fb98",
+        "tier": 1,
+        "emoji": "📡",
+        "description": "A message sent into the cosmos.",
+        "narrative": "Someone, somewhere, might be listening."
+      }
     ],
     "seedCount": 6,
-    "goals": [{ "requiredCount": 3, "conditions": [
-      { "description": "Establish a permanent human presence beyond Earth", "met": false },
-      { "description": "Solve a fundamental challenge facing humanity's future", "met": false },
-      { "description": "Achieve faster-than-light communication or travel", "met": false },
-      { "description": "Make first contact or detect extraterrestrial life", "met": false },
-      { "description": "Terraform or colonize another planet", "met": false },
-      { "description": "Achieve a post-scarcity economy or unlimited clean energy", "met": false }
-    ], "fallbackTier5Count": 5 }]
+    "goals": [
+      {
+        "requiredCount": 4,
+        "conditions": [
+          {
+            "description": "Establish a permanent human presence beyond Earth",
+            "met": false
+          },
+          {
+            "description": "Solve a fundamental challenge facing humanity's future",
+            "met": false
+          },
+          {
+            "description": "Achieve faster-than-light communication or travel",
+            "met": false
+          },
+          {
+            "description": "Make first contact or detect extraterrestrial life",
+            "met": false
+          },
+          {
+            "description": "Terraform or colonize another planet",
+            "met": false
+          },
+          {
+            "description": "Achieve a post-scarcity economy or unlimited clean energy",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 5
+      }
+    ]
   }
 ]

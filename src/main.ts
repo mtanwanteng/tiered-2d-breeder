@@ -64,7 +64,7 @@ function renderEraProgress() {
 
   const goal = eraManager.current.goals[0];
   const metCount = goal ? goal.conditions.filter((c) => c.met).length : 0;
-  const dotCount = goal ? goal.conditions.length : 5;
+  const dotCount = goal ? goal.requiredCount : 5;
 
   let html = "";
 
@@ -98,9 +98,9 @@ function renderGoals() {
   if (!goal) { goalsEl.innerHTML = ""; return; }
   const metCount = goal.conditions.filter((c) => c.met).length;
   const counterEl = document.getElementById("era-goal-counter");
-  if (counterEl) counterEl.textContent = `(${metCount}/${goal.conditions.length})`;
+  if (counterEl) counterEl.textContent = `(${metCount}/${goal.requiredCount})`;
   goalsEl.innerHTML = `
-    <div class="era-goal-header">Complete all tasks (${metCount}/${goal.conditions.length})</div>
+    <div class="era-goal-header">Complete ${goal.requiredCount} of ${goal.conditions.length} tasks (${metCount} done)</div>
     ${goal.conditions
       .map((c) => `
         <div class="era-goal${c.met ? " met" : ""}">${c.description}</div>
