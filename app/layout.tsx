@@ -9,7 +9,7 @@ import { DiscordActivityProvider } from "./components/discord-activity-provider"
 
 export const metadata: Metadata = {
   title: "Bari The Architect",
-  description: "An AI-powered civilization creation game.",
+  description: "A Civilization Creation Game Using AI to Inspire Creativity",
 };
 
 export default function RootLayout({
