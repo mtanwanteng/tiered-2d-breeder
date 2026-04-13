@@ -15,21 +15,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userId = user?.id ?? null;
 
     if (userId && userId !== prevUserId.current) {
-      // New login — identify in PostHog (merges anonymous history)
-      const provider = (user as { provider?: string })?.provider ?? null;
-      posthog?.identify(userId, {
-        email: user?.email,
-        name: user?.name,
-        provider,
-      });
-      posthog?.capture("auth_completed", { provider });
-
+      // Set auth state immediately so UI is responsive
       authStore.setState({
         isLoggedIn: true,
         userId,
         name: user?.name ?? null,
         avatarUrl: user?.image ?? null,
-        provider: (provider as "google" | "discord") ?? null,
+        provider: null,
+      });
+
+      // Resolve provider from accounts — user object from session doesn't include it
+      void authClient.listAccounts().then((result) => {
+        const provider = (result.data?.[0]?.providerId ?? null) as "google" | "discord" | null;
+        authStore.setState({ provider });
+        posthog?.identify(userId, { email: user?.email, name: user?.name, provider });
+        posthog?.capture("auth_completed", { provider });
       });
 
       // Record anonId + lastActiveAt on first login (fire-and-forget)
