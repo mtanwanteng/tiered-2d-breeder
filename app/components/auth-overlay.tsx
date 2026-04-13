@@ -243,7 +243,7 @@ export function AuthOverlay() {
                       onClick={() => openTapestryPreview("/tapestry2.png")}
                     />
                   </div>
-                  <p className="htp-tapestry-text">Collect Tapestries reflecting your civilization&apos;s progression through the Ages!</p>
+                  <p className="htp-tapestry-text">Collect Tapestries reflecting your civilization&apos;s unique progression through the Ages!</p>
                 </div>
               </div>
 
