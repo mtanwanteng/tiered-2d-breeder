@@ -63,7 +63,6 @@ export function AuthOverlay() {
     setHasViewedHtp(viewed);
     if (!viewed) {
       setHtpOpen(true);
-      setVideoOpen(true);
       localStorage.setItem(HTP_VIEWED_KEY, "true");
       setHasViewedHtp(true);
     }
