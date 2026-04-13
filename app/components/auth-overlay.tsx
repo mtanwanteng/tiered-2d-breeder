@@ -51,30 +51,47 @@ export function AuthOverlay() {
   const [hasViewedHtp, setHasViewedHtp] = useState(false);
   const htpRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
+  const isFirstSessionRef = useRef(false); // true when this is the player's first HTP view
+  const htpWasOpenRef = useRef(false);     // tracks open→close transition for dismiss event
+  const videoWatchedRef = useRef(false);   // whether video was played in this HTP session
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const name = useAuthStore((s) => s.name);
   const avatarUrl = useAuthStore((s) => s.avatarUrl);
   const provider = useAuthStore((s) => s.provider);
   const posthog = usePostHog();
 
-  // On mount: initialise viewed flag; auto-open HTP + video on first visit
+  // On mount: initialise viewed flag; auto-open HTP on first visit
   useEffect(() => {
     const viewed = localStorage.getItem(HTP_VIEWED_KEY) === "true";
     setHasViewedHtp(viewed);
     if (!viewed) {
+      isFirstSessionRef.current = true;
       setHtpOpen(true);
       localStorage.setItem(HTP_VIEWED_KEY, "true");
       setHasViewedHtp(true);
     }
   }, []);
 
-  // Mark as viewed whenever HTP is opened (covers manual opens after first visit)
+  // Fire htp_first_opened once posthog is ready (may lag behind mount on first visit)
+  useEffect(() => {
+    if (posthog && isFirstSessionRef.current) {
+      posthog.capture("htp_first_opened");
+      isFirstSessionRef.current = false;
+    }
+  }, [posthog]);
+
+  // Track HTP open/close transitions
   useEffect(() => {
     if (htpOpen) {
+      htpWasOpenRef.current = true;
       localStorage.setItem(HTP_VIEWED_KEY, "true");
       setHasViewedHtp(true);
+    } else if (htpWasOpenRef.current) {
+      posthog?.capture("htp_dismissed", { video_watched: videoWatchedRef.current });
+      htpWasOpenRef.current = false;
+      videoWatchedRef.current = false;
     }
-  }, [htpOpen]);
+  }, [htpOpen, posthog]);
 
   // Close HTP popup when clicking outside
   useEffect(() => {
@@ -216,7 +233,7 @@ export function AuthOverlay() {
 
               <div className="htp-layout">
                 <div className="htp-col-main">
-                  <button className="htp-play-btn" onClick={() => setVideoOpen(true)}>
+                  <button className="htp-play-btn" onClick={() => { videoWatchedRef.current = true; posthog?.capture("htp_video_played"); setVideoOpen(true); }}>
                     ▶ Play Video
                   </button>
 
@@ -288,7 +305,7 @@ export function AuthOverlay() {
         </div>
       </div>
 
-      {videoOpen && <VideoModal onClose={() => setVideoOpen(false)} />}
+      {videoOpen && <VideoModal onClose={() => { posthog?.capture("htp_video_closed"); setVideoOpen(false); }} />}
 
       <AuthModal
         isOpen={isModalOpen}
