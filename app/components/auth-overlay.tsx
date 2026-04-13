@@ -199,23 +199,37 @@ export function AuthOverlay() {
             <div className="htp-popup">
               <div className="htp-tail" />
 
-              <button className="htp-play-btn" onClick={() => setVideoOpen(true)}>
-                ▶ Play Video
-              </button>
+              <div className="htp-layout">
+                <div className="htp-col-main">
+                  <button className="htp-play-btn" onClick={() => setVideoOpen(true)}>
+                    ▶ Play Video
+                  </button>
 
-              <ol className="htp-steps">
-                <li>Drag two tiles together to <strong>combine</strong> them into something new.</li>
-                <li>Discover new <strong>ideas</strong> and build up your civilization.</li>
-                <li>Complete era goals to <strong>advance through history</strong>.</li>
-                <li>Reach the <strong>Age of Plenty</strong> to win.</li>
-              </ol>
-
-              <div className="htp-tapestry-promo">
-                <div className="htp-tapestry-images">
-                  <img src="/tapestry.png" alt="Tapestry example" className="htp-tapestry-img" />
-                  <img src="/tapestry2.png" alt="Tapestry example" className="htp-tapestry-img" />
+                  <ol className="htp-steps">
+                    <li>Drag two tiles together to <strong>combine</strong> them into something new.</li>
+                    <li>Discover new <strong>ideas</strong> and build up your civilization.</li>
+                    <li>Complete era goals to <strong>advance through history</strong>.</li>
+                    <li>Reach the <strong>Age of Plenty</strong> to win.</li>
+                  </ol>
                 </div>
-                <p className="htp-tapestry-text">Collect Tapestries reflecting your civilization&apos;s progression through the Ages!</p>
+
+                <div className="htp-tapestry-promo">
+                  <div className="htp-tapestry-images">
+                    <img
+                      src="/tapestry1.png"
+                      alt="Tapestry example"
+                      className="htp-tapestry-img"
+                      onClick={() => authStore.getState().showStaticTapestry?.("/tapestry1.png")}
+                    />
+                    <img
+                      src="/tapestry2.png"
+                      alt="Tapestry example"
+                      className="htp-tapestry-img"
+                      onClick={() => authStore.getState().showStaticTapestry?.("/tapestry2.png")}
+                    />
+                  </div>
+                  <p className="htp-tapestry-text">Collect Tapestries reflecting your civilization&apos;s progression through the Ages!</p>
+                </div>
               </div>
 
               {!isLoggedIn && !isDiscordActivity() && (

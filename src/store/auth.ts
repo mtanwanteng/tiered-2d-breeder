@@ -12,6 +12,7 @@ export interface AuthState {
   openLoginFromVictory: (() => void) | null;
   resetGame: (() => void) | null;
   resetPlayer: (() => Promise<void>) | null;
+  showStaticTapestry: ((src: string) => void) | null;
 }
 
 export const authStore = createStore<AuthState>()(
@@ -26,6 +27,7 @@ export const authStore = createStore<AuthState>()(
       openLoginFromVictory: null,
       resetGame: null,
       resetPlayer: null,
+      showStaticTapestry: null,
     })
   )
 );
