@@ -1500,6 +1500,12 @@ body {
   border-color: rgba(255, 255, 255, 0.45);
 }
 
+.htp-btn--viewed {
+  padding: 5px 10px;
+  font-size: 15px;
+  font-weight: bold;
+}
+
 .htp-popup {
   position: absolute;
   top: calc(100% + 10px);
