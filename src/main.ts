@@ -68,10 +68,10 @@ function renderEraProgress() {
 
   let html = "";
 
-  // Completed eras: dim cube + all-lit dots
+  // Completed eras: dim cube + single glowing dash
   for (const h of eraManager.history) {
-    html += `<div class="era-cube era-cube--done" title="${h.eraName}"></div>`;
-    html += `<div class="era-dots">${`<span class="era-dot era-dot--lit"></span>`.repeat(5)}</div>`;
+    html += `<div class="era-cube era-cube--done" title="${esc(h.eraName)}"></div>`;
+    html += `<div class="era-dots"><span class="era-dash"></span></div>`;
   }
 
   // Current era: bright glowing cube + progress dots
