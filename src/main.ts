@@ -226,6 +226,7 @@ app.innerHTML = `
         <div id="tapestry-spinner">Weaving the tapestry\u2026</div>
       </div>
       <div id="tapestry-actions">
+        <button id="tapestry-heart-btn" aria-label="Love this tapestry">\u2665</button>
         <button id="tapestry-share-btn">Share</button>
         <a id="tapestry-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Join our Discord</a>
       </div>
@@ -591,7 +592,12 @@ tapestryOverlay.addEventListener("click", (e) => {
   if (e.target === tapestryOverlay) closeTapestry();
 });
 
+document.getElementById("tapestry-heart-btn")!.addEventListener("click", () => {
+  posthog.capture('tapestry_hearted', { era_name: eraManager.current.name });
+});
+
 document.getElementById("tapestry-share-btn")!.addEventListener("click", () => {
+  posthog.capture('tapestry_shared', { era_name: eraManager.current.name });
   const img = document.getElementById("tapestry-img") as HTMLImageElement | null;
   if (!img) return;
   const ext = img.src.startsWith("data:image/jpeg") ? "jpg" : "png";

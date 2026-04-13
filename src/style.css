@@ -2208,6 +2208,27 @@ body {
   border-top: 1px solid #2a3f5f;
 }
 
+#tapestry-heart-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e05;
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+
+#tapestry-heart-btn:hover {
+  background: rgba(238, 0, 85, 0.15);
+  border-color: #e05;
+}
+
 #tapestry-share-btn {
   background: #ffd700;
   color: #1a1a2e;
