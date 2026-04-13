@@ -46,6 +46,7 @@ Story: ${narrative}`;
           recordId: tapestryId,
           ownerScope,
           ownerId,
+          eraName,
         });
         const stored = await uploadTapestryImage({
           bytes,
