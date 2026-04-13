@@ -96,3 +96,14 @@ export interface EraHistory {
   tileSpawnCounts?: Record<string, number>; // item name → times spawned from palette
   tileSpawnByTier?: Record<number, number>; // tier → total spawn count
 }
+
+export interface TapestryGameData {
+  selectedModel: ModelId;
+  totalCombinations: number;
+  eraCurrentIndex: number;
+  eraHistory: EraHistory[];
+  eraActionLog: ActionLogEntry[];
+  discoveredItems: string[];
+  eraStartedAt: number;
+  eraCompletedAt: number;
+}

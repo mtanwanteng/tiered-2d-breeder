@@ -1,4 +1,4 @@
-import type { Tier, ElementData, ModelId, ActionLogEntry, EraHistory } from "./types";
+import type { Tier, ElementData, ModelId, ActionLogEntry, EraHistory, TapestryGameData } from "./types";
 import { recipeKey, MODELS } from "./types";
 import { combineElements } from "./gemini";
 import { InMemoryRecipeStore } from "./recipes";
@@ -11,6 +11,7 @@ import type { SaveData } from "./save";
 import { renderCombinationGraph } from "./combination-graph";
 import { authStore } from "./store/auth";
 import { isDiscordActivity } from "./discord";
+import { getOrCreateAnonId } from "./identity";
 import posthog from "posthog-js";
 
 // --- Types ---
@@ -276,13 +277,25 @@ const handleEraToastClose = () => {
 };
 
 // --- Tapestry ---
-let tapestryPromise: Promise<{ base64: string; mimeType: string } | null> | null = null;
+let tapestryPromise: Promise<{ base64: string; mimeType: string; tapestryId?: string | null; sharePath?: string | null } | null> | null = null;
+let tapestrySharePath: string | null = null;
 
-function startTapestryGeneration(narrative: string, eraName: string, nextEraName: string) {
+function startTapestryGeneration(
+  narrative: string,
+  eraName: string,
+  nextEraName: string,
+  gameData: TapestryGameData
+) {
   tapestryPromise = fetch("/api/generate-tapestry", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ narrative, eraName, nextEraName }),
+    body: JSON.stringify({
+      narrative,
+      eraName,
+      nextEraName,
+      anonId: getOrCreateAnonId(),
+      gameData,
+    }),
   })
     .then((r) => (r.ok ? r.json() : null))
     .catch(() => null);
@@ -297,10 +310,12 @@ async function showTapestry() {
   tapestryPromise = null;
 
   if (!result?.base64) {
+    tapestrySharePath = null;
     tapestryOverlay.classList.remove("visible");
     return;
   }
 
+  tapestrySharePath = result.sharePath ?? null;
   tapestryContent.innerHTML = `<img id="tapestry-img" src="data:${result.mimeType};base64,${result.base64}" alt="Era tapestry">`;
   setDiscordCta(document.getElementById("tapestry-discord-btn"));
   tapestryActions.style.display = "flex";
@@ -310,6 +325,25 @@ function closeTapestry() {
   tapestryOverlay.classList.remove("visible");
   tapestryContent.innerHTML = "";
   tapestryActions.style.display = "none";
+}
+
+function buildTapestryGameData(input: {
+  completedAt: number;
+  discoveredItems: string[];
+  completedEraActions: ActionLogEntry[];
+}): TapestryGameData {
+  const eraState = eraManager.exportState();
+
+  return {
+    selectedModel,
+    totalCombinations: actionLog.length,
+    eraCurrentIndex: eraState.currentIndex,
+    eraHistory: [...eraState.history],
+    eraActionLog: input.completedEraActions,
+    discoveredItems: input.discoveredItems,
+    eraStartedAt,
+    eraCompletedAt: input.completedAt,
+  };
 }
 
 // --- Heatmap ---
@@ -598,6 +632,22 @@ document.getElementById("tapestry-heart-btn")!.addEventListener("click", () => {
 
 document.getElementById("tapestry-share-btn")!.addEventListener("click", () => {
   posthog.capture('tapestry_shared', { era_name: eraManager.current.name });
+  if (tapestrySharePath) {
+    const shareUrl = new URL(tapestrySharePath, window.location.origin).toString();
+
+    if (navigator.share) {
+      void navigator.share({ title: "Bari tapestry", url: shareUrl }).catch(() => {});
+      return;
+    }
+
+    if (navigator.clipboard?.writeText) {
+      void navigator.clipboard.writeText(shareUrl).then(() => {
+        alert("Tapestry link copied.");
+      });
+      return;
+    }
+  }
+
   const img = document.getElementById("tapestry-img") as HTMLImageElement | null;
   if (!img) return;
   const ext = img.src.startsWith("data:image/jpeg") ? "jpg" : "png";
@@ -1054,13 +1104,19 @@ async function doEraTransition(result: { narrative: string }) {
   try {
     const inventory = getDiscoveredItems();
     const completedAt = Date.now();
+    const completedEraActions = [...eraActionLog];
 
     const fromEra = eraManager.current.name;
     const eraNumber = eraManager.history.length + 1;
     const combinationsInEra = eraActionLog.length;
     const itemsDiscoveredInEra = inventory.length;
 
-    eraManager.recordHistory(eraActionLog, result.narrative, inventory, eraStartedAt, completedAt, eraSpawnCounts, eraSpawnByTier);
+    eraManager.recordHistory(completedEraActions, result.narrative, inventory, eraStartedAt, completedAt, eraSpawnCounts, eraSpawnByTier);
+    const tapestryGameData = buildTapestryGameData({
+      completedAt,
+      discoveredItems: inventory,
+      completedEraActions,
+    });
     eraActionLog = [];
     eraStartedAt = Date.now();
     eraSpawnCounts = {};
@@ -1068,7 +1124,7 @@ async function doEraTransition(result: { narrative: string }) {
 
     if (eraManager.isLastEra) {
       log.info("era", "VICTORY — Space Age completed!");
-      startTapestryGeneration(result.narrative, fromEra, "the Age of Plenty");
+      startTapestryGeneration(result.narrative, fromEra, "the Age of Plenty", tapestryGameData);
       clearSave();
       victoryShown = true;
       showVictory();
@@ -1083,7 +1139,7 @@ async function doEraTransition(result: { narrative: string }) {
     const nextEra = eraManager.advanceTo(choice.era.name);
     if (nextEra) {
       log.info("era", `Era advanced to: ${nextEra.name}`);
-      startTapestryGeneration(result.narrative, fromEra, nextEra.name);
+      startTapestryGeneration(result.narrative, fromEra, nextEra.name, tapestryGameData);
       posthog.capture('era_advanced', {
         from_era: fromEra,
         to_era: nextEra.name,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../../auth";
 import { db } from "../../../../src/db";
 import { user } from "../../../../src/db/schema";
+import { claimAnonymousTapestriesForUser } from "../../../../src/db/tapestries";
 import { eq, sql } from "drizzle-orm";
 import { getPostHogClient } from "../../../../src/lib/posthog-server";
 
@@ -38,6 +39,11 @@ export async function POST(req: NextRequest) {
         throw error;
       }
     }
+
+    await claimAnonymousTapestriesForUser({
+      anonId,
+      userId: session.user.id,
+    });
   }
 
   const ph = getPostHogClient();
