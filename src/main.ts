@@ -535,23 +535,40 @@ document.getElementById("palette-zoom-out")!.addEventListener("click", () => {
   applyPaletteZoom();
 });
 
-// Auto-fit palette zoom to window height — only scales down, never above 1.0
-function autosizePalette() {
+// Returns the natural (unzoomed) scroll height of the palette.
+function getPaletteNaturalH(): number {
   palette.style.zoom = "1";
-  const naturalH = palette.scrollHeight;
-  applyPaletteZoom(); // restore before early return
+  const h = palette.scrollHeight;
+  applyPaletteZoom();
+  return h;
+}
+
+// On load: fit zoom so all content is visible. Never zooms above 1.0.
+function autosizePaletteInitial() {
+  const naturalH = getPaletteNaturalH();
   if (naturalH <= 0) return;
   const fit = window.innerHeight / naturalH;
   paletteZoom = Math.max(PALETTE_ZOOM_MIN, Math.min(1.0, Math.round(fit * 100) / 100));
   applyPaletteZoom();
 }
 
-autosizePalette();
+// On resize: only zoom down if content no longer fits; never zoom in.
+function autosizePaletteOnResize() {
+  const naturalH = getPaletteNaturalH();
+  if (naturalH <= 0) return;
+  const fittingZoom = window.innerHeight / naturalH;
+  if (fittingZoom < paletteZoom) {
+    paletteZoom = Math.max(PALETTE_ZOOM_MIN, Math.round(fittingZoom * 100) / 100);
+    applyPaletteZoom();
+  }
+}
+
+autosizePaletteInitial();
 
 let _autosizeTimer: ReturnType<typeof setTimeout> | null = null;
 new ResizeObserver(() => {
   if (_autosizeTimer) clearTimeout(_autosizeTimer);
-  _autosizeTimer = setTimeout(autosizePalette, 100);
+  _autosizeTimer = setTimeout(autosizePaletteOnResize, 100);
 }).observe(document.documentElement);
 demoResetConfirmBtn.addEventListener("click", handleDemoResetConfirm);
 demoResetCancelBtn.addEventListener("click", handleDemoResetCancel);
