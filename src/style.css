@@ -756,6 +756,25 @@ body {
   background: #ffed4a;
 }
 
+#victory-discord-btn {
+  background: #5865F2;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#victory-discord-btn:hover {
+  background: #4752c4;
+}
+
 #victory-continue-btn {
   background: transparent;
   color: #aaa;
@@ -803,6 +822,30 @@ body {
   font-size: 10px;
   color: #666;
   line-height: 1.4;
+}
+
+/* --- Discord fixed button --- */
+#discord-btn {
+  position: fixed;
+  bottom: 12px;
+  right: 100px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #5865F2;
+  border: 1px solid #7289da;
+  color: white;
+  cursor: pointer;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  text-decoration: none;
+}
+
+#discord-btn:hover {
+  background: #4752c4;
 }
 
 /* --- Scoreboard button --- */
@@ -1616,6 +1659,59 @@ body {
   background: linear-gradient(135deg, #2179c9, #1a5fa0);
 }
 
+.htp-discord {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #2a3f5f;
+  text-align: center;
+}
+
+.htp-discord-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: #5865F2;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  width: 100%;
+}
+
+.htp-discord-btn:hover {
+  background: #4752c4;
+}
+
+/* Compact icon-only variant — shown when provider === "discord" */
+.htp-discord-icon-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #5865F2;
+  color: #fff;
+  text-decoration: none;
+  margin: 0 auto;
+}
+
+.htp-discord-icon-link:hover {
+  background: #4752c4;
+}
+
+/* Compact (icon-only) state for vanilla-TS Discord buttons */
+#victory-discord-btn[data-compact],
+#tapestry-discord-btn[data-compact] {
+  padding: 10px 12px;
+  gap: 0;
+}
+
 /* --- Auth modal --- */
 
 .auth-modal-backdrop {
@@ -1970,6 +2066,8 @@ body {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 0 60px rgba(0, 100, 200, 0.3);
+  display: flex;
+  flex-direction: column;
 }
 
 #tapestry-close {
@@ -1995,19 +2093,65 @@ body {
 }
 
 #tapestry-content {
+  flex: 1 1 auto;
+  min-height: 200px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 300px;
-  min-height: 200px;
 }
 
 #tapestry-img {
   display: block;
   max-width: 100%;
-  max-height: 85vh;
-  max-height: 85dvh;
+  max-height: calc(85vh - 56px);
+  max-height: calc(85dvh - 56px);
   object-fit: contain;
+}
+
+#tapestry-actions {
+  flex-shrink: 0;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid #2a3f5f;
+}
+
+#tapestry-share-btn {
+  background: #ffd700;
+  color: #1a1a2e;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#tapestry-share-btn:hover {
+  background: #ffed4a;
+}
+
+#tapestry-discord-btn {
+  background: #5865F2;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#tapestry-discord-btn:hover {
+  background: #4752c4;
 }
 
 #tapestry-spinner {
