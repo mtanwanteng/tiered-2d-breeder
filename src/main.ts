@@ -533,6 +533,25 @@ document.getElementById("palette-zoom-out")!.addEventListener("click", () => {
   paletteZoom = Math.max(PALETTE_ZOOM_MIN, Math.round((paletteZoom - PALETTE_ZOOM_STEP) * 10) / 10);
   applyPaletteZoom();
 });
+
+// Auto-fit palette zoom to window height — only scales down, never above 1.0
+function autosizePalette() {
+  palette.style.zoom = "1";
+  const naturalH = palette.scrollHeight;
+  applyPaletteZoom(); // restore before early return
+  if (naturalH <= 0) return;
+  const fit = window.innerHeight / naturalH;
+  paletteZoom = Math.max(PALETTE_ZOOM_MIN, Math.min(1.0, Math.round(fit * 100) / 100));
+  applyPaletteZoom();
+}
+
+autosizePalette();
+
+let _autosizeTimer: ReturnType<typeof setTimeout> | null = null;
+new ResizeObserver(() => {
+  if (_autosizeTimer) clearTimeout(_autosizeTimer);
+  _autosizeTimer = setTimeout(autosizePalette, 100);
+}).observe(document.documentElement);
 demoResetConfirmBtn.addEventListener("click", handleDemoResetConfirm);
 demoResetCancelBtn.addEventListener("click", handleDemoResetCancel);
 scoreboardBtn.addEventListener("click", showScoreboard);
