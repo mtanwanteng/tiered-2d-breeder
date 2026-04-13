@@ -1687,6 +1687,31 @@ body {
   background: #4752c4;
 }
 
+/* Compact icon-only variant — shown when provider === "discord" */
+.htp-discord-icon-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #5865F2;
+  color: #fff;
+  text-decoration: none;
+  margin: 0 auto;
+}
+
+.htp-discord-icon-link:hover {
+  background: #4752c4;
+}
+
+/* Compact (icon-only) state for vanilla-TS Discord buttons */
+#victory-discord-btn[data-compact],
+#tapestry-discord-btn[data-compact] {
+  padding: 10px 12px;
+  gap: 0;
+}
+
 /* --- Auth modal --- */
 
 .auth-modal-backdrop {
