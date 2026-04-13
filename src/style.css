@@ -1638,6 +1638,34 @@ body {
   color: #eee;
 }
 
+.htp-tapestry-promo {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.htp-tapestry-images {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.htp-tapestry-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.htp-tapestry-text {
+  font-size: 11px;
+  color: #ccc;
+  line-height: 1.4;
+}
+
 .htp-cta {
   margin-top: 14px;
   padding-top: 14px;

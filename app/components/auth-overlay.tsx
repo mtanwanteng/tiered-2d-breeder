@@ -210,6 +210,14 @@ export function AuthOverlay() {
                 <li>Reach the <strong>Age of Plenty</strong> to win.</li>
               </ol>
 
+              <div className="htp-tapestry-promo">
+                <div className="htp-tapestry-images">
+                  <img src="/tapestry.png" alt="Tapestry example" className="htp-tapestry-img" />
+                  <img src="/tapestry2.png" alt="Tapestry example" className="htp-tapestry-img" />
+                </div>
+                <p className="htp-tapestry-text">Collect Tapestries reflecting your civilization&apos;s progression through the Ages!</p>
+              </div>
+
               {!isLoggedIn && !isDiscordActivity() && (
                 <div className="htp-cta">
                   <p className="htp-cta-text">
