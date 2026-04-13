@@ -68,10 +68,10 @@ function renderEraProgress() {
 
   let html = "";
 
-  // Completed eras: dim cube + all-lit dots
+  // Completed eras: dim cube + single glowing dash
   for (const h of eraManager.history) {
-    html += `<div class="era-cube era-cube--done" title="${h.eraName}"></div>`;
-    html += `<div class="era-dots">${`<span class="era-dot era-dot--lit"></span>`.repeat(5)}</div>`;
+    html += `<div class="era-cube era-cube--done" title="${esc(h.eraName)}"></div>`;
+    html += `<div class="era-dots"><span class="era-dash"></span></div>`;
   }
 
   // Current era: bright glowing cube + progress dots
@@ -135,6 +135,7 @@ app.innerHTML = `
     <div id="inventory-header">
       <h2>Inventory</h2>
       <div id="palette-zoom-controls">
+        <span id="palette-zoom-icon">\uD83D\uDD0D</span>
         <button id="palette-zoom-out">&#8722;</button>
         <button id="palette-zoom-in">&#43;</button>
       </div>
@@ -518,7 +519,7 @@ eraToggleBtn.addEventListener("click", () => {
 const palette = document.getElementById("palette")!;
 let paletteZoom = 1.0;
 const PALETTE_ZOOM_STEP = 0.1;
-const PALETTE_ZOOM_MIN = 0.5;
+const PALETTE_ZOOM_MIN = 0.25;
 const PALETTE_ZOOM_MAX = 1.5;
 
 function applyPaletteZoom() {
@@ -533,6 +534,42 @@ document.getElementById("palette-zoom-out")!.addEventListener("click", () => {
   paletteZoom = Math.max(PALETTE_ZOOM_MIN, Math.round((paletteZoom - PALETTE_ZOOM_STEP) * 10) / 10);
   applyPaletteZoom();
 });
+
+// Returns the natural (unzoomed) scroll height of the palette.
+function getPaletteNaturalH(): number {
+  palette.style.zoom = "1";
+  const h = palette.scrollHeight;
+  applyPaletteZoom();
+  return h;
+}
+
+// On load: fit zoom so all content is visible. Never zooms above 1.0.
+function autosizePaletteInitial() {
+  const naturalH = getPaletteNaturalH();
+  if (naturalH <= 0) return;
+  const fit = window.innerHeight / naturalH;
+  paletteZoom = Math.max(PALETTE_ZOOM_MIN, Math.min(1.0, Math.round(fit * 100) / 100));
+  applyPaletteZoom();
+}
+
+// On resize: only zoom down if content no longer fits; never zoom in.
+function autosizePaletteOnResize() {
+  const naturalH = getPaletteNaturalH();
+  if (naturalH <= 0) return;
+  const fittingZoom = window.innerHeight / naturalH;
+  if (fittingZoom < paletteZoom) {
+    paletteZoom = Math.max(PALETTE_ZOOM_MIN, Math.round(fittingZoom * 100) / 100);
+    applyPaletteZoom();
+  }
+}
+
+autosizePaletteInitial();
+
+let _autosizeTimer: ReturnType<typeof setTimeout> | null = null;
+new ResizeObserver(() => {
+  if (_autosizeTimer) clearTimeout(_autosizeTimer);
+  _autosizeTimer = setTimeout(autosizePaletteOnResize, 100);
+}).observe(document.documentElement);
 demoResetConfirmBtn.addEventListener("click", handleDemoResetConfirm);
 demoResetCancelBtn.addEventListener("click", handleDemoResetCancel);
 scoreboardBtn.addEventListener("click", showScoreboard);

@@ -39,6 +39,8 @@ function VideoModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+const HTP_VIEWED_KEY = "htp_viewed";
+
 export function AuthOverlay() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fromVictory, setFromVictory] = useState(false);
@@ -46,6 +48,7 @@ export function AuthOverlay() {
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [htpOpen, setHtpOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
+  const [hasViewedHtp, setHasViewedHtp] = useState(false);
   const htpRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
@@ -53,6 +56,25 @@ export function AuthOverlay() {
   const avatarUrl = useAuthStore((s) => s.avatarUrl);
   const provider = useAuthStore((s) => s.provider);
   const posthog = usePostHog();
+
+  // On mount: initialise viewed flag; auto-open HTP + video on first visit
+  useEffect(() => {
+    const viewed = localStorage.getItem(HTP_VIEWED_KEY) === "true";
+    setHasViewedHtp(viewed);
+    if (!viewed) {
+      setHtpOpen(true);
+      localStorage.setItem(HTP_VIEWED_KEY, "true");
+      setHasViewedHtp(true);
+    }
+  }, []);
+
+  // Mark as viewed whenever HTP is opened (covers manual opens after first visit)
+  useEffect(() => {
+    if (htpOpen) {
+      localStorage.setItem(HTP_VIEWED_KEY, "true");
+      setHasViewedHtp(true);
+    }
+  }, [htpOpen]);
 
   // Close HTP popup when clicking outside
   useEffect(() => {
@@ -166,11 +188,11 @@ export function AuthOverlay() {
         {/* How to Play */}
         <div className="htp-wrapper" ref={htpRef}>
           <button
-            className={`htp-btn${htpOpen ? " htp-btn--active" : ""}`}
+            className={`htp-btn${htpOpen ? " htp-btn--active" : ""}${hasViewedHtp ? " htp-btn--viewed" : ""}`}
             onClick={() => setHtpOpen((v) => !v)}
             aria-label="How to play"
           >
-            How-To-Play{htpOpen && <span className="htp-btn-arrow"> ▲</span>}
+            {hasViewedHtp ? "?" : <>How-To-Play{htpOpen && <span className="htp-btn-arrow"> ▲</span>}</>}
           </button>
 
           {htpOpen && (
