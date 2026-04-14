@@ -49,7 +49,7 @@ export function initDebugConsole(actions?: DebugActions): { modelSelect: HTMLSel
         </select>
         ${ALL_CATEGORIES.map((c) => `<label class="debug-cat-label"><input type="checkbox" data-cat="${c}" checked><span style="color:${CATEGORY_COLORS[c]}">${c}</span></label>`).join("")}
       </div>
-      ${actions?.modelOptions ? `<select id="debug-model-select">${actions.modelOptions}</select>` : ''}
+      ${!isProd && actions?.modelOptions ? `<select id="debug-model-select">${actions.modelOptions}</select>` : ''}
       <button id="debug-clear">Clear</button>
       ${!isProd ? `<button id="debug-test-victory">Test Victory</button>` : ''}
       ${!isProd ? `<button id="debug-reset-player">Reset Player</button>` : ''}
