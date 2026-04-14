@@ -228,7 +228,7 @@ app.innerHTML = `
       <div id="tapestry-actions">
         <button id="tapestry-heart-btn" aria-label="Love this tapestry">\u2665</button>
         <button id="tapestry-share-btn">Share</button>
-        <a id="tapestry-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Join our Discord</a>
+        <a id="tapestry-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Share on Discord</a>
       </div>
     </div>
   </div>
@@ -588,9 +588,6 @@ const handleKeyDown = (e: KeyboardEvent) => {
 document.addEventListener("keydown", handleKeyDown);
 
 tapestryClose.addEventListener("click", closeTapestry);
-tapestryOverlay.addEventListener("click", (e) => {
-  if (e.target === tapestryOverlay) closeTapestry();
-});
 
 document.getElementById("tapestry-heart-btn")!.addEventListener("click", () => {
   posthog.capture('tapestry_hearted', { era_name: eraManager.current.name });
