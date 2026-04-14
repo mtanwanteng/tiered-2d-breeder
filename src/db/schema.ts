@@ -2,7 +2,8 @@
 // Better Auth tables (user, session, account, verification) below.
 // To regenerate after DB is connected: npx auth@latest generate --output src/db/schema.ts
 
-import { pgTable, text, boolean, timestamp, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, timestamp, index, uniqueIndex, integer, jsonb } from "drizzle-orm/pg-core";
+import type { TapestryGameData } from "../types";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -83,3 +84,32 @@ export const verification = pgTable("verification", {
   createdAt: timestamp("created_at").$defaultFn(() => new Date()),
   updatedAt: timestamp("updated_at").$defaultFn(() => new Date()),
 });
+
+export const tapestry = pgTable(
+  "tapestry",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    anonId: text("anon_id"),
+    bucket: text("bucket").notNull(),
+    s3Key: text("s3_key").notNull(),
+    mimeType: text("mime_type").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    eraName: text("era_name").notNull(),
+    nextEraName: text("next_era_name").notNull(),
+    narrative: text("narrative").notNull(),
+    visibility: text("visibility").notNull().$defaultFn(() => "unlisted"),
+    gameData: jsonb("game_data").$type<TapestryGameData | null>(),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+    updatedAt: timestamp("updated_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("tapestry_user_id_idx").on(t.userId),
+    index("tapestry_anon_id_idx").on(t.anonId),
+    index("tapestry_created_at_idx").on(t.createdAt),
+  ]
+);

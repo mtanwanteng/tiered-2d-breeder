@@ -19,6 +19,7 @@ dist-ssr
 terraform/.terraform/
 terraform/*.tfstate
 terraform/*.tfstate.backup
+terraform/*.tfstate.*
 terraform/*.tfplan
 terraform/service-account-key.json
 .terraform.lock.hcl
