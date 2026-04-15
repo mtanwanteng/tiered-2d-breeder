@@ -5,6 +5,8 @@ const SAVE_KEY = "bari-save";
 
 export interface SaveData {
   version: 1;
+  runId?: string; // absent on saves predating this field — treated as a new run
+  latestTapestryPath?: string | null;
   selectedModel: ModelId;
   actionLog: ActionLogEntry[];
   eraActionLog: ActionLogEntry[];

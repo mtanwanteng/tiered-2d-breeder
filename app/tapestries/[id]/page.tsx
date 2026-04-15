@@ -28,7 +28,7 @@ export default async function TapestryPage(
     getAdjacentTapestries(tapestry),
   ]);
 
-  const displayAuthor = authorName ? `Crafted by ${authorName}` : "Crafted by Anonymous Architect";
+  const displayAuthor = authorName ? `By ${authorName}` : "By Anonymous Architect";
   const displayDate = tapestry.createdAt.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",

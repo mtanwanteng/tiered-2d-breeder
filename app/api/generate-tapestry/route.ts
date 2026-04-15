@@ -12,11 +12,12 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const { narrative, eraName, nextEraName, anonId, gameData } = (await request.json()) as {
+  const { narrative, eraName, nextEraName, anonId, runId, gameData } = (await request.json()) as {
     narrative: string;
     eraName: string;
     nextEraName: string;
     anonId?: string;
+    runId?: string;
     gameData?: TapestryGameData;
   };
 
@@ -62,6 +63,7 @@ Story: ${narrative}`;
             id: tapestryId,
             userId: session?.user?.id ?? null,
             anonId: anonId ?? null,
+            runId: runId ?? null,
             bucket: stored.bucket,
             s3Key: stored.key,
             mimeType,

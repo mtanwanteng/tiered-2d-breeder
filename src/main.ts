@@ -181,6 +181,7 @@ app.innerHTML = `
       <div class="scoreboard-header">
         <h2>Civilization Progress</h2>
         <p class="scoreboard-subtitle"></p>
+        <button id="scoreboard-tapestries-btn">Your Tapestries</button>
       </div>
       <button id="scoreboard-close-btn">\u2715</button>
       <div id="scoreboard-timeline"></div>
@@ -279,6 +280,7 @@ const handleEraToastClose = () => {
 // --- Tapestry ---
 let tapestryPromise: Promise<{ base64: string; mimeType: string; tapestryId?: string | null; sharePath?: string | null; ssoExpired?: boolean } | null> | null = null;
 let tapestrySharePath: string | null = null;
+let runId: string = crypto.randomUUID();
 
 function startTapestryGeneration(
   narrative: string,
@@ -294,6 +296,7 @@ function startTapestryGeneration(
       eraName,
       nextEraName,
       anonId: getOrCreateAnonId(),
+      runId,
       gameData,
     }),
   })
@@ -627,6 +630,11 @@ demoResetConfirmBtn.addEventListener("click", handleDemoResetConfirm);
 demoResetCancelBtn.addEventListener("click", handleDemoResetCancel);
 scoreboardBtn.addEventListener("click", showScoreboard);
 scoreboardCloseBtn.addEventListener("click", () => scoreboardOverlay.classList.remove("visible"));
+document.getElementById("scoreboard-tapestries-btn")!.addEventListener("click", () => {
+  if (tapestrySharePath) {
+    window.open(new URL(tapestrySharePath, window.location.origin).toString(), "_blank", "noopener,noreferrer");
+  }
+});
 
 const handleKeyDown = (e: KeyboardEvent) => {
   if (e.key === "Escape" && tapestryOverlay.classList.contains("visible") && tapestryOverlay.classList.contains("tapestry-closeable")) {
@@ -688,6 +696,8 @@ function persistGame() {
   const eraState = eraManager.exportState();
   const data: SaveData = {
     version: 1,
+    runId,
+    latestTapestryPath: tapestrySharePath,
     selectedModel,
     actionLog: [...actionLog],
     eraActionLog: [...eraActionLog],
@@ -793,7 +803,21 @@ function restoreGame(save: SaveData) {
 
 const savedGame = loadGame();
 if (savedGame) {
+  if (savedGame.runId) runId = savedGame.runId;
+  if (savedGame.latestTapestryPath) tapestrySharePath = savedGame.latestTapestryPath;
   restoreGame(savedGame);
+
+  if (!tapestrySharePath) {
+    fetch(`/api/tapestry/latest?anonId=${encodeURIComponent(getOrCreateAnonId())}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.sharePath) {
+          tapestrySharePath = data.sharePath;
+          persistGame();
+        }
+      })
+      .catch(() => null);
+  }
   eraStartedAt = Date.now(); // current era start unknown; track from resume point
   eraSpawnCounts = {};
   eraSpawnByTier = {};
@@ -1167,6 +1191,7 @@ async function doEraTransition(result: { narrative: string }) {
         busy = false;
         eraAdvancing = false;
         await showTapestry();
+        persistGame();
       });
     }
   } catch (err) {
@@ -1248,6 +1273,10 @@ function showScoreboard() {
 
   document.querySelector('.scoreboard-header h2')!.textContent = 'Civilization Progress';
   document.querySelector('.scoreboard-subtitle')!.textContent = subtitleText;
+
+  const tapestriesBtn = document.getElementById('scoreboard-tapestries-btn') as HTMLButtonElement;
+  const isNonProd = process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production';
+  tapestriesBtn.style.display = (tapestrySharePath || isNonProd) ? '' : 'none';
 
   if (erasCompleted === 0) {
     scoreboardTimeline.innerHTML = `<div class="scoreboard-empty">Complete your first era to see it here.</div>`;

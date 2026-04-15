@@ -9,6 +9,7 @@ export async function createTapestryRecord(input: {
   id: string;
   userId: string | null;
   anonId: string | null;
+  runId: string | null;
   bucket: string;
   s3Key: string;
   mimeType: string;
@@ -25,6 +26,7 @@ export async function createTapestryRecord(input: {
     id: input.id,
     userId: input.userId,
     anonId: input.anonId,
+    runId: input.runId,
     bucket: input.bucket,
     s3Key: input.s3Key,
     mimeType: input.mimeType,
@@ -60,6 +62,28 @@ export async function claimAnonymousTapestriesForUser(input: {
     );
 
   return result;
+}
+
+export async function getLatestTapestryForOwner(input: {
+  userId: string | null;
+  anonId: string | null;
+}): Promise<{ id: string } | null> {
+  const filter = input.userId
+    ? eq(tapestry.userId, input.userId)
+    : input.anonId
+    ? and(isNull(tapestry.userId), eq(tapestry.anonId, input.anonId))
+    : null;
+
+  if (!filter) return null;
+
+  const rows = await db
+    .select({ id: tapestry.id })
+    .from(tapestry)
+    .where(filter)
+    .orderBy(desc(tapestry.createdAt))
+    .limit(1);
+
+  return rows[0] ?? null;
 }
 
 export async function getTapestryById(id: string) {

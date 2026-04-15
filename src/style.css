@@ -929,6 +929,22 @@ body {
   font-size: 13px;
 }
 
+#scoreboard-tapestries-btn {
+  margin-top: 12px;
+  padding: 6px 16px;
+  background: none;
+  border: 1px solid #ffd700;
+  border-radius: 6px;
+  color: #ffd700;
+  font-size: 13px;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+}
+
+#scoreboard-tapestries-btn:hover {
+  background: rgba(255, 215, 0, 0.12);
+}
+
 #scoreboard-close-btn {
   position: absolute;
   top: 16px;

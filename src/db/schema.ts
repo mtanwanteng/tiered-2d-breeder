@@ -91,6 +91,7 @@ export const tapestry = pgTable(
     id: text("id").primaryKey(),
     userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     anonId: text("anon_id"),
+    runId: text("run_id"),
     bucket: text("bucket").notNull(),
     s3Key: text("s3_key").notNull(),
     mimeType: text("mime_type").notNull(),
@@ -110,6 +111,7 @@ export const tapestry = pgTable(
   (t) => [
     index("tapestry_user_id_idx").on(t.userId),
     index("tapestry_anon_id_idx").on(t.anonId),
+    index("tapestry_run_id_idx").on(t.runId),
     index("tapestry_created_at_idx").on(t.createdAt),
   ]
 );
