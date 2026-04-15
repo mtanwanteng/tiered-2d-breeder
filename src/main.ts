@@ -277,7 +277,7 @@ const handleEraToastClose = () => {
 };
 
 // --- Tapestry ---
-let tapestryPromise: Promise<{ base64: string; mimeType: string; tapestryId?: string | null; sharePath?: string | null } | null> | null = null;
+let tapestryPromise: Promise<{ base64: string; mimeType: string; tapestryId?: string | null; sharePath?: string | null; ssoExpired?: boolean } | null> | null = null;
 let tapestrySharePath: string | null = null;
 
 function startTapestryGeneration(
@@ -302,12 +302,27 @@ function startTapestryGeneration(
 }
 
 async function showTapestry() {
+  tapestryOverlay.classList.remove("tapestry-closeable");
   tapestryContent.innerHTML = `<div id="tapestry-spinner">Weaving the tapestry\u2026</div>`;
   tapestryActions.style.display = "none";
   tapestryOverlay.classList.add("visible");
 
-  const result = await tapestryPromise;
+  // After 60s with no result, enable close and warn
+  const timeoutId = setTimeout(() => {
+    tapestryOverlay.classList.add("tapestry-closeable");
+    const spinner = document.getElementById("tapestry-spinner");
+    if (spinner) spinner.textContent = "Weaving taking longer than expected\u2026";
+  }, 60_000);
+
+  // Show tapestry after result arrives AND at least 2s have passed
+  const [result] = await Promise.all([
+    tapestryPromise,
+    new Promise<void>((resolve) => setTimeout(resolve, 2_000)),
+  ]);
+
+  clearTimeout(timeoutId);
   tapestryPromise = null;
+  tapestryOverlay.classList.add("tapestry-closeable");
 
   if (!result?.base64) {
     tapestrySharePath = null;
@@ -316,13 +331,16 @@ async function showTapestry() {
   }
 
   tapestrySharePath = result.sharePath ?? null;
+  if (result.ssoExpired) {
+    showEraToast("⚠️ Auth Expired", "AWS SSO token has expired. Run this in your terminal:\n\naws sso login --sso-session supercell-sso\n\nTapestry was generated but not saved.");
+  }
   tapestryContent.innerHTML = `<img id="tapestry-img" src="data:${result.mimeType};base64,${result.base64}" alt="Era tapestry">`;
   setDiscordCta(document.getElementById("tapestry-discord-btn"));
   tapestryActions.style.display = "flex";
 }
 
 function closeTapestry() {
-  tapestryOverlay.classList.remove("visible");
+  tapestryOverlay.classList.remove("visible", "tapestry-closeable");
   tapestryContent.innerHTML = "";
   tapestryActions.style.display = "none";
 }
@@ -611,7 +629,7 @@ scoreboardBtn.addEventListener("click", showScoreboard);
 scoreboardCloseBtn.addEventListener("click", () => scoreboardOverlay.classList.remove("visible"));
 
 const handleKeyDown = (e: KeyboardEvent) => {
-  if (e.key === "Escape" && tapestryOverlay.classList.contains("visible")) {
+  if (e.key === "Escape" && tapestryOverlay.classList.contains("visible") && tapestryOverlay.classList.contains("tapestry-closeable")) {
     closeTapestry();
   } else if (e.key === "Escape" && heatmapOverlay.classList.contains("visible")) {
     closeHeatmap();

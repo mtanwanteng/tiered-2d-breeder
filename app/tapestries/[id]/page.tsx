@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTapestryById } from "../../../src/db/tapestries";
+import { getSignedTapestryUrl } from "../../../lib/server/tapestry-storage";
 
 export const metadata: Metadata = {
   robots: {
@@ -18,6 +19,8 @@ export default async function TapestryPage(
   if (!tapestry) {
     notFound();
   }
+
+  const imageUrl = await getSignedTapestryUrl(tapestry.bucket, tapestry.s3Key);
 
   return (
     <main
@@ -50,7 +53,7 @@ export default async function TapestryPage(
           }}
         >
           <img
-            src={`/api/tapestries/${tapestry.id}/image`}
+            src={imageUrl}
             alt={`Tapestry commemorating ${tapestry.eraName}`}
             style={{ display: "block", width: "100%", height: "auto", borderRadius: 16 }}
           />

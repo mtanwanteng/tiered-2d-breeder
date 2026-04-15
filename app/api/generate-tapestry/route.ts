@@ -35,45 +35,58 @@ Story: ${narrative}`;
     let tapestryId: string | null = null;
     let sharePath: string | null = null;
 
+    let ssoExpired = false;
+
     if (isTapestryStorageConfigured()) {
       const ownerScope = session?.user?.id ? "user" : "anon";
       const ownerId = session?.user?.id ?? anonId;
 
       if (ownerId) {
-        tapestryId = crypto.randomUUID();
-        const bytes = Buffer.from(base64, "base64");
-        const key = buildTapestryObjectKey({
-          recordId: tapestryId,
-          ownerScope,
-          ownerId,
-          eraName,
-        });
-        const stored = await uploadTapestryImage({
-          bytes,
-          key,
-          mimeType,
-        });
-        console.log(`[TAP] S3 upload success: s3://${stored.bucket}/${stored.key} (${stored.byteSize} bytes)`);
+        try {
+          tapestryId = crypto.randomUUID();
+          const bytes = Buffer.from(base64, "base64");
+          const key = buildTapestryObjectKey({
+            recordId: tapestryId,
+            ownerScope,
+            ownerId,
+            eraName,
+          });
+          const stored = await uploadTapestryImage({
+            bytes,
+            key,
+            mimeType,
+          });
+          console.log(`[TAP] S3 upload success: s3://${stored.bucket}/${stored.key} (${stored.byteSize} bytes)`);
 
-        await createTapestryRecord({
-          id: tapestryId,
-          userId: session?.user?.id ?? null,
-          anonId: anonId ?? null,
-          bucket: stored.bucket,
-          s3Key: stored.key,
-          mimeType,
-          byteSize: stored.byteSize,
-          eraName,
-          nextEraName,
-          narrative,
-          gameData: gameData ?? null,
-        });
+          await createTapestryRecord({
+            id: tapestryId,
+            userId: session?.user?.id ?? null,
+            anonId: anonId ?? null,
+            bucket: stored.bucket,
+            s3Key: stored.key,
+            mimeType,
+            byteSize: stored.byteSize,
+            eraName,
+            nextEraName,
+            narrative,
+            gameData: gameData ?? null,
+          });
 
-        sharePath = `/tapestries/${tapestryId}`;
+          sharePath = `/tapestries/${tapestryId}`;
+        } catch (uploadError) {
+          const msg = uploadError instanceof Error ? uploadError.message : String(uploadError);
+          if (msg.includes("Token is expired") || msg.includes("CredentialsProviderError")) {
+            console.error("[TAP] AWS SSO token expired. Re-run: aws sso login --sso-session supercell-sso");
+            ssoExpired = true;
+          } else {
+            console.error(`[TAP] S3 upload failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${msg}` : ""}`);
+          }
+          tapestryId = null;
+        }
       }
     }
 
-    return NextResponse.json({ base64, mimeType, tapestryId, sharePath });
+    return NextResponse.json({ base64, mimeType, tapestryId, sharePath, ssoExpired });
   } catch (error) {
     console.error("[TAP] Failed (generation or S3 upload):", error);
     return NextResponse.json(

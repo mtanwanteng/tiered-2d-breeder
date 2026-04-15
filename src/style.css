@@ -2162,6 +2162,7 @@ body {
   position: absolute;
   top: 10px;
   right: 12px;
+  visibility: hidden;
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid #3a5070;
   color: #eee;
@@ -2175,6 +2176,9 @@ body {
   align-items: center;
   justify-content: center;
   line-height: 1;
+}
+.tapestry-closeable #tapestry-close {
+  visibility: visible;
 }
 #tapestry-close:hover {
   background: rgba(255, 255, 255, 0.15);

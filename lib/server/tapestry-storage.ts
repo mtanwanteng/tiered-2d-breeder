@@ -1,4 +1,5 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const region = process.env.AWS_REGION;
 const bucket = process.env.AWS_S3_TAPESTRY_BUCKET;
@@ -89,23 +90,14 @@ export async function uploadTapestryImage(input: {
   };
 }
 
-export async function readTapestryImage(input: { bucket: string; key: string }) {
+// 7-day signed URL — max lifetime for IAM user credentials
+const SIGNED_URL_TTL = 604800;
+
+export async function getSignedTapestryUrl(bucketName: string, key: string): Promise<string> {
   const s3 = getS3Client();
-  const result = await s3.send(
-    new GetObjectCommand({
-      Bucket: input.bucket,
-      Key: input.key,
-    })
+  return getSignedUrl(
+    s3,
+    new GetObjectCommand({ Bucket: bucketName, Key: key }),
+    { expiresIn: SIGNED_URL_TTL },
   );
-
-  if (!result.Body) {
-    throw new Error("Tapestry object body was empty");
-  }
-
-  return {
-    bytes: await result.Body.transformToByteArray(),
-    contentType: result.ContentType ?? "application/octet-stream",
-    etag: result.ETag ?? undefined,
-    lastModified: result.LastModified ?? undefined,
-  };
 }
