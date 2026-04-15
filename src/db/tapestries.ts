@@ -1,6 +1,6 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, gt, isNull, lt } from "drizzle-orm";
 import { db } from "./index";
-import { tapestry } from "./schema";
+import { tapestry, user } from "./schema";
 import type { TapestryGameData } from "../types";
 
 export type TapestryRecord = typeof tapestry.$inferSelect;
@@ -65,4 +65,37 @@ export async function claimAnonymousTapestriesForUser(input: {
 export async function getTapestryById(id: string) {
   const rows = await db.select().from(tapestry).where(eq(tapestry.id, id)).limit(1);
   return rows[0] ?? null;
+}
+
+export async function getTapestryAuthorName(userId: string | null): Promise<string | null> {
+  if (!userId) return null;
+  const rows = await db.select({ name: user.name }).from(user).where(eq(user.id, userId)).limit(1);
+  return rows[0]?.name ?? null;
+}
+
+export async function getAdjacentTapestries(current: TapestryRecord): Promise<{
+  prev: { id: string } | null;
+  next: { id: string } | null;
+}> {
+  const ownerFilter = current.userId
+    ? eq(tapestry.userId, current.userId)
+    : and(isNull(tapestry.userId), eq(tapestry.anonId, current.anonId!));
+
+  const [prevRows, nextRows] = await Promise.all([
+    db.select({ id: tapestry.id })
+      .from(tapestry)
+      .where(and(ownerFilter, lt(tapestry.createdAt, current.createdAt)))
+      .orderBy(desc(tapestry.createdAt))
+      .limit(1),
+    db.select({ id: tapestry.id })
+      .from(tapestry)
+      .where(and(ownerFilter, gt(tapestry.createdAt, current.createdAt)))
+      .orderBy(asc(tapestry.createdAt))
+      .limit(1),
+  ]);
+
+  return {
+    prev: prevRows[0] ?? null,
+    next: nextRows[0] ?? null,
+  };
 }
