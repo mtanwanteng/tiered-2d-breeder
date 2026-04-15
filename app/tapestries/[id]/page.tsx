@@ -24,6 +24,7 @@ export default async function TapestryPage(
 
   return (
     <main
+      className="tapestry-page"
       style={{
         minHeight: "100vh",
         padding: "32px 20px 48px",

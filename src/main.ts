@@ -1151,10 +1151,12 @@ async function doEraTransition(result: { narrative: string }) {
     const choice = await eraManager.chooseNextEra(actionLog, inventory, selectedModel);
     bari.classList.remove("active");
 
+    // Start tapestry fetch immediately — fires in background while player reads era summary
+    startTapestryGeneration(choice.narrative, fromEra, choice.era.name, tapestryGameData);
+
     const nextEra = eraManager.advanceTo(choice.era.name);
     if (nextEra) {
       log.info("era", `Era advanced to: ${nextEra.name}`);
-      startTapestryGeneration(result.narrative, fromEra, nextEra.name, tapestryGameData);
       posthog.capture('era_advanced', {
         from_era: fromEra,
         to_era: nextEra.name,
