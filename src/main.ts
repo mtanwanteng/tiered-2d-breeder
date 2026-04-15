@@ -228,7 +228,7 @@ app.innerHTML = `
       </div>
       <div id="tapestry-actions">
         <button id="tapestry-heart-btn" aria-label="Love this tapestry">\u2665</button>
-        <button id="tapestry-share-btn">Share</button>
+        <button id="tapestry-share-btn">View Tapestry</button>
         <a id="tapestry-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Share on Discord</a>
       </div>
     </div>
@@ -646,21 +646,10 @@ document.getElementById("tapestry-heart-btn")!.addEventListener("click", () => {
 });
 
 document.getElementById("tapestry-share-btn")!.addEventListener("click", () => {
-  posthog.capture('tapestry_shared', { era_name: eraManager.current.name });
+  posthog.capture('tapestry_viewed', { era_name: eraManager.current.name });
   if (tapestrySharePath) {
-    const shareUrl = new URL(tapestrySharePath, window.location.origin).toString();
-
-    if (navigator.share) {
-      void navigator.share({ title: "Bari tapestry", url: shareUrl }).catch(() => {});
-      return;
-    }
-
-    if (navigator.clipboard?.writeText) {
-      void navigator.clipboard.writeText(shareUrl).then(() => {
-        alert("Tapestry link copied.");
-      });
-      return;
-    }
+    window.open(new URL(tapestrySharePath, window.location.origin).toString(), "_blank", "noopener,noreferrer");
+    return;
   }
 
   const img = document.getElementById("tapestry-img") as HTMLImageElement | null;

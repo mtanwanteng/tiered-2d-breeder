@@ -4,6 +4,9 @@ export default function TapestryLayout({ children }: { children: React.ReactNode
       <style>{`
         body { overflow: auto !important; }
         .tapestry-page, .tapestry-page * { user-select: text !important; }
+        .tapestry-page { min-height: 100dvh; }
+        .tapestry-img { max-height: calc(100dvh - 380px); }
+        .tapestry-lightbox-img { max-height: 95dvh; }
         .tapestry-content {
           font-size: clamp(11px, 1.7dvh, 16px);
         }

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAdjacentTapestries, getTapestryAuthorName, getTapestryById } from "../../../src/db/tapestries";
 import { getSignedTapestryUrl } from "../../../lib/server/tapestry-storage";
+import TapestryLightbox from "./TapestryLightbox";
+import TapestryPageActions from "./TapestryPageActions";
 
 export const metadata: Metadata = {
   robots: {
@@ -38,7 +40,6 @@ export default async function TapestryPage(
       className="tapestry-page"
       style={{
         minHeight: "100vh",
-        minHeight: "100dvh",
         padding: "32px 20px 48px",
         background:
           "radial-gradient(circle at top, rgba(216, 186, 120, 0.2), transparent 35%), #0f0d0a",
@@ -102,10 +103,10 @@ export default async function TapestryPage(
               boxShadow: "0 24px 80px rgba(0, 0, 0, 0.35)",
             }}
           >
-            <img
+            <TapestryLightbox
               src={imageUrl}
               alt={`Tapestry commemorating ${tapestry.eraName}`}
-              style={{
+              imgStyle={{
                 display: "block",
                 width: "auto",
                 height: "auto",
@@ -113,9 +114,9 @@ export default async function TapestryPage(
                 minHeight: 256,
                 maxWidth: "100%",
                 maxHeight: "calc(100vh - 380px)",
-                maxHeight: "calc(100dvh - 380px)",
                 margin: "0 auto",
               }}
+              imgClassName="tapestry-img"
             />
           </div>
 
@@ -152,6 +153,7 @@ export default async function TapestryPage(
           </p>
         </div>
       </div>
+      <TapestryPageActions />
     </main>
   );
 }
