@@ -6,6 +6,7 @@ import {
   getAccessToken,
   MODELS,
 } from "../../../lib/server/vertex";
+import { getPostHogClient } from "../../../src/lib/posthog-server";
 
 export const runtime = "nodejs";
 
@@ -45,20 +46,27 @@ Current inventory: ${inventory.join(", ")}
 
 For EACH goal, determine if the player's items or actions achieve it. Be generous but reasonable - items don't need to literally match, but should clearly relate to the goal. 
 
-For each met goal, write one sentence revealing the consequence or hidden meaning, not what it is. Past tense for history, present for ongoing truths. No hedging, no passive voice, no "this was important because". Structure patterns (pick one per entry):
+For each met goal, write a single terse sentence revealing the consequence or hidden meaning, focusing on narrative. Past tense for history, present for ongoing truths. No hedging, no passive voice, no "this was important because". Structure patterns (pick one per entry):
 - Consequence statement: "Iron democratized warfare and farming alike."
 - Before/after contrast: "Before coins, trade was barter. After coins, trade was empire."
 - Parallel list: "The first handle, the first lever, the first fuel."
 - Aphorism or paradox: "A castle is both home and weapon."
 
+Make sure to mention the item.
 Return your evaluation for every goal listed.`;
 
   try {
     const token = await getAccessToken();
-    const result =
+    const { data: result, inputTokens, outputTokens } =
       config.publisher === "google"
         ? await callGemini(token, config.vertexModel, prompt, ERA_CHECK_SCHEMA)
         : await callClaude(token, config.vertexModel, prompt, ["results"]);
+
+    const ph = getPostHogClient();
+    if (ph) {
+      ph.capture({ distinctId: 'anonymous', event: 'ai_era_check_requested', properties: { model, input_tokens: inputTokens, output_tokens: outputTokens } });
+      await ph.shutdown();
+    }
 
     return NextResponse.json(result);
   } catch (error) {

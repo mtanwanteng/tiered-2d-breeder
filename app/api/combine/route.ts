@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
   try {
     const token = await getAccessToken();
-    const result =
+    const { data: result, inputTokens, outputTokens } =
       config.publisher === "google"
         ? await callGemini(token, config.vertexModel, prompt, COMBINE_SCHEMA)
         : await callClaude(token, config.vertexModel, prompt, [
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     const ph = getPostHogClient();
     if (ph) {
-      ph.capture({ distinctId: 'anonymous', event: 'ai_combination_requested', properties: { model, tier, era_name: eraName } });
+      ph.capture({ distinctId: 'anonymous', event: 'ai_combination_requested', properties: { model, tier, era_name: eraName, input_tokens: inputTokens, output_tokens: outputTokens } });
       await ph.shutdown();
     }
 

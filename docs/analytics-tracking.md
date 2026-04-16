@@ -127,11 +127,11 @@
 | AI calls per era | `ai_combination_requested` grouped by `era_name` | Available |
 | Error rate | `ai_combination_error` / `ai_combination_requested` | Available |
 | Model usage split | `model` on `ai_combination_requested` | Available |
-| **Cost per combination** | Needs token counts from Vertex AI response | **Missing** — token counts not captured |
-| **Cost per user per day** | Token cost × `ai_combination_requested` per user per day | **Missing** — depends on token tracking |
+| **Cost per combination** | `input_tokens` + `output_tokens` on `ai_combination_requested` × per-model rate | Available |
+| **Cost per user per day** | Token cost × `ai_combination_requested` per user per day | Available |
 | Cache hit savings | `is_cache_hit` rate on `combination_created` × avoided API calls | Available — indirect |
 
-> **Token tracking**: Vertex AI returns token usage in the API response. Add `input_tokens` and `output_tokens` as properties on `ai_combination_requested` to enable per-model cost attribution. The multiplier per 1K tokens varies by model and is available in Vertex pricing docs.
+> **Token tracking**: `input_tokens` and `output_tokens` are captured on `ai_combination_requested`. The multiplier per 1K tokens varies by model and is available in Vertex pricing docs.
 
 ---
 
@@ -165,8 +165,10 @@
 
 | Event | Distinct ID | Properties |
 |-------|-------------|------------|
-| `ai_combination_requested` | `'anonymous'` | `model`, `tier`, `era_name` |
+| `ai_combination_requested` | `'anonymous'` | `model`, `tier`, `era_name`, `input_tokens`, `output_tokens` |
 | `ai_combination_error` | `'anonymous'` | `model`, `error_type` |
+| `ai_era_check_requested` | `'anonymous'` | `model`, `input_tokens`, `output_tokens` |
+| `ai_era_choose_requested` | `'anonymous'` | `model`, `input_tokens`, `output_tokens` |
 | `session_started` | real user ID | — |
 
 ### Built-in PostHog
@@ -197,7 +199,6 @@
 - **Era timestamps** — add `eraStartedAt` / `eraCompletedAt` to `EraHistory` in the save system. Feeds: scoreboard time display, game design pace analysis.
 - **`era_rated`** — player rates an era at transition; properties: `{ era_name, era_number, rating, pace }`. Feeds: game design satisfaction + balance.
 - **`game_rated`** — player rates the full game at victory; properties: `{ rating, total_eras, total_time_ms }`.
-- **Token tracking** — add `input_tokens`, `output_tokens` to `ai_combination_requested`. Feeds: cost per combination, cost per user.
 
 ### Future
 

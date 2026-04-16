@@ -6,6 +6,7 @@ import {
   getAccessToken,
   MODELS,
 } from "../../../lib/server/vertex";
+import { getPostHogClient } from "../../../src/lib/posthog-server";
 
 export const runtime = "nodejs";
 
@@ -54,10 +55,16 @@ You MUST choose one of the listed era names exactly as written.`;
 
   try {
     const token = await getAccessToken();
-    const result =
+    const { data: result, inputTokens, outputTokens } =
       config.publisher === "google"
         ? await callGemini(token, config.vertexModel, prompt, CHOOSE_ERA_SCHEMA)
         : await callClaude(token, config.vertexModel, prompt, ["chosenEra", "narrative"]);
+
+    const ph = getPostHogClient();
+    if (ph) {
+      ph.capture({ distinctId: 'anonymous', event: 'ai_era_choose_requested', properties: { model, input_tokens: inputTokens, output_tokens: outputTokens } });
+      await ph.shutdown();
+    }
 
     return NextResponse.json(result);
   } catch (error) {

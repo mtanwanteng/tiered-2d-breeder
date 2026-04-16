@@ -155,7 +155,7 @@ export async function callGemini(
   model: string,
   prompt: string,
   schema: Record<string, unknown>,
-) {
+): Promise<{ data: unknown; inputTokens: number; outputTokens: number }> {
   const url = `${VERTEX_BASE}/google/models/${model}:generateContent`;
   const response = await fetch(url, {
     method: "POST",
@@ -183,7 +183,11 @@ export async function callGemini(
     throw new Error("Empty response from Gemini");
   }
 
-  return JSON.parse(raw);
+  return {
+    data: JSON.parse(raw),
+    inputTokens: json.usageMetadata?.promptTokenCount ?? 0,
+    outputTokens: json.usageMetadata?.candidatesTokenCount ?? 0,
+  };
 }
 
 export async function callClaude(
@@ -191,7 +195,7 @@ export async function callClaude(
   model: string,
   prompt: string,
   fieldNames: string[],
-) {
+): Promise<{ data: unknown; inputTokens: number; outputTokens: number }> {
   const url = `${VERTEX_BASE}/anthropic/models/${model}:rawPredict`;
   const fieldList = fieldNames.map((field) => `"${field}"`).join(", ");
   const response = await fetch(url, {
@@ -223,5 +227,9 @@ export async function callClaude(
     throw new Error("Empty response from Claude");
   }
 
-  return JSON.parse(raw);
+  return {
+    data: JSON.parse(raw),
+    inputTokens: json.usage?.input_tokens ?? 0,
+    outputTokens: json.usage?.output_tokens ?? 0,
+  };
 }

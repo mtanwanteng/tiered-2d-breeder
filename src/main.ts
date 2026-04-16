@@ -236,7 +236,7 @@ app.innerHTML = `
       </div>
       <div id="tapestry-actions">
         <button id="tapestry-heart-btn" aria-label="Love this tapestry">\u2665</button>
-        <button id="tapestry-share-btn">Your Tapestries</button>
+        <button id="tapestry-share-btn">Download</button>
         <a id="tapestry-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Share on Discord</a>
       </div>
     </div>
@@ -342,7 +342,7 @@ async function showTapestry() {
 
   tapestrySharePath = result.sharePath ?? null;
   if (result.ssoExpired) {
-    showEraToast("⚠️ Auth Expired", "AWS SSO token has expired. Run this in your terminal:\n\naws sso login --sso-session supercell-sso\n\nTapestry was generated but not saved.");
+    showEraToast("⚠️ Auth Expired", "AWS SSO token has expired. Run this in your terminal:\n\naws sso login --sso-session sxxx-sso\n\nTapestry was generated but not saved.");
   }
   tapestryContent.innerHTML = `<img id="tapestry-img" src="data:${result.mimeType};base64,${result.base64}" alt="Era tapestry">`;
   setDiscordCta(document.getElementById("tapestry-discord-btn"));
@@ -689,9 +689,10 @@ demoResetCancelBtn.addEventListener("click", handleDemoResetCancel);
 scoreboardBtn.addEventListener("click", showScoreboard);
 scoreboardCloseBtn.addEventListener("click", () => scoreboardOverlay.classList.remove("visible"));
 document.getElementById("scoreboard-tapestries-btn")!.addEventListener("click", () => {
-  if (tapestrySharePath) {
-    window.open(new URL(tapestrySharePath, window.location.origin).toString(), "_blank", "noopener,noreferrer");
-  }
+  // TODO: re-enable when tapestry share links are ready
+  // if (tapestrySharePath) {
+  //   window.open(new URL(tapestrySharePath, window.location.origin).toString(), "_blank", "noopener,noreferrer");
+  // }
 });
 
 const handleKeyDown = (e: KeyboardEvent) => {
@@ -713,10 +714,11 @@ document.getElementById("tapestry-heart-btn")!.addEventListener("click", () => {
 
 document.getElementById("tapestry-share-btn")!.addEventListener("click", () => {
   posthog.capture('tapestry_viewed', { era_name: eraManager.current.name });
-  if (tapestrySharePath) {
-    window.open(new URL(tapestrySharePath, window.location.origin).toString(), "_blank", "noopener,noreferrer");
-    return;
-  }
+  // TODO: re-enable when tapestry share links are ready
+  // if (tapestrySharePath) {
+  //   window.open(new URL(tapestrySharePath, window.location.origin).toString(), "_blank", "noopener,noreferrer");
+  //   return;
+  // }
 
   const img = document.getElementById("tapestry-img") as HTMLImageElement | null;
   if (!img) return;
@@ -1125,11 +1127,12 @@ async function combine(a: CombineItem, b: CombineItem) {
   actionLog.push(entry);
   eraActionLog.push(entry);
 
-  // Save and check era advancement
   persistGame();
-  checkEraAdvancement();
-
   pendingCombines--;
+
+  // Only check era advancement when no combines are still in flight
+  if (pendingCombines === 0) checkEraAdvancement();
+
   if (eraAdvancing && pendingCombines === 0 && pendingEraResult) {
     const result = pendingEraResult;
     pendingEraResult = null;
@@ -1154,8 +1157,6 @@ function getDiscoveredItems(): string[] {
 async function checkEraAdvancement() {
   if (victoryShown) return; // Age of Plenty — free-build mode, no more advancement
   if (eraAdvancing) return;
-  const hasAdvancedItem = eraActionLog.some((e) => e.resultTier >= 3);
-  if (!hasAdvancedItem) return;
   log.debug("era", "Checking era advancement...");
 
   const tier5Count = eraActionLog.filter((e) => e.resultTier === 5).length;
@@ -1337,8 +1338,7 @@ function showScoreboard() {
   document.querySelector('.scoreboard-subtitle')!.textContent = subtitleText;
 
   const tapestriesBtn = document.getElementById('scoreboard-tapestries-btn') as HTMLButtonElement;
-  const isNonProd = process.env.NEXT_PUBLIC_VERCEL_ENV !== 'production';
-  tapestriesBtn.style.display = (tapestrySharePath || isNonProd) ? '' : 'none';
+  tapestriesBtn.style.display = 'none'; // TODO: re-enable when tapestry share links are ready
 
   if (erasCompleted === 0) {
     scoreboardTimeline.innerHTML = `<div class="scoreboard-empty">Complete your first era to see it here.</div>`;

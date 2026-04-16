@@ -78,7 +78,7 @@ Story: ${narrative}`;
         } catch (uploadError) {
           const msg = uploadError instanceof Error ? uploadError.message : String(uploadError);
           if (msg.includes("Token is expired") || msg.includes("CredentialsProviderError")) {
-            console.error("[TAP] AWS SSO token expired. Re-run: aws sso login --sso-session supercell-sso");
+            console.error("[TAP] AWS SSO token expired. Re-run: aws sso login --sso-session sxxx-sso");
             ssoExpired = true;
           } else {
             console.error(`[TAP] S3 upload failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${msg}` : ""}`);
