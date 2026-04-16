@@ -139,7 +139,7 @@
       {
         "requiredCount": 1,
         "minTier": 3,
-        "conditions": [{ "description": "Reach Tier 3", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 3,
@@ -276,7 +276,7 @@
       {
         "requiredCount": 1,
         "minTier": 3,
-        "conditions": [{ "description": "Reach Tier 3", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 4,
@@ -417,7 +417,7 @@
       {
         "requiredCount": 1,
         "minTier": 3,
-        "conditions": [{ "description": "Reach Tier 3", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 4,
@@ -554,7 +554,7 @@
       {
         "requiredCount": 1,
         "minTier": 4,
-        "conditions": [{ "description": "Reach Tier 4", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 4,
@@ -691,7 +691,7 @@
       {
         "requiredCount": 1,
         "minTier": 4,
-        "conditions": [{ "description": "Reach Tier 4", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 5,
@@ -832,7 +832,7 @@
       {
         "requiredCount": 1,
         "minTier": 4,
-        "conditions": [{ "description": "Reach Tier 4", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 5,
@@ -969,7 +969,7 @@
       {
         "requiredCount": 1,
         "minTier": 4,
-        "conditions": [{ "description": "Reach Tier 4", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 5,
@@ -1110,7 +1110,7 @@
       {
         "requiredCount": 1,
         "minTier": 5,
-        "conditions": [{ "description": "Reach Tier 5", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 5,
@@ -1251,7 +1251,7 @@
       {
         "requiredCount": 1,
         "minTier": 5,
-        "conditions": [{ "description": "Reach Tier 5", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 6,
@@ -1396,7 +1396,7 @@
       {
         "requiredCount": 1,
         "minTier": 5,
-        "conditions": [{ "description": "Reach Tier 5", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 6,
@@ -1542,7 +1542,7 @@
       {
         "requiredCount": 1,
         "minTier": 5,
-        "conditions": [{ "description": "Reach Tier 5", "met": false }]
+        "conditions": [{ "description": "Make a ⭐⭐⭐⭐⭐ Item", "met": false }]
       },
       {
         "requiredCount": 6,

@@ -193,6 +193,11 @@ body {
   color: #32cd32;
 }
 
+.era-goal.met {
+  text-decoration: line-through;
+  text-decoration-color: #32cd32;
+}
+
 .era-goal[data-narrative] {
   cursor: pointer;
 }
