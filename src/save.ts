@@ -14,7 +14,7 @@ export interface SaveData {
   eraCurrentIndex: number;
   eraHistory: EraHistory[];
   eraResolvedSeeds: Record<number, ElementData[]>;
-  eraGoalStates: Record<number, { met: boolean; narrative?: string }[]>;
+  eraGoalStates: Record<number, { met: boolean; narrative?: string }[][] | { met: boolean; narrative?: string }[]>;
   paletteItems: ElementData[];
 }
 

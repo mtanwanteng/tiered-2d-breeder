@@ -70,7 +70,8 @@ export interface EraCondition {
 export interface EraGoal {
   conditions: EraCondition[];
   requiredCount: number;
-  fallbackTier5Count: number;
+  fallbackTier5Count?: number; // only used for AI-checked goals
+  minTier?: number; // if set, goal is checked deterministically: any item of this tier or higher
 }
 
 /** An era of civilization with its starting items and goals */

@@ -137,6 +137,11 @@
     "seedCount": 6,
     "goals": [
       {
+        "requiredCount": 1,
+        "minTier": 3,
+        "conditions": [{ "description": "Reach Tier 3", "met": false }]
+      },
+      {
         "requiredCount": 3,
         "conditions": [
           {
@@ -268,6 +273,11 @@
     ],
     "seedCount": 6,
     "goals": [
+      {
+        "requiredCount": 1,
+        "minTier": 3,
+        "conditions": [{ "description": "Reach Tier 3", "met": false }]
+      },
       {
         "requiredCount": 4,
         "conditions": [
@@ -405,6 +415,11 @@
     "seedCount": 6,
     "goals": [
       {
+        "requiredCount": 1,
+        "minTier": 3,
+        "conditions": [{ "description": "Reach Tier 3", "met": false }]
+      },
+      {
         "requiredCount": 4,
         "conditions": [
           {
@@ -536,6 +551,11 @@
     ],
     "seedCount": 6,
     "goals": [
+      {
+        "requiredCount": 1,
+        "minTier": 4,
+        "conditions": [{ "description": "Reach Tier 4", "met": false }]
+      },
       {
         "requiredCount": 4,
         "conditions": [
@@ -669,7 +689,12 @@
     "seedCount": 6,
     "goals": [
       {
-        "requiredCount": 4,
+        "requiredCount": 1,
+        "minTier": 4,
+        "conditions": [{ "description": "Reach Tier 4", "met": false }]
+      },
+      {
+        "requiredCount": 5,
         "conditions": [
           {
             "description": "Advance craftsmanship or establish a guild or trade network",
@@ -805,7 +830,12 @@
     "seedCount": 6,
     "goals": [
       {
-        "requiredCount": 4,
+        "requiredCount": 1,
+        "minTier": 4,
+        "conditions": [{ "description": "Reach Tier 4", "met": false }]
+      },
+      {
+        "requiredCount": 5,
         "conditions": [
           {
             "description": "Make a breakthrough in science, art, or medicine",
@@ -937,7 +967,12 @@
     "seedCount": 6,
     "goals": [
       {
-        "requiredCount": 4,
+        "requiredCount": 1,
+        "minTier": 4,
+        "conditions": [{ "description": "Reach Tier 4", "met": false }]
+      },
+      {
+        "requiredCount": 5,
         "conditions": [
           {
             "description": "Discover or connect with a new land or civilization",
@@ -1073,7 +1108,12 @@
     "seedCount": 6,
     "goals": [
       {
-        "requiredCount": 4,
+        "requiredCount": 1,
+        "minTier": 5,
+        "conditions": [{ "description": "Reach Tier 5", "met": false }]
+      },
+      {
+        "requiredCount": 5,
         "conditions": [
           {
             "description": "Mechanize production or transform how goods are made",
@@ -1209,7 +1249,12 @@
     "seedCount": 6,
     "goals": [
       {
-        "requiredCount": 4,
+        "requiredCount": 1,
+        "minTier": 5,
+        "conditions": [{ "description": "Reach Tier 5", "met": false }]
+      },
+      {
+        "requiredCount": 6,
         "conditions": [
           {
             "description": "Harness a new form of energy or revolutionize medicine",
@@ -1233,6 +1278,10 @@
           },
           {
             "description": "Build a megastructure or transform the urban landscape",
+            "met": false
+          },
+          {
+            "description": "Wage or survive a world war and forge lasting peace from its aftermath",
             "met": false
           }
         ],
@@ -1345,7 +1394,12 @@
     "seedCount": 6,
     "goals": [
       {
-        "requiredCount": 4,
+        "requiredCount": 1,
+        "minTier": 5,
+        "conditions": [{ "description": "Reach Tier 5", "met": false }]
+      },
+      {
+        "requiredCount": 6,
         "conditions": [
           {
             "description": "Create artificial intelligence or autonomous systems",
@@ -1368,7 +1422,11 @@
             "met": false
           },
           {
-            "description": "Automate a major industry or human activity",
+            "description": "Replace human physical labour in manufacturing, logistics, or agriculture through robotics",
+            "met": false
+          },
+          {
+            "description": "Put a networked supercomputer in the hands of every person on Earth",
             "met": false
           }
         ],
@@ -1482,7 +1540,12 @@
     "seedCount": 6,
     "goals": [
       {
-        "requiredCount": 4,
+        "requiredCount": 1,
+        "minTier": 5,
+        "conditions": [{ "description": "Reach Tier 5", "met": false }]
+      },
+      {
+        "requiredCount": 6,
         "conditions": [
           {
             "description": "Establish a permanent human presence beyond Earth",
@@ -1493,7 +1556,7 @@
             "met": false
           },
           {
-            "description": "Achieve faster-than-light communication or travel",
+            "description": "Achieve human life extension or indefinite biological preservation",
             "met": false
           },
           {
@@ -1506,6 +1569,10 @@
           },
           {
             "description": "Achieve a post-scarcity economy or unlimited clean energy",
+            "met": false
+          },
+          {
+            "description": "Launch a self-sustaining interstellar probe or generation ship",
             "met": false
           }
         ],

@@ -63,7 +63,7 @@ function renderEraProgress() {
   if (!el) return;
   if (victoryShown) { el.innerHTML = ""; return; }
 
-  const goal = eraManager.current.goals[0];
+  const goal = eraManager.current.goals.find((g) => g.minTier === undefined);
   const metCount = goal ? goal.conditions.filter((c) => c.met).length : 0;
   const dotCount = goal ? goal.requiredCount : 5;
 
@@ -95,19 +95,25 @@ function renderEraProgress() {
 
 function renderGoals() {
   const goalsEl = document.getElementById("era-goals")!;
-  const goal = eraManager.current.goals[0];
-  if (!goal) { goalsEl.innerHTML = ""; return; }
-  const metCount = goal.conditions.filter((c) => c.met).length;
+  const goals = eraManager.current.goals;
+  const aiGoal = goals.find((g) => g.minTier === undefined);
+  const tierGoal = goals.find((g) => g.minTier !== undefined);
+  if (!aiGoal && !tierGoal) { goalsEl.innerHTML = ""; return; }
+  const metCount = aiGoal ? aiGoal.conditions.filter((c) => c.met).length : 0;
   const counterEl = document.getElementById("era-goal-counter");
-  if (counterEl) counterEl.textContent = `(${metCount}/${goal.requiredCount})`;
+  if (counterEl) counterEl.textContent = aiGoal ? `(${metCount}/${aiGoal.requiredCount})` : "";
+  const tierMet = tierGoal?.conditions[0]?.met ?? false;
   goalsEl.innerHTML = `
-    <div class="era-goal-header">Complete ${goal.requiredCount} of ${goal.conditions.length} tasks (${metCount} done)</div>
-    ${goal.conditions
+    ${tierGoal ? `<div class="era-goal${tierMet ? " met" : ""}">${tierGoal.conditions[0].description}</div>` : ""}
+    ${aiGoal ? `<div class="era-goal-header">Complete ${aiGoal.requiredCount} of ${aiGoal.conditions.length} tasks (${metCount} done)</div>
+    ${aiGoal.conditions
       .map((c) => `
-        <div class="era-goal${c.met ? " met" : ""}">${c.description}</div>
-        ${c.met && c.narrative ? `<div class="era-goal-narrative">${c.narrative}</div>` : ""}
+        <div class="era-goal${c.met ? " met" : ""}"${c.met && c.narrative ? ` data-narrative="${c.narrative.replace(/"/g, '&quot;')}"` : ""}>
+          ${c.description}
+          ${c.met && c.narrative ? `<span class="era-goal-info">ⓘ</span>` : ""}
+        </div>
       `)
-      .join("")}
+      .join("")}` : ""}
   `;
   renderEraProgress();
 }
@@ -169,6 +175,7 @@ app.innerHTML = `
       <canvas id="heatmap-canvas"></canvas>
     </div>
   </div>
+  <div id="goal-tooltip"></div>
   <div id="result-toast"></div>
   <div id="era-toast">
     <h3 id="era-toast-title"></h3>
@@ -552,6 +559,57 @@ const handleDemoResetCancel = () => demoResetOverlay.classList.remove("visible")
 
 eraToastBtn.addEventListener("click", handleEraToastClose);
 restartButton.addEventListener("click", handleRestart);
+
+// Goal narrative tooltip (fixed-position, shared)
+const goalTooltipEl = document.getElementById("goal-tooltip")!;
+let pinnedGoalInfo: HTMLElement | null = null;
+
+function positionGoalTooltip(info: HTMLElement) {
+  const text = info.dataset.narrative;
+  if (!text) return;
+  const rect = info.getBoundingClientRect();
+  goalTooltipEl.textContent = text;
+  goalTooltipEl.classList.add("visible");
+  const tipW = goalTooltipEl.offsetWidth;
+  const tipH = goalTooltipEl.offsetHeight;
+  const margin = 6;
+  const centeredLeft = rect.left + rect.width / 2;
+  const clampedLeft = Math.max(tipW / 2 + margin, Math.min(window.innerWidth - tipW / 2 - margin, centeredLeft));
+  const fitsAbove = rect.top - tipH - margin > 0;
+  const top = fitsAbove ? rect.top - margin : rect.bottom + margin + tipH;
+  goalTooltipEl.style.left = `${clampedLeft}px`;
+  goalTooltipEl.style.top = `${top}px`;
+}
+
+const eraGoalsForTooltip = document.getElementById("era-goals")!;
+eraGoalsForTooltip.addEventListener("mouseover", (e) => {
+  if (pinnedGoalInfo) return;
+  const goal = (e.target as HTMLElement).closest(".era-goal[data-narrative]") as HTMLElement | null;
+  if (goal) positionGoalTooltip(goal);
+});
+eraGoalsForTooltip.addEventListener("mouseout", (e) => {
+  if (pinnedGoalInfo) return;
+  const goal = (e.target as HTMLElement).closest(".era-goal[data-narrative]");
+  if (goal) goalTooltipEl.classList.remove("visible");
+});
+eraGoalsForTooltip.addEventListener("click", (e) => {
+  const goal = (e.target as HTMLElement).closest(".era-goal[data-narrative]") as HTMLElement | null;
+  if (!goal) return;
+  e.stopPropagation();
+  if (pinnedGoalInfo === goal) {
+    pinnedGoalInfo = null;
+    goalTooltipEl.classList.remove("visible");
+  } else {
+    pinnedGoalInfo = goal;
+    positionGoalTooltip(goal);
+  }
+});
+document.addEventListener("click", () => {
+  if (pinnedGoalInfo) {
+    pinnedGoalInfo = null;
+    goalTooltipEl.classList.remove("visible");
+  }
+});
 
 // Era goals toggle
 const eraGoalsEl = document.getElementById("era-goals")!;

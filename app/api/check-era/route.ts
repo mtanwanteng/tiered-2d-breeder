@@ -43,7 +43,7 @@ ${recentActions}
 
 Current inventory: ${inventory.join(", ")}
 
-For EACH goal, determine if the player's items or actions achieve it. Be generous but reasonable - items don't need to literally match, but should clearly relate to the goal. For each met goal, write 1-2 sentences describing how. Return your evaluation for every goal listed.`;
+For EACH goal, determine if the player's items or actions achieve it. Be generous but reasonable - items don't need to literally match, but should clearly relate to the goal. For each met goal, write exactly one sentence describing how the developed item or items changed life for individuals, not redescribing how it met the gaol. Return your evaluation for every goal listed.`;
 
   try {
     const token = await getAccessToken();
