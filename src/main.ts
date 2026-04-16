@@ -236,7 +236,7 @@ app.innerHTML = `
       </div>
       <div id="tapestry-actions">
         <button id="tapestry-heart-btn" aria-label="Love this tapestry">\u2665</button>
-        <button id="tapestry-share-btn">View Tapestry</button>
+        <button id="tapestry-share-btn">Your Tapestries</button>
         <a id="tapestry-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Share on Discord</a>
       </div>
     </div>
@@ -1210,7 +1210,11 @@ async function doEraTransition(result: { narrative: string }) {
 
     if (eraManager.isLastEra) {
       log.info("era", "VICTORY — Space Age completed!");
-      startTapestryGeneration(result.narrative, fromEra, "the Age of Plenty", tapestryGameData);
+      showToast("Bari is weaving the tapestry of ages...", null);
+      bari.classList.add("active");
+      const victoryNarrative = await eraManager.generateAdvancementNarrative(actionLog, inventory, selectedModel, "the Age of Plenty");
+      bari.classList.remove("active");
+      startTapestryGeneration(victoryNarrative ?? result.narrative, fromEra, "the Age of Plenty", tapestryGameData);
       clearSave();
       victoryShown = true;
       showVictory();

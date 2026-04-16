@@ -209,6 +209,37 @@ export class EraManager {
     };
   }
 
+  /** Generate a narrative for a fixed next era (used for Space Age victory) */
+  async generateAdvancementNarrative(
+    actionLog: ActionLogEntry[],
+    inventory: string[],
+    model: ModelId,
+    nextEraName: string,
+  ): Promise<string | null> {
+    try {
+      const res = await fetch("/api/choose-era", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          completedEras: this.history.map((h) => h.eraName),
+          currentEra: this.current.name,
+          actionLog: actionLog.slice(-20),
+          inventory,
+          eligibleEras: [{ name: nextEraName, order: 9999 }],
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { narrative?: string };
+        if (data.narrative) return data.narrative;
+      }
+    } catch (err) {
+      const detail = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : "";
+      log.error("api", `[ERA-VIC] Victory narrative failed${detail}`);
+    }
+    return null;
+  }
+
   /** Record the current era's history */
   recordHistory(
     actions: ActionLogEntry[],

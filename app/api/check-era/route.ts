@@ -43,7 +43,15 @@ ${recentActions}
 
 Current inventory: ${inventory.join(", ")}
 
-For EACH goal, determine if the player's items or actions achieve it. Be generous but reasonable - items don't need to literally match, but should clearly relate to the goal. For each met goal, write exactly one sentence describing how the developed item or items changed life for individuals, not redescribing how it met the gaol. Return your evaluation for every goal listed.`;
+For EACH goal, determine if the player's items or actions achieve it. Be generous but reasonable - items don't need to literally match, but should clearly relate to the goal. 
+
+For each met goal, write one sentence revealing the consequence or hidden meaning, not what it is. Past tense for history, present for ongoing truths. No hedging, no passive voice, no "this was important because". Structure patterns (pick one per entry):
+- Consequence statement: "Iron democratized warfare and farming alike."
+- Before/after contrast: "Before coins, trade was barter. After coins, trade was empire."
+- Parallel list: "The first handle, the first lever, the first fuel."
+- Aphorism or paradox: "A castle is both home and weapon."
+
+Return your evaluation for every goal listed.`;
 
   try {
     const token = await getAccessToken();
