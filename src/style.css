@@ -198,6 +198,10 @@ body {
   text-decoration-color: #32cd32;
 }
 
+.era-goal.skipped {
+  text-decoration: line-through;
+}
+
 .era-goal[data-narrative] {
   cursor: pointer;
 }

@@ -103,16 +103,20 @@ function renderGoals() {
   const counterEl = document.getElementById("era-goal-counter");
   if (counterEl) counterEl.textContent = aiGoal ? `(${metCount}/${aiGoal.requiredCount})` : "";
   const tierMet = tierGoal?.conditions[0]?.met ?? false;
+  const aiRequiredMet = aiGoal ? metCount >= aiGoal.requiredCount : false;
   goalsEl.innerHTML = `
     ${tierGoal ? `<div class="era-goal${tierMet ? " met" : ""}">${tierGoal.conditions[0].description}</div>` : ""}
-    ${aiGoal ? `<div class="era-goal-header">Complete ${aiGoal.requiredCount} of ${aiGoal.conditions.length} tasks (${metCount} done)</div>
+    ${aiGoal ? `<div class="era-goal-header">${aiRequiredMet ? `✔ ` : ``}Complete ${aiGoal.requiredCount} of ${aiGoal.conditions.length} tasks${aiRequiredMet ? `` : ` (${metCount} done)`}</div>
     ${aiGoal.conditions
-      .map((c) => `
-        <div class="era-goal${c.met ? " met" : ""}"${c.met && c.narrative ? ` data-narrative="${c.narrative.replace(/"/g, '&quot;')}"` : ""}>
+      .map((c) => {
+        const classes = c.met ? " met" : (aiRequiredMet ? " skipped" : "");
+        return `
+        <div class="era-goal${classes}"${c.met && c.narrative ? ` data-narrative="${c.narrative.replace(/"/g, '&quot;')}"` : ""}>
           ${c.description}
           ${c.met && c.narrative ? `<span class="era-goal-info">ⓘ</span>` : ""}
         </div>
-      `)
+      `;
+      })
       .join("")}` : ""}
   `;
   renderEraProgress();
@@ -1130,8 +1134,7 @@ async function combine(a: CombineItem, b: CombineItem) {
   persistGame();
   pendingCombines--;
 
-  // Only check era advancement when no combines are still in flight
-  if (pendingCombines === 0) checkEraAdvancement();
+  checkEraAdvancement();
 
   if (eraAdvancing && pendingCombines === 0 && pendingEraResult) {
     const result = pendingEraResult;
