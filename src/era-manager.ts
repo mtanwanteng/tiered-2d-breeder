@@ -80,6 +80,8 @@ export class EraManager {
     inventory: string[],
     tier5Count: number,
     model: ModelId,
+    anonId?: string,
+    runId?: string,
   ): Promise<{ narrative: string } | null> {
     if (actionLog.length <= this.advancementCheckedAt) return null;
     this.advancementCheckedAt = actionLog.length;
@@ -121,6 +123,9 @@ export class EraManager {
               goals: unmetConditions.map((c) => c.description),
               actionLog: actionLog.slice(-20),
               inventory,
+              eraName: this.current.name,
+              anonId,
+              runId,
             }),
           });
           if (res.ok) {
@@ -161,6 +166,8 @@ export class EraManager {
     actionLog: ActionLogEntry[],
     inventory: string[],
     model: ModelId,
+    anonId?: string,
+    runId?: string,
   ): Promise<{ era: Era; narrative: string }> {
     const eligible = this.getEligibleNextEras();
 
@@ -184,6 +191,8 @@ export class EraManager {
           actionLog: actionLog.slice(-20),
           inventory,
           eligibleEras: eligible.map((e) => ({ name: e.name, order: e.order })),
+          anonId,
+          runId,
         }),
       });
 

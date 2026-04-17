@@ -1072,7 +1072,7 @@ async function combine(a: CombineItem, b: CombineItem) {
       const template = await promptProvider.getPrompt(childTier, eraManager.current.name);
       const prompt = template.replace("{{a}}", a.name).replace("{{b}}", b.name);
       log.debug("api", `Calling ${selectedModel} for ${a.name} + ${b.name}`);
-      const result = await combineElements(selectedModel, prompt, childTier, eraManager.current.name);
+      const result = await combineElements(selectedModel, prompt, childTier, eraManager.current.name, getOrCreateAnonId(), runId);
       elementData = { ...result, tier: childTier };
       await recipeStore.set(key, elementData);
       log.info("api", `Result: ${result.emoji} ${result.name} (${result.color})`);
@@ -1173,6 +1173,8 @@ async function checkEraAdvancement() {
     inventory,
     tier5Count,
     selectedModel,
+    getOrCreateAnonId(),
+    runId,
   );
 
   renderGoals();
@@ -1227,7 +1229,7 @@ async function doEraTransition(result: { narrative: string }) {
 
     showToast("Bari is charting the next age...", null);
     bari.classList.add("active");
-    const choice = await eraManager.chooseNextEra(actionLog, inventory, selectedModel);
+    const choice = await eraManager.chooseNextEra(actionLog, inventory, selectedModel, getOrCreateAnonId(), runId);
     bari.classList.remove("active");
 
     // Start tapestry fetch immediately — fires in background while player reads era summary

@@ -5,11 +5,13 @@ export async function combineElements(
   prompt: string,
   tier?: number,
   eraName?: string,
+  anonId?: string,
+  runId?: string,
 ): Promise<CombineResult> {
   const res = await fetch("/api/combine", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model, prompt, tier, eraName }),
+    body: JSON.stringify({ model, prompt, tier, eraName, anonId, runId }),
   });
 
   if (!res.ok) {

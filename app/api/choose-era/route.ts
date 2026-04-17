@@ -7,6 +7,7 @@ import {
   MODELS,
 } from "../../../lib/server/vertex";
 import { getPostHogClient } from "../../../src/lib/posthog-server";
+import { auth } from "../../auth";
 
 export const runtime = "nodejs";
 
@@ -17,10 +18,12 @@ interface ChooseEraRequest {
   actionLog: { parentA: string; parentB: string; result: string; resultTier: number }[];
   inventory: string[];
   eligibleEras: { name: string; order: number }[];
+  anonId?: string;
+  runId?: string;
 }
 
 export async function POST(request: Request) {
-  const { model, completedEras, currentEra, actionLog, inventory, eligibleEras } =
+  const { model, completedEras, currentEra, actionLog, inventory, eligibleEras, anonId, runId } =
     (await request.json()) as Partial<ChooseEraRequest>;
 
   const config = model ? MODELS[model] : undefined;
@@ -54,15 +57,20 @@ Pick the era that best matches the direction of this civilization's development.
 You MUST choose one of the listed era names exactly as written.`;
 
   try {
-    const token = await getAccessToken();
+    const [token, session] = await Promise.all([
+      getAccessToken(),
+      auth.api.getSession({ headers: request.headers }),
+    ]);
+
     const { data: result, inputTokens, outputTokens } =
       config.publisher === "google"
         ? await callGemini(token, config.vertexModel, prompt, CHOOSE_ERA_SCHEMA)
         : await callClaude(token, config.vertexModel, prompt, ["chosenEra", "narrative"]);
 
+    const distinctId = session?.user?.id ?? anonId ?? 'anonymous';
     const ph = getPostHogClient();
     if (ph) {
-      ph.capture({ distinctId: 'anonymous', event: 'ai_era_choose_requested', properties: { model, input_tokens: inputTokens, output_tokens: outputTokens } });
+      ph.capture({ distinctId, event: 'ai_era_choose_requested', properties: { model, era_name: currentEra, run_id: runId, input_tokens: inputTokens, output_tokens: outputTokens } });
       await ph.shutdown();
     }
 

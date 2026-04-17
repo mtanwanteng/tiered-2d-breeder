@@ -7,6 +7,7 @@ import {
   MODELS,
 } from "../../../lib/server/vertex";
 import { getPostHogClient } from "../../../src/lib/posthog-server";
+import { auth } from "../../auth";
 
 export const runtime = "nodejs";
 
@@ -15,10 +16,13 @@ interface EraCheckRequest {
   goals: string[];
   actionLog: { parentA: string; parentB: string; result: string; resultTier: number }[];
   inventory: string[];
+  eraName?: string;
+  anonId?: string;
+  runId?: string;
 }
 
 export async function POST(request: Request) {
-  const { model, goals, actionLog, inventory } = (await request.json()) as Partial<EraCheckRequest>;
+  const { model, goals, actionLog, inventory, eraName, anonId, runId } = (await request.json()) as Partial<EraCheckRequest>;
   const config = model ? MODELS[model] : undefined;
 
   if (!config || !goals || !actionLog || !inventory) {
@@ -44,7 +48,7 @@ ${recentActions}
 
 Current inventory: ${inventory.join(", ")}
 
-For EACH goal, determine if the player's items or actions achieve it. Be generous but reasonable - items don't need to literally match, but should clearly relate to the goal. 
+For EACH goal, determine if the player's items or actions achieve it. Be generous but reasonable - items don't need to literally match, but should clearly relate to the goal.
 
 For each met goal, write a single terse sentence revealing the consequence or hidden meaning, focusing on narrative. Past tense for history, present for ongoing truths. No hedging, no passive voice, no "this was important because". Structure patterns (pick one per entry):
 - Consequence statement: "Iron democratized warfare and farming alike."
@@ -56,15 +60,20 @@ Make sure to mention the item.
 Return your evaluation for every goal listed.`;
 
   try {
-    const token = await getAccessToken();
+    const [token, session] = await Promise.all([
+      getAccessToken(),
+      auth.api.getSession({ headers: request.headers }),
+    ]);
+
     const { data: result, inputTokens, outputTokens } =
       config.publisher === "google"
         ? await callGemini(token, config.vertexModel, prompt, ERA_CHECK_SCHEMA)
         : await callClaude(token, config.vertexModel, prompt, ["results"]);
 
+    const distinctId = session?.user?.id ?? anonId ?? 'anonymous';
     const ph = getPostHogClient();
     if (ph) {
-      ph.capture({ distinctId: 'anonymous', event: 'ai_era_check_requested', properties: { model, input_tokens: inputTokens, output_tokens: outputTokens } });
+      ph.capture({ distinctId, event: 'ai_era_check_requested', properties: { model, era_name: eraName, run_id: runId, input_tokens: inputTokens, output_tokens: outputTokens } });
       await ph.shutdown();
     }
 

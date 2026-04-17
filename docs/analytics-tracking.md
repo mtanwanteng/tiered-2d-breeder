@@ -165,10 +165,10 @@
 
 | Event | Distinct ID | Properties |
 |-------|-------------|------------|
-| `ai_combination_requested` | `'anonymous'` | `model`, `tier`, `era_name`, `input_tokens`, `output_tokens` |
+| `ai_combination_requested` | userId or anonId | `model`, `tier`, `era_name`, `run_id`, `input_tokens`, `output_tokens` |
 | `ai_combination_error` | `'anonymous'` | `model`, `error_type` |
-| `ai_era_check_requested` | `'anonymous'` | `model`, `input_tokens`, `output_tokens` |
-| `ai_era_choose_requested` | `'anonymous'` | `model`, `input_tokens`, `output_tokens` |
+| `ai_era_check_requested` | userId or anonId | `model`, `era_name`, `run_id`, `input_tokens`, `output_tokens` |
+| `ai_era_choose_requested` | userId or anonId | `model`, `era_name`, `run_id`, `input_tokens`, `output_tokens` |
 | `session_started` | real user ID | — |
 
 ### Built-in PostHog
