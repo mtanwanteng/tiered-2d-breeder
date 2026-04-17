@@ -165,7 +165,7 @@ app.innerHTML = `
       </div>
     </div>
   </div>
-  <div id="workspace"><div id="era-progress"></div></div>
+  <div id="workspace"><div id="era-progress"></div><button id="chart-era-btn">Chart the Next Age with Bari</button></div>
   <div id="heatmap-overlay">
     <div id="heatmap-modal">
       <div id="heatmap-header">
@@ -249,6 +249,7 @@ app.innerHTML = `
 
 const paletteItems = document.getElementById("palette-items")!;
 const workspace = document.getElementById("workspace")!;
+const chartEraBtn = document.getElementById("chart-era-btn")!;
 const toast = document.getElementById("result-toast")!;
 const bari = document.getElementById("bari")!;
 const eraToast = document.getElementById("era-toast")!;
@@ -1131,16 +1132,12 @@ async function combine(a: CombineItem, b: CombineItem) {
   actionLog.push(entry);
   eraActionLog.push(entry);
 
+  if (eraManager.markTierGoalIfMet(elementData.tier)) renderGoals();
+
   persistGame();
   pendingCombines--;
 
   checkEraAdvancement();
-
-  if (eraAdvancing && pendingCombines === 0 && pendingEraResult) {
-    const result = pendingEraResult;
-    pendingEraResult = null;
-    doEraTransition(result);
-  }
 }
 
 function removeItem(item: CombineItem) {
@@ -1183,13 +1180,8 @@ async function checkEraAdvancement() {
   if (eraAdvancing) return; // another call won the race while we awaited
 
   eraAdvancing = true;
-  busy = true;
-
-  if (pendingCombines === 0) {
-    doEraTransition(result);
-  } else {
-    pendingEraResult = result;
-  }
+  pendingEraResult = result;
+  chartEraBtn.classList.add("visible");
 }
 
 async function doEraTransition(result: { narrative: string }) {
@@ -1203,7 +1195,10 @@ async function doEraTransition(result: { narrative: string }) {
     const combinationsInEra = eraActionLog.length;
     const itemsDiscoveredInEra = inventory.length;
 
-    eraManager.recordHistory(completedEraActions, result.narrative, inventory, eraStartedAt, completedAt, eraSpawnCounts, eraSpawnByTier);
+    const completedEraStartedAt = eraStartedAt;
+    const completedEraSpawnCounts = { ...eraSpawnCounts };
+    const completedEraSpawnByTier = { ...eraSpawnByTier };
+
     const tapestryGameData = buildTapestryGameData({
       completedAt,
       discoveredItems: inventory,
@@ -1220,6 +1215,7 @@ async function doEraTransition(result: { narrative: string }) {
       bari.classList.add("active");
       const victoryNarrative = await eraManager.generateAdvancementNarrative(actionLog, inventory, selectedModel, "the Age of Plenty");
       bari.classList.remove("active");
+      eraManager.recordHistory(completedEraActions, victoryNarrative ?? result.narrative, inventory, completedEraStartedAt, completedAt, completedEraSpawnCounts, completedEraSpawnByTier);
       startTapestryGeneration(victoryNarrative ?? result.narrative, fromEra, "the Age of Plenty", tapestryGameData);
       clearSave();
       victoryShown = true;
@@ -1231,6 +1227,7 @@ async function doEraTransition(result: { narrative: string }) {
     bari.classList.add("active");
     const choice = await eraManager.chooseNextEra(actionLog, inventory, selectedModel, getOrCreateAnonId(), runId);
     bari.classList.remove("active");
+    eraManager.recordHistory(completedEraActions, choice.narrative, inventory, completedEraStartedAt, completedAt, completedEraSpawnCounts, completedEraSpawnByTier);
 
     // Start tapestry fetch immediately — fires in background while player reads era summary
     startTapestryGeneration(choice.narrative, fromEra, choice.era.name, tapestryGameData);
@@ -1264,6 +1261,7 @@ async function doEraTransition(result: { narrative: string }) {
     }
   } catch (err) {
     log.error("era", `[ERA-TRN] Era transition failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : ""}`);
+    chartEraBtn.classList.remove("visible");
     busy = false;
     eraAdvancing = false;
     pendingEraResult = null;
@@ -1593,6 +1591,15 @@ document.getElementById("victory-continue-btn")!.addEventListener("click", async
   busy = false;
   eraAdvancing = false;
   await showTapestry();
+});
+
+chartEraBtn.addEventListener("click", () => {
+  if (!pendingEraResult) return;
+  const result = pendingEraResult;
+  pendingEraResult = null;
+  chartEraBtn.classList.remove("visible");
+  busy = true;
+  doEraTransition(result);
 });
 
 // --- Palette management ---

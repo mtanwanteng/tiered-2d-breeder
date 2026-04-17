@@ -74,6 +74,19 @@ export class EraManager {
     return this.currentIndex === allEras.length - 1;
   }
 
+  /** Immediately mark any tier goal met if the given tier qualifies. Returns true if anything changed. */
+  markTierGoalIfMet(tier: number): boolean {
+    let changed = false;
+    for (const goal of this.current.goals) {
+      if (goal.minTier !== undefined && !goal.conditions[0].met && tier >= goal.minTier) {
+        goal.conditions[0].met = true;
+        log.info("era", `Tier goal met: Reached Tier ${goal.minTier}`);
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
   /** Check if era should advance. Checks each unmet condition individually. */
   async checkAdvancement(
     actionLog: ActionLogEntry[],
@@ -88,16 +101,6 @@ export class EraManager {
 
     const goals = this.current.goals;
     if (goals.length === 0) return null;
-
-    // Check tier goals deterministically (no API call needed)
-    for (const goal of goals) {
-      if (goal.minTier !== undefined && !goal.conditions[0].met) {
-        if (actionLog.some((e) => e.resultTier >= goal.minTier!)) {
-          goal.conditions[0].met = true;
-          log.info("era", `Tier goal met: Reached Tier ${goal.minTier}`);
-        }
-      }
-    }
 
     // Find the AI-checked goal (the one without minTier)
     const aiGoal = goals.find((g) => g.minTier === undefined);

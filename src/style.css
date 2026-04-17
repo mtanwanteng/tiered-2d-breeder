@@ -2326,3 +2326,34 @@ body {
   padding: 48px;
   font-size: 15px;
 }
+
+/* --- Chart Era Button --- */
+#chart-era-btn {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  display: none;
+  background: #ffd700;
+  color: #1a1a2e;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 10;
+}
+
+#chart-era-btn.visible {
+  display: block;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#chart-era-btn:hover {
+  background: #ffed4a;
+}
