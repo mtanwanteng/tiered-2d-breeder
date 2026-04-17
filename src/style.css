@@ -626,6 +626,42 @@ body {
   opacity: 1;
 }
 
+#thanks-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e2a3a;
+  border: 1px solid #3a4a5a;
+  color: #ccc;
+  padding: 10px 16px 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+#thanks-toast.visible {
+  display: flex;
+}
+
+#thanks-toast-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+#thanks-toast-close:hover {
+  color: #ccc;
+}
+
 /* --- Era advancement toast --- */
 #era-toast {
   position: fixed;
@@ -719,9 +755,17 @@ body {
 }
 
 .victory-subtitle {
+  color: #ccc;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 8px;
+}
+
+#victory-narrative {
   color: #aaa;
   font-size: 13px;
-  margin-bottom: 24px;
+  font-style: italic;
+  margin-bottom: 20px;
 }
 
 #victory-timeline {

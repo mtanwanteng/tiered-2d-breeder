@@ -56,7 +56,7 @@ For each met goal, write a single terse sentence revealing the consequence or hi
 - Parallel list: "The first handle, the first lever, the first fuel."
 - Aphorism or paradox: "A castle is both home and weapon."
 
-Make sure to mention the item.
+Make sure to mention the item. Only reference items the player created (the results of actions), not the ingredients used to make them.
 Return your evaluation for every goal listed.`;
 
   try {

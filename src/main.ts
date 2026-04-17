@@ -181,6 +181,7 @@ app.innerHTML = `
   </div>
   <div id="goal-tooltip"></div>
   <div id="result-toast"></div>
+  <div id="thanks-toast">Thanks for playing! <button id="thanks-toast-close">&times;</button></div>
   <div id="era-toast">
     <h3 id="era-toast-title"></h3>
     <div id="era-toast-stats"></div>
@@ -223,12 +224,13 @@ app.innerHTML = `
   <div id="victory-overlay">
     <div id="victory-panel">
       <h2>The Age of Plenty</h2>
-      <p class="victory-subtitle">Your civilization has transcended the ages</p>
+      <h3 class="victory-subtitle">Your civilization has transcended the ages</h3>
+      <p id="victory-narrative"></p>
       <div id="victory-timeline"></div>
       <div class="victory-actions">
         <button id="victory-share-btn">Share</button>
         <a id="victory-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Join our Discord</a>
-        <button id="victory-continue-btn">Continue Building</button>
+        <button id="victory-continue-btn">Continue</button>
       </div>
     </div>
   </div>
@@ -1204,6 +1206,7 @@ async function doEraTransition(result: { narrative: string }) {
       discoveredItems: inventory,
       completedEraActions,
     });
+    eraManager.recordHistory(completedEraActions, result.narrative, inventory, completedEraStartedAt, completedAt, completedEraSpawnCounts, completedEraSpawnByTier);
     eraActionLog = [];
     eraStartedAt = Date.now();
     eraSpawnCounts = {};
@@ -1215,11 +1218,10 @@ async function doEraTransition(result: { narrative: string }) {
       bari.classList.add("active");
       const victoryNarrative = await eraManager.generateAdvancementNarrative(actionLog, inventory, selectedModel, "the Age of Plenty");
       bari.classList.remove("active");
-      eraManager.recordHistory(completedEraActions, victoryNarrative ?? result.narrative, inventory, completedEraStartedAt, completedAt, completedEraSpawnCounts, completedEraSpawnByTier);
       startTapestryGeneration(victoryNarrative ?? result.narrative, fromEra, "the Age of Plenty", tapestryGameData);
       clearSave();
       victoryShown = true;
-      showVictory();
+      showVictory(victoryNarrative ?? undefined);
       return; // busy + eraAdvancing stay true until player clicks Continue Building
     }
 
@@ -1227,7 +1229,6 @@ async function doEraTransition(result: { narrative: string }) {
     bari.classList.add("active");
     const choice = await eraManager.chooseNextEra(actionLog, inventory, selectedModel, getOrCreateAnonId(), runId);
     bari.classList.remove("active");
-    eraManager.recordHistory(completedEraActions, choice.narrative, inventory, completedEraStartedAt, completedAt, completedEraSpawnCounts, completedEraSpawnByTier);
 
     // Start tapestry fetch immediately — fires in background while player reads era summary
     startTapestryGeneration(choice.narrative, fromEra, choice.era.name, tapestryGameData);
@@ -1451,7 +1452,7 @@ function updateVictoryAuthSection() {
   setDiscordCta(document.getElementById("victory-discord-btn"));
 }
 
-function showVictory() {
+function showVictory(narrative?: string) {
   posthog.capture('game_completed', {
     total_eras: eraManager.history.length,
     total_combinations: actionLog.length,
@@ -1461,6 +1462,8 @@ function showVictory() {
   document.getElementById("era-name")!.textContent = "The Age of Plenty";
   document.getElementById("era-goals")!.innerHTML =
     '<div class="era-goal met">Your civilization has transcended the ages</div>';
+  const narrativeEl = document.getElementById("victory-narrative");
+  if (narrativeEl) narrativeEl.textContent = narrative ?? "";
 
   // Build timeline
   victoryTimeline.innerHTML = eraManager.history
@@ -1588,9 +1591,14 @@ victoryShareBtn.addEventListener("click", handleVictoryShare);
 
 document.getElementById("victory-continue-btn")!.addEventListener("click", async () => {
   victoryOverlay.classList.remove("visible");
+  document.getElementById("thanks-toast")!.classList.add("visible");
   busy = false;
   eraAdvancing = false;
   await showTapestry();
+});
+
+document.getElementById("thanks-toast-close")!.addEventListener("click", () => {
+  document.getElementById("thanks-toast")!.classList.remove("visible");
 });
 
 chartEraBtn.addEventListener("click", () => {
