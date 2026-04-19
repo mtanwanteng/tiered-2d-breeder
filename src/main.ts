@@ -13,6 +13,7 @@ import { authStore } from "./store/auth";
 import { isDiscordActivity } from "./discord";
 import { getOrCreateAnonId } from "./identity";
 import posthog from "posthog-js";
+import { toPng } from "html-to-image";
 
 // --- Types ---
 interface CombineItem {
@@ -1460,8 +1461,11 @@ function showVictory(narrative?: string) {
   });
   // Set era name to The Age of Plenty
   document.getElementById("era-name")!.textContent = "The Age of Plenty";
-  document.getElementById("era-goals")!.innerHTML =
-    '<div class="era-goal met">Your civilization has transcended the ages</div>';
+  const goalsEl = document.getElementById("era-goals")!;
+  goalsEl.innerHTML =
+    '<div class="era-goal met">Your civilization has transcended the ages</div>' +
+    '<button id="victory-restart-btn" class="restart-btn-inline">Play Again</button>';
+  document.getElementById("victory-restart-btn")!.addEventListener("click", handleRestart);
   const narrativeEl = document.getElementById("victory-narrative");
   if (narrativeEl) narrativeEl.textContent = narrative ?? "";
 
@@ -1508,81 +1512,13 @@ function showVictory(narrative?: string) {
 const handleVictoryShare = async () => {
   const panel = document.getElementById("victory-panel")!;
   try {
-    // Use canvas to capture the victory panel
-    const canvas = document.createElement("canvas");
-    const rect = panel.getBoundingClientRect();
-    const scale = 2; // retina
-    canvas.width = rect.width * scale;
-    canvas.height = rect.height * scale;
-    const ctx = canvas.getContext("2d")!;
-    ctx.scale(scale, scale);
-
-    // Draw background
-    ctx.fillStyle = "#16213e";
-    ctx.fillRect(0, 0, rect.width, rect.height);
-
-    // Draw title
-    ctx.fillStyle = "#ffd700";
-    ctx.font = "bold 24px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("The Age of Plenty", rect.width / 2, 40);
-
-    ctx.fillStyle = "#aaa";
-    ctx.font = "14px system-ui";
-    ctx.fillText("Your civilization has transcended the ages", rect.width / 2, 64);
-
-    // Draw era history
-    let y = 100;
-    for (const h of eraManager.history) {
-      ctx.fillStyle = "#ffd700";
-      ctx.font = "bold 16px system-ui";
-      ctx.textAlign = "left";
-      ctx.fillText(h.eraName, 24, y);
-      y += 20;
-
-      ctx.fillStyle = "#ccc";
-      ctx.font = "12px system-ui";
-      // Word-wrap narrative
-      const words = h.advancementNarrative.split(" ");
-      let line = "";
-      for (const word of words) {
-        const test = line + word + " ";
-        if (ctx.measureText(test).width > rect.width - 48) {
-          ctx.fillText(line.trim(), 24, y);
-          y += 16;
-          line = word + " ";
-        } else {
-          line = test;
-        }
-      }
-      if (line.trim()) {
-        ctx.fillText(line.trim(), 24, y);
-        y += 16;
-      }
-
-      ctx.fillStyle = "#888";
-      ctx.font = "11px system-ui";
-      ctx.fillText(`${h.actions.length} combinations \u00B7 ${h.discoveredItems.length} items`, 24, y + 4);
-      y += 30;
-    }
-
-    // Footer
-    ctx.fillStyle = "#555";
-    ctx.font = "10px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("Bari \u2014 A Civilization Through the Ages", rect.width / 2, y + 10);
-
-    canvas.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "bari-victory.png";
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+    const dataUrl = await toPng(panel, { pixelRatio: 2 });
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = "bari-victory.png";
+    a.click();
   } catch (err) {
-    console.error("Share failed:", err);
+    log.error("system", `[SHARE] Victory share failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : ""}`);
     showToast("Could not save image", 3000);
   }
 };

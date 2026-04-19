@@ -530,6 +530,23 @@ body {
   color: #e94560;
 }
 
+.restart-btn-inline:hover {
+  background: #ffed4a;
+}
+
+.restart-btn-inline {
+  display: block;
+  margin: 8px auto 0;
+  background: #ffd700;
+  border: none;
+  color: #1a1a2e;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 /* --- Demo reset modal --- */
 #demo-reset-overlay {
   display: none;
@@ -866,15 +883,14 @@ body {
 }
 
 #victory-continue-btn {
-  background: transparent;
-  color: #aaa;
-  border: 1px solid #2a3a5a;
+  background: #ffd700;
+  color: #1a1a2e;
+  border: none;
+  font-weight: 700;
 }
 
 #victory-continue-btn:hover {
-  background: #0f3460;
-  color: #fff;
-  border-color: #4a6a9a;
+  background: #ffed4a;
 }
 
 /* --- Era toast completed-era stats --- */
