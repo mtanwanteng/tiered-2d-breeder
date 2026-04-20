@@ -48,7 +48,8 @@ export async function POST(request: Request) {
             "narrative",
           ]);
 
-    console.log(`[CMB] ok → name="${result.name}" emoji=${result.emoji} tokens=${inputTokens}+${outputTokens}`);
+    const resultData = result as { name?: string; color?: string; emoji?: string; description?: string; narrative?: string };
+    console.log(`[CMB] ok → name="${resultData.name}" emoji=${resultData.emoji} tokens=${inputTokens}+${outputTokens}`);
 
     const distinctId = session?.user?.id ?? anonId ?? 'anonymous';
     const ph = getPostHogClient();
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
       await ph.shutdown();
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(resultData);
   } catch (error) {
     console.error(`[CMB] failed:`, error);
 

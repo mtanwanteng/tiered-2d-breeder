@@ -69,7 +69,8 @@ You MUST choose one of the listed era names exactly as written.`;
         ? await callGemini(token, config.vertexModel, prompt, CHOOSE_ERA_SCHEMA)
         : await callClaude(token, config.vertexModel, prompt, ["chosenEra", "narrative"]);
 
-    console.log(`[ERA-CHO] ok → chosenEra="${result.chosenEra}" tokens=${inputTokens}+${outputTokens}`);
+    const resultData = result as { chosenEra?: string; narrative?: string };
+    console.log(`[ERA-CHO] ok → chosenEra="${resultData.chosenEra}" tokens=${inputTokens}+${outputTokens}`);
 
     const distinctId = session?.user?.id ?? anonId ?? 'anonymous';
     const ph = getPostHogClient();
@@ -78,7 +79,7 @@ You MUST choose one of the listed era names exactly as written.`;
       await ph.shutdown();
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(resultData);
   } catch (error) {
     console.error(`[ERA-CHO] failed:`, error);
     return NextResponse.json(
