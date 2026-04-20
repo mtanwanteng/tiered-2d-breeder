@@ -72,7 +72,8 @@ Return your evaluation for every goal listed.`;
         ? await callGemini(token, config.vertexModel, prompt, ERA_CHECK_SCHEMA)
         : await callClaude(token, config.vertexModel, prompt, ["results"]);
 
-    const metCount = result.results?.filter((r: { met: boolean }) => r.met).length ?? "?";
+    const resultData = result as { results?: { met: boolean }[] };
+    const metCount = resultData.results?.filter((r) => r.met).length ?? "?";
     console.log(`[ERA-CHK] ok → ${metCount}/${goals.length} goals met tokens=${inputTokens}+${outputTokens}`);
 
     const distinctId = session?.user?.id ?? anonId ?? 'anonymous';
@@ -82,7 +83,7 @@ Return your evaluation for every goal listed.`;
       await ph.shutdown();
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(resultData);
   } catch (error) {
     console.error(`[ERA-CHK] failed:`, error);
     return NextResponse.json(

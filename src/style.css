@@ -2395,10 +2395,10 @@ body {
 }
 
 #chart-era-btn {
-  position: absolute;
-  bottom: 28px;
+  position: fixed;
+  top: 16px;
   left: 50%;
-  transform: translateX(-50%) translateY(12px);
+  transform: translateX(-50%) translateY(-12px);
   display: none;
   background: #ffd700;
   color: #1a1a2e;
@@ -2409,9 +2409,10 @@ body {
   font-size: 15px;
   cursor: pointer;
   white-space: nowrap;
+  max-width: calc(100vw - 24px);
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 10;
+  z-index: 50;
 }
 
 #chart-era-btn.visible {
