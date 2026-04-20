@@ -332,6 +332,67 @@ let latestEraChoice: { era: Era; narrative: string } | null = null;
 let latestTapestryPromise: Promise<{ base64: string; mimeType: string; tapestryId?: string | null; sharePath?: string | null; ssoExpired?: boolean } | null> | null = null;
 let eraAdvancementDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+// --- Pipeline debug HUD (non-prod only) ---
+type PipelineRun = {
+  id: number;
+  snapshotAt: number;
+  eraStatus: 'pending' | 'done' | 'error';
+  eraName?: string;
+  tapestryStatus: 'waiting' | 'inflight' | 'done' | 'error';
+};
+const pipelineRuns: PipelineRun[] = [];
+let pipelineRunSeq = 0;
+let pipelineHudEl: HTMLElement | null = null;
+let pipelineDebounceIndicator = false;
+
+function initPipelineHud() {
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") return;
+  const el = document.createElement("div");
+  el.id = "pipeline-hud";
+  document.body.appendChild(el);
+  pipelineHudEl = el;
+  updatePipelineHud();
+}
+
+function updatePipelineHud() {
+  if (!pipelineHudEl) return;
+  if (!eraAdvancing && pipelineRuns.length === 0) {
+    pipelineHudEl.style.display = "none";
+    return;
+  }
+  pipelineHudEl.style.display = "block";
+
+  const debounceRow = pipelineDebounceIndicator
+    ? `<div class="ph-debounce">⏱ debouncing…</div>`
+    : "";
+
+  const rows = pipelineRuns.map(r => {
+    const eraCell = r.eraStatus === 'pending'
+      ? `<span class="ph-pending">era ⟳</span>`
+      : r.eraStatus === 'done'
+      ? `<span class="ph-done">era ✓ <em>${r.eraName ?? ""}</em></span>`
+      : `<span class="ph-error">era ✗</span>`;
+
+    const tapCell = r.tapestryStatus === 'waiting'
+      ? `<span class="ph-waiting">tap —</span>`
+      : r.tapestryStatus === 'inflight'
+      ? `<span class="ph-inflight">tap ⟳</span>`
+      : r.tapestryStatus === 'done'
+      ? `<span class="ph-done">tap ✓</span>`
+      : `<span class="ph-error">tap ✗</span>`;
+
+    return `<div class="ph-row">#${r.id} ${eraCell} ${tapCell}</div>`;
+  }).join("");
+
+  pipelineHudEl.innerHTML = `<div class="ph-title">era pipeline</div>${debounceRow}${rows}`;
+}
+
+function clearPipelineHud() {
+  pipelineRuns.length = 0;
+  pipelineDebounceIndicator = false;
+  updatePipelineHud();
+}
+
 function startTapestryGeneration(
   narrative: string,
   eraName: string,
@@ -935,6 +996,8 @@ if (savedGame) {
   posthog.capture('game_started', { era_name: eraManager.current.name });
 }
 
+initPipelineHud();
+
 // --- Document-level pointer drag handlers ---
 // Items use position:fixed while being dragged so they render above the palette
 // sidebar regardless of stacking context. On drop they convert back to absolute.
@@ -1224,14 +1287,28 @@ async function checkEraAdvancement() {
 
 function scheduleAdvancementPipeline() {
   if (eraAdvancementDebounceTimer) clearTimeout(eraAdvancementDebounceTimer);
+  pipelineDebounceIndicator = true;
+  updatePipelineHud();
   eraAdvancementDebounceTimer = setTimeout(() => {
     eraAdvancementDebounceTimer = null;
+    pipelineDebounceIndicator = false;
     runAdvancementPipeline();
   }, 1_000);
 }
 
 async function runAdvancementPipeline() {
   if (!eraAdvancing) return;
+
+  // Register this run in the HUD
+  const run: PipelineRun = {
+    id: ++pipelineRunSeq,
+    snapshotAt: Date.now(),
+    eraStatus: 'pending',
+    tapestryStatus: 'waiting',
+  };
+  pipelineRuns.push(run);
+  if (pipelineRuns.length > 6) pipelineRuns.shift();
+  updatePipelineHud();
 
   // Snapshot the current game state at the moment this pipeline fires
   const snapInventory = getDiscoveredItems();
@@ -1251,18 +1328,34 @@ async function runAdvancementPipeline() {
 
   // Choose next era (or generate victory narrative)
   let choice: { era: Era; narrative: string };
-  if (eraManager.isLastEra) {
-    const narrative = await eraManager.generateAdvancementNarrative(snap.actions, snap.inventory, selectedModel, "the Age of Plenty");
-    choice = { era: { name: "the Age of Plenty", seeds: [], goals: [], order: 9999 }, narrative: narrative ?? pendingEraResult!.narrative };
-  } else {
-    choice = await eraManager.chooseNextEra(snap.actions, snap.inventory, selectedModel, getOrCreateAnonId(), runId);
+  try {
+    if (eraManager.isLastEra) {
+      const narrative = await eraManager.generateAdvancementNarrative(snap.actions, snap.inventory, selectedModel, "the Age of Plenty");
+      choice = { era: { name: "the Age of Plenty", seeds: [], goals: [], order: 9999 }, narrative: narrative ?? pendingEraResult!.narrative };
+    } else {
+      choice = await eraManager.chooseNextEra(snap.actions, snap.inventory, selectedModel, getOrCreateAnonId(), runId);
+    }
+  } catch {
+    run.eraStatus = 'error';
+    updatePipelineHud();
+    return;
   }
   if (!eraAdvancing) return;
+  run.eraStatus = 'done';
+  run.eraName = choice.era.name;
+  run.tapestryStatus = 'inflight';
   latestEraChoice = choice;
+  updatePipelineHud();
 
   // Fire tapestry generation — no await, store promise as latest
   startTapestryGeneration(choice.narrative, snap.fromEra, choice.era.name, snap.tapestryGameData);
   latestTapestryPromise = tapestryPromise;
+
+  // Track completion for HUD
+  tapestryPromise?.then(result => {
+    run.tapestryStatus = result?.base64 ? 'done' : 'error';
+    updatePipelineHud();
+  });
 }
 
 async function doEraTransition(result: { narrative: string }) {
@@ -1363,6 +1456,7 @@ async function doEraTransition(result: { narrative: string }) {
         persistGame();
         busy = false;
         eraAdvancing = false;
+        clearPipelineHud();
         await showTapestry();
         persistGame();
       });
@@ -1376,6 +1470,7 @@ async function doEraTransition(result: { narrative: string }) {
     latestEraSnapshot = null;
     latestEraChoice = null;
     latestTapestryPromise = null;
+    clearPipelineHud();
   }
 }
 
@@ -1636,6 +1731,7 @@ document.getElementById("victory-continue-btn")!.addEventListener("click", async
   document.getElementById("thanks-toast")!.classList.add("visible");
   busy = false;
   eraAdvancing = false;
+  clearPipelineHud();
   await showTapestry();
 });
 

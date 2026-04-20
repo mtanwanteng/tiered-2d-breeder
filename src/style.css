@@ -1409,6 +1409,56 @@ body {
   color: #555;
 }
 
+/* --- Pipeline debug HUD --- */
+#pipeline-hud {
+  display: none;
+  position: fixed;
+  bottom: 56px;
+  right: 10px;
+  background: rgba(10, 10, 20, 0.88);
+  border: 1px solid #1a4a8a;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-family: monospace;
+  font-size: 11px;
+  z-index: 450;
+  min-width: 200px;
+  pointer-events: none;
+}
+
+.ph-title {
+  color: #fca;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  font-size: 10px;
+}
+
+.ph-debounce {
+  color: #888;
+  margin-bottom: 3px;
+}
+
+.ph-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  color: #aaa;
+  line-height: 1.6;
+}
+
+.ph-row em {
+  color: #ddd;
+  font-style: normal;
+}
+
+.ph-pending  { color: #888; }
+.ph-waiting  { color: #444; }
+.ph-inflight { color: #f90; }
+.ph-done     { color: #4d4; }
+.ph-error    { color: #f44; }
+
 /* --- Auth overlay --- */
 
 .auth-overlay {
