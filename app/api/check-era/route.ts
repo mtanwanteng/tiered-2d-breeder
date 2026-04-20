@@ -59,6 +59,8 @@ For each met goal, write a single terse sentence revealing the consequence or hi
 Make sure to mention the item. Only reference items the player created (the results of actions), not the ingredients used to make them.
 Return your evaluation for every goal listed.`;
 
+  console.log(`[ERA-CHK] model=${model} era=${eraName} goals=${goals.length}`);
+
   try {
     const [token, session] = await Promise.all([
       getAccessToken(),
@@ -70,6 +72,9 @@ Return your evaluation for every goal listed.`;
         ? await callGemini(token, config.vertexModel, prompt, ERA_CHECK_SCHEMA)
         : await callClaude(token, config.vertexModel, prompt, ["results"]);
 
+    const metCount = result.results?.filter((r: { met: boolean }) => r.met).length ?? "?";
+    console.log(`[ERA-CHK] ok → ${metCount}/${goals.length} goals met tokens=${inputTokens}+${outputTokens}`);
+
     const distinctId = session?.user?.id ?? anonId ?? 'anonymous';
     const ph = getPostHogClient();
     if (ph) {
@@ -79,7 +84,10 @@ Return your evaluation for every goal listed.`;
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Era check error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error(`[ERA-CHK] failed:`, error);
+    return NextResponse.json(
+      { error: `Era check failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${String(error)}` : ""}` },
+      { status: 500 },
+    );
   }
 }

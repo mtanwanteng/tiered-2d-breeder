@@ -29,6 +29,8 @@ export async function POST(request: Request) {
     );
   }
 
+  console.log(`[CMB] model=${model} tier=${tier} era=${eraName}`);
+
   try {
     const [token, session] = await Promise.all([
       getAccessToken(),
@@ -46,6 +48,8 @@ export async function POST(request: Request) {
             "narrative",
           ]);
 
+    console.log(`[CMB] ok → name="${result.name}" emoji=${result.emoji} tokens=${inputTokens}+${outputTokens}`);
+
     const distinctId = session?.user?.id ?? anonId ?? 'anonymous';
     const ph = getPostHogClient();
     if (ph) {
@@ -55,7 +59,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Combine error:", error);
+    console.error(`[CMB] failed:`, error);
 
     const ph = getPostHogClient();
     if (ph) {
@@ -63,6 +67,9 @@ export async function POST(request: Request) {
       await ph.shutdown();
     }
 
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    return NextResponse.json(
+      { error: `Combination failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${String(error)}` : ""}` },
+      { status: 500 },
+    );
   }
 }

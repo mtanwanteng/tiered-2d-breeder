@@ -29,6 +29,8 @@ Era completed: ${eraName}
 Advancing to: ${nextEraName}
 Story: ${narrative}`;
 
+  console.log(`[TAP] era=${eraName} → ${nextEraName}`);
+
   try {
     const session = await auth.api.getSession({ headers: request.headers });
     const token = await getAccessToken();
@@ -57,7 +59,7 @@ Story: ${narrative}`;
             key,
             mimeType,
           });
-          console.log(`[TAP] S3 upload success: s3://${stored.bucket}/${stored.key} (${stored.byteSize} bytes)`);
+          console.log(`[TAP] ok → image ${mimeType} tapestryId=${tapestryId} s3://${stored.bucket}/${stored.key} (${stored.byteSize} bytes)`);
 
           await createTapestryRecord({
             id: tapestryId,

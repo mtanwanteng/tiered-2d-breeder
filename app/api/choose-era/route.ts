@@ -56,6 +56,8 @@ Pick the era that best matches the direction of this civilization's development.
 
 You MUST choose one of the listed era names exactly as written.`;
 
+  console.log(`[ERA-CHO] model=${model} era=${currentEra} options=${eligibleEras.length}`);
+
   try {
     const [token, session] = await Promise.all([
       getAccessToken(),
@@ -67,6 +69,8 @@ You MUST choose one of the listed era names exactly as written.`;
         ? await callGemini(token, config.vertexModel, prompt, CHOOSE_ERA_SCHEMA)
         : await callClaude(token, config.vertexModel, prompt, ["chosenEra", "narrative"]);
 
+    console.log(`[ERA-CHO] ok → chosenEra="${result.chosenEra}" tokens=${inputTokens}+${outputTokens}`);
+
     const distinctId = session?.user?.id ?? anonId ?? 'anonymous';
     const ph = getPostHogClient();
     if (ph) {
@@ -76,7 +80,10 @@ You MUST choose one of the listed era names exactly as written.`;
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Choose era error:", error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error(`[ERA-CHO] failed:`, error);
+    return NextResponse.json(
+      { error: `Era choice failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${String(error)}` : ""}` },
+      { status: 500 },
+    );
   }
 }

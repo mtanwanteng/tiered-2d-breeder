@@ -243,7 +243,7 @@ app.innerHTML = `
       </div>
       <div id="tapestry-actions">
         <button id="tapestry-heart-btn" aria-label="Love this tapestry">\u2665</button>
-        <button id="tapestry-share-btn">Download</button>
+        <button id="tapestry-share-btn">Save</button>
         <a id="tapestry-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Share on Discord</a>
       </div>
     </div>
