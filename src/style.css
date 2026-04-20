@@ -863,6 +863,16 @@ body {
   background: #ffed4a;
 }
 
+#victory-share-btn {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 #victory-discord-btn {
   background: #5865F2;
   color: #fff;
@@ -931,29 +941,6 @@ body {
 }
 
 /* --- Discord fixed button --- */
-#discord-btn {
-  position: fixed;
-  bottom: 12px;
-  right: 100px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #5865F2;
-  border: 1px solid #7289da;
-  color: white;
-  cursor: pointer;
-  z-index: 400;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  text-decoration: none;
-}
-
-#discord-btn:hover {
-  background: #4752c4;
-}
-
 /* --- Scoreboard button --- */
 #scoreboard-btn {
   position: fixed;
@@ -1898,9 +1885,8 @@ body {
   background: #4752c4;
 }
 
-/* Compact (icon-only) state for vanilla-TS Discord buttons */
-#victory-discord-btn[data-compact],
-#tapestry-discord-btn[data-compact] {
+/* Compact (icon-only) state for victory Discord button */
+#victory-discord-btn[data-compact] {
   padding: 10px 12px;
   gap: 0;
 }
@@ -2350,35 +2336,20 @@ body {
   background: #ffd700;
   color: #1a1a2e;
   border: none;
-  padding: 8px 20px;
+  width: 36px;
+  height: 36px;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 #tapestry-share-btn:hover {
   background: #ffed4a;
 }
 
-#tapestry-discord-btn {
-  background: #5865F2;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-#tapestry-discord-btn:hover {
-  background: #4752c4;
-}
 
 #tapestry-spinner {
   color: #8090b0;
@@ -2389,41 +2360,41 @@ body {
 
 /* --- Chart Era Button --- */
 @keyframes chart-btn-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7), 0 4px 20px rgba(255, 215, 0, 0.3); transform: translateX(-50%) translateY(0) scale(1); }
-  50%  { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0), 0 4px 28px rgba(255, 215, 0, 0.5); transform: translateX(-50%) translateY(-3px) scale(1.03); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7), 0 4px 20px rgba(255, 215, 0, 0.3); transform: translateX(-50%) translateY(0) scale(1); }
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.35);
+    border-color: rgba(255, 215, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.2);
+    border-color: rgba(255, 215, 0, 0.65);
+  }
 }
 
 #chart-era-btn {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-12px);
   display: none;
-  background: #ffd700;
-  color: #1a1a2e;
-  border: none;
-  padding: 12px 32px;
-  border-radius: 10px;
-  font-weight: 700;
-  font-size: 15px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 215, 0, 0.06);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  color: #ffd700;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  white-space: nowrap;
-  max-width: calc(100vw - 24px);
+  text-align: center;
   opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  z-index: 50;
+  transition: opacity 0.3s ease, background 0.15s, border-color 0.15s;
 }
 
 #chart-era-btn.visible {
   display: block;
   opacity: 1;
-  animation: chart-btn-pulse 1.8s ease-in-out infinite;
+  animation: chart-btn-pulse 2s ease-in-out infinite;
 }
 
 #chart-era-btn:hover {
   animation: none;
-  background: #ffed4a;
-  transform: translateX(-50%) translateY(-2px) scale(1.04);
-  box-shadow: 0 6px 24px rgba(255, 215, 0, 0.5);
+  background: rgba(255, 215, 0, 0.14);
+  border-color: rgba(255, 215, 0, 0.8);
 }

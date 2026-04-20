@@ -29,6 +29,7 @@ export interface DebugActions {
 
 export function initDebugConsole(actions?: DebugActions): { modelSelect: HTMLSelectElement | null } {
   const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+  if (isProd) return { modelSelect: null };
 
   // Toggle button
   const toggle = document.createElement("button");

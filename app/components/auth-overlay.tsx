@@ -151,7 +151,7 @@ export function AuthOverlay() {
     content.appendChild(img);
     const actions = document.getElementById("tapestry-actions");
     if (actions) actions.style.display = "none";
-    overlay.classList.add("visible");
+    overlay.classList.add("visible", "tapestry-closeable");
   };
 
   const openLogin = () => {

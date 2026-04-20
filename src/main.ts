@@ -1,4 +1,4 @@
-import type { Tier, ElementData, ModelId, ActionLogEntry, EraHistory, TapestryGameData } from "./types";
+import type { Tier, ElementData, ModelId, ActionLogEntry, EraHistory, TapestryGameData, Era } from "./types";
 import { recipeKey, MODELS } from "./types";
 import { combineElements } from "./gemini";
 import { InMemoryRecipeStore } from "./recipes";
@@ -127,6 +127,24 @@ function renderEraName() {
   document.getElementById("era-name")!.textContent = eraManager.current.name;
 }
 
+const SAVE_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+
+async function saveImage(dataUrl: string, filename: string) {
+  try {
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], filename, { type: blob.type });
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file] });
+      return;
+    }
+  } catch { /* fall through to anchor download */ }
+  const a = document.createElement("a");
+  a.href = dataUrl;
+  a.download = filename;
+  a.click();
+}
+
 const DISCORD_INVITE = "https://discord.gg/jMdRx9ZjyC";
 const DISCORD_SVG = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.101 18.079.105 18.1.111 18.12a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>`;
 
@@ -143,6 +161,7 @@ app.innerHTML = `
         </div>
       </div>
       <div id="era-goals"></div>
+      <button id="chart-era-btn">Next Age →</button>
     </div>
     <div id="inventory-header">
       <h2>Inventory</h2>
@@ -166,7 +185,7 @@ app.innerHTML = `
       </div>
     </div>
   </div>
-  <div id="workspace"><div id="era-progress"></div><button id="chart-era-btn">Chart the Next Age with Bari</button></div>
+  <div id="workspace"><div id="era-progress"></div></div>
   <div id="heatmap-overlay">
     <div id="heatmap-modal">
       <div id="heatmap-header">
@@ -200,7 +219,6 @@ app.innerHTML = `
       <div id="scoreboard-timeline"></div>
     </div>
   </div>
-  ${!isDiscordActivity() ? `<a id="discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer" title="Join our Discord">${DISCORD_SVG}</a>` : ""}
   <button id="scoreboard-btn" title="View Scoreboard">\uD83D\uDCDC</button>
   <div id="era-summary-overlay">
     <div id="era-summary-panel">
@@ -229,7 +247,7 @@ app.innerHTML = `
       <p id="victory-narrative"></p>
       <div id="victory-timeline"></div>
       <div class="victory-actions">
-        <button id="victory-share-btn">Share</button>
+        <button id="victory-share-btn" aria-label="Save victory screen"></button>
         <a id="victory-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Join our Discord</a>
         <button id="victory-continue-btn">Continue</button>
       </div>
@@ -243,8 +261,7 @@ app.innerHTML = `
       </div>
       <div id="tapestry-actions">
         <button id="tapestry-heart-btn" aria-label="Love this tapestry">\u2665</button>
-        <button id="tapestry-share-btn">Save</button>
-        <a id="tapestry-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Share on Discord</a>
+        <button id="tapestry-share-btn" aria-label="Save tapestry"></button>
       </div>
     </div>
   </div>
@@ -264,6 +281,8 @@ const victoryOverlay = document.getElementById("victory-overlay")!;
 const victoryPanel = document.getElementById("victory-panel")!;
 const victoryTimeline = document.getElementById("victory-timeline")!;
 const victoryShareBtn = document.getElementById("victory-share-btn")!;
+victoryShareBtn.innerHTML = SAVE_SVG;
+document.getElementById("tapestry-share-btn")!.innerHTML = SAVE_SVG;
 const restartButton = document.getElementById("restart-btn")!;
 let modelSelect: HTMLSelectElement | null = null;
 const demoResetOverlay = document.getElementById("demo-reset-overlay")!;
@@ -296,6 +315,22 @@ const handleEraToastClose = () => {
 let tapestryPromise: Promise<{ base64: string; mimeType: string; tapestryId?: string | null; sharePath?: string | null; ssoExpired?: boolean } | null> | null = null;
 let tapestrySharePath: string | null = null;
 let runId: string = crypto.randomUUID();
+
+// --- Era advancement pipeline ---
+type EraSnapshot = {
+  fromEra: string;
+  completedAt: number;
+  actions: ActionLogEntry[];
+  inventory: string[];
+  tapestryGameData: ReturnType<typeof buildTapestryGameData>;
+  eraStartedAt: number;
+  spawnCounts: Record<string, number>;
+  spawnByTier: Record<number, number>;
+};
+let latestEraSnapshot: EraSnapshot | null = null;
+let latestEraChoice: { era: Era; narrative: string } | null = null;
+let latestTapestryPromise: Promise<{ base64: string; mimeType: string; tapestryId?: string | null; sharePath?: string | null; ssoExpired?: boolean } | null> | null = null;
+let eraAdvancementDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 function startTapestryGeneration(
   narrative: string,
@@ -353,7 +388,6 @@ async function showTapestry() {
     showEraToast("⚠️ Auth Expired", "AWS SSO token has expired. Run this in your terminal:\n\naws sso login --sso-session sxxx-sso\n\nTapestry was generated but not saved.");
   }
   tapestryContent.innerHTML = `<img id="tapestry-img" src="data:${result.mimeType};base64,${result.base64}" alt="Era tapestry">`;
-  setDiscordCta(document.getElementById("tapestry-discord-btn"));
   tapestryActions.style.display = "flex";
 }
 
@@ -715,6 +749,11 @@ const handleKeyDown = (e: KeyboardEvent) => {
 document.addEventListener("keydown", handleKeyDown);
 
 tapestryClose.addEventListener("click", closeTapestry);
+tapestryOverlay.addEventListener("click", (e) => {
+  if (e.target === tapestryOverlay && tapestryOverlay.classList.contains("tapestry-closeable")) {
+    closeTapestry();
+  }
+});
 
 document.getElementById("tapestry-heart-btn")!.addEventListener("click", () => {
   posthog.capture('tapestry_hearted', { era_name: eraManager.current.name });
@@ -722,19 +761,10 @@ document.getElementById("tapestry-heart-btn")!.addEventListener("click", () => {
 
 document.getElementById("tapestry-share-btn")!.addEventListener("click", () => {
   posthog.capture('tapestry_viewed', { era_name: eraManager.current.name });
-  // TODO: re-enable when tapestry share links are ready
-  // if (tapestrySharePath) {
-  //   window.open(new URL(tapestrySharePath, window.location.origin).toString(), "_blank", "noopener,noreferrer");
-  //   return;
-  // }
-
   const img = document.getElementById("tapestry-img") as HTMLImageElement | null;
   if (!img) return;
   const ext = img.src.startsWith("data:image/jpeg") ? "jpg" : "png";
-  const a = document.createElement("a");
-  a.href = img.src;
-  a.download = `bari-tapestry.${ext}`;
-  a.click();
+  saveImage(img.src, `bari-tapestry.${ext}`);
 });
 
 heatmapClose.addEventListener("click", closeHeatmap);
@@ -1159,7 +1189,11 @@ function getDiscoveredItems(): string[] {
 
 async function checkEraAdvancement() {
   if (victoryShown) return; // Age of Plenty — free-build mode, no more advancement
-  if (eraAdvancing) return;
+  if (eraAdvancing) {
+    // Player made another combine while era is advancing — debounce a fresh pipeline
+    scheduleAdvancementPipeline();
+    return;
+  }
   log.debug("era", "Checking era advancement...");
 
   const tier5Count = eraActionLog.filter((e) => e.resultTier === 5).length;
@@ -1185,24 +1219,75 @@ async function checkEraAdvancement() {
   eraAdvancing = true;
   pendingEraResult = result;
   chartEraBtn.classList.add("visible");
+  scheduleAdvancementPipeline(); // start choose-era + tapestry pipeline with 1s debounce
+}
+
+function scheduleAdvancementPipeline() {
+  if (eraAdvancementDebounceTimer) clearTimeout(eraAdvancementDebounceTimer);
+  eraAdvancementDebounceTimer = setTimeout(() => {
+    eraAdvancementDebounceTimer = null;
+    runAdvancementPipeline();
+  }, 1_000);
+}
+
+async function runAdvancementPipeline() {
+  if (!eraAdvancing) return;
+
+  // Snapshot the current game state at the moment this pipeline fires
+  const snapInventory = getDiscoveredItems();
+  const snapActions = [...eraActionLog];
+  const snapAt = Date.now();
+  const snap: EraSnapshot = {
+    fromEra: eraManager.current.name,
+    completedAt: snapAt,
+    actions: snapActions,
+    inventory: snapInventory,
+    tapestryGameData: buildTapestryGameData({ completedAt: snapAt, discoveredItems: snapInventory, completedEraActions: snapActions }),
+    eraStartedAt,
+    spawnCounts: { ...eraSpawnCounts },
+    spawnByTier: { ...eraSpawnByTier },
+  };
+  latestEraSnapshot = snap;
+
+  // Choose next era (or generate victory narrative)
+  let choice: { era: Era; narrative: string };
+  if (eraManager.isLastEra) {
+    const narrative = await eraManager.generateAdvancementNarrative(snap.actions, snap.inventory, selectedModel, "the Age of Plenty");
+    choice = { era: { name: "the Age of Plenty", seeds: [], goals: [], order: 9999 }, narrative: narrative ?? pendingEraResult!.narrative };
+  } else {
+    choice = await eraManager.chooseNextEra(snap.actions, snap.inventory, selectedModel, getOrCreateAnonId(), runId);
+  }
+  if (!eraAdvancing) return;
+  latestEraChoice = choice;
+
+  // Fire tapestry generation — no await, store promise as latest
+  startTapestryGeneration(choice.narrative, snap.fromEra, choice.era.name, snap.tapestryGameData);
+  latestTapestryPromise = tapestryPromise;
 }
 
 async function doEraTransition(result: { narrative: string }) {
-  try {
-    const inventory = getDiscoveredItems();
-    const completedAt = Date.now();
-    const completedEraActions = [...eraActionLog];
+  // Stop any pending pipeline debounce — we're committing to the latest snapshot now
+  if (eraAdvancementDebounceTimer) {
+    clearTimeout(eraAdvancementDebounceTimer);
+    eraAdvancementDebounceTimer = null;
+  }
 
-    const fromEra = eraManager.current.name;
+  try {
+    // Use snapshot from background pipeline if available, otherwise build it now
+    const snap = latestEraSnapshot;
+    const inventory = snap?.inventory ?? getDiscoveredItems();
+    const completedAt = snap?.completedAt ?? Date.now();
+    const completedEraActions = snap?.actions ?? [...eraActionLog];
+    const completedEraStartedAt = snap?.eraStartedAt ?? eraStartedAt;
+    const completedEraSpawnCounts = snap?.spawnCounts ?? { ...eraSpawnCounts };
+    const completedEraSpawnByTier = snap?.spawnByTier ?? { ...eraSpawnByTier };
+
+    const fromEra = snap?.fromEra ?? eraManager.current.name;
     const eraNumber = eraManager.history.length + 1;
     const combinationsInEra = eraActionLog.length;
     const itemsDiscoveredInEra = inventory.length;
 
-    const completedEraStartedAt = eraStartedAt;
-    const completedEraSpawnCounts = { ...eraSpawnCounts };
-    const completedEraSpawnByTier = { ...eraSpawnByTier };
-
-    const tapestryGameData = buildTapestryGameData({
+    const tapestryGameData = snap?.tapestryGameData ?? buildTapestryGameData({
       completedAt,
       discoveredItems: inventory,
       completedEraActions,
@@ -1213,26 +1298,47 @@ async function doEraTransition(result: { narrative: string }) {
     eraSpawnCounts = {};
     eraSpawnByTier = {};
 
+    // Use tapestry promise from background pipeline if one is in flight/ready
+    if (latestTapestryPromise) tapestryPromise = latestTapestryPromise;
+
+    // Clear pipeline state
+    latestEraSnapshot = null;
+    const preComputedChoice = latestEraChoice;
+    latestEraChoice = null;
+    latestTapestryPromise = null;
+
     if (eraManager.isLastEra) {
       log.info("era", "VICTORY — Space Age completed!");
-      showToast("Bari is weaving the tapestry of ages...", null);
-      bari.classList.add("active");
-      const victoryNarrative = await eraManager.generateAdvancementNarrative(actionLog, inventory, selectedModel, "the Age of Plenty");
-      bari.classList.remove("active");
-      startTapestryGeneration(victoryNarrative ?? result.narrative, fromEra, "the Age of Plenty", tapestryGameData);
+      let victoryNarrative: string | null = preComputedChoice?.narrative ?? null;
+      if (!victoryNarrative) {
+        showToast("Bari is weaving the tapestry of ages...", null);
+        bari.classList.add("active");
+        victoryNarrative = await eraManager.generateAdvancementNarrative(actionLog, inventory, selectedModel, "the Age of Plenty");
+        bari.classList.remove("active");
+      }
+      if (!tapestryPromise) {
+        startTapestryGeneration(victoryNarrative ?? result.narrative, fromEra, "the Age of Plenty", tapestryGameData);
+      }
       clearSave();
       victoryShown = true;
       showVictory(victoryNarrative ?? undefined);
       return; // busy + eraAdvancing stay true until player clicks Continue Building
     }
 
-    showToast("Bari is charting the next age...", null);
-    bari.classList.add("active");
-    const choice = await eraManager.chooseNextEra(actionLog, inventory, selectedModel, getOrCreateAnonId(), runId);
-    bari.classList.remove("active");
+    let choice: { era: Era; narrative: string };
+    if (preComputedChoice) {
+      choice = preComputedChoice;
+    } else {
+      showToast("Bari is charting the next age...", null);
+      bari.classList.add("active");
+      choice = await eraManager.chooseNextEra(actionLog, inventory, selectedModel, getOrCreateAnonId(), runId);
+      bari.classList.remove("active");
+    }
 
-    // Start tapestry fetch immediately — fires in background while player reads era summary
-    startTapestryGeneration(choice.narrative, fromEra, choice.era.name, tapestryGameData);
+    // If background pipeline didn't start tapestry yet, start it now
+    if (!tapestryPromise) {
+      startTapestryGeneration(choice.narrative, fromEra, choice.era.name, tapestryGameData);
+    }
 
     const nextEra = eraManager.advanceTo(choice.era.name);
     if (nextEra) {
@@ -1267,6 +1373,9 @@ async function doEraTransition(result: { narrative: string }) {
     busy = false;
     eraAdvancing = false;
     pendingEraResult = null;
+    latestEraSnapshot = null;
+    latestEraChoice = null;
+    latestTapestryPromise = null;
   }
 }
 
@@ -1513,10 +1622,7 @@ const handleVictoryShare = async () => {
   const panel = document.getElementById("victory-panel")!;
   try {
     const dataUrl = await toPng(panel, { pixelRatio: 2 });
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = "bari-victory.png";
-    a.click();
+    await saveImage(dataUrl, "bari-victory.png");
   } catch (err) {
     log.error("system", `[SHARE] Victory share failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : ""}`);
     showToast("Could not save image", 3000);
