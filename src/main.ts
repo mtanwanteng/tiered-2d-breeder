@@ -1497,14 +1497,16 @@ function renderEraStatCards(h: { actions: ActionLogEntry[]; discoveredItems: str
     const discoveredCells = discoveredByTier.map((v, i) => `<td>${activeTiers[i] === 1 ? '' : v}</td>`).join('') + `<td class="era-tier-total-col">${discoveredByTier.reduce((a, b) => a + b, 0)}</td>`;
 
     tierTable = `
-      <table class="era-tier-table">
-        <thead><tr><th></th>${headerCells}</tr></thead>
-        <tbody>
-          <tr><td class="era-tier-label">placed</td>${placedCells}</tr>
-          <tr><td class="era-tier-label">combos</td>${combosCells}</tr>
-          <tr><td class="era-tier-label">discovered</td>${discoveredCells}</tr>
-        </tbody>
-      </table>`;
+      <div class="era-tier-table-wrap">
+        <table class="era-tier-table">
+          <thead><tr><th></th>${headerCells}</tr></thead>
+          <tbody>
+            <tr><td class="era-tier-label">placed</td>${placedCells}</tr>
+            <tr><td class="era-tier-label">combos</td>${combosCells}</tr>
+            <tr><td class="era-tier-label">discovered</td>${discoveredCells}</tr>
+          </tbody>
+        </table>
+      </div>`;
   }
 
   const favoriteRow = topSpawn

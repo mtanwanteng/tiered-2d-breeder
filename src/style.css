@@ -1127,6 +1127,11 @@ body {
 }
 
 /* --- Tier breakdown table (scoreboard + era summary + victory) --- */
+.era-tier-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .era-tier-table {
   width: 100%;
   border-collapse: collapse;
