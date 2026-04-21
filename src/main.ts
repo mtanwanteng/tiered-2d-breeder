@@ -1253,8 +1253,9 @@ function getDiscoveredItems(): string[] {
 async function checkEraAdvancement() {
   if (victoryShown) return; // Age of Plenty — free-build mode, no more advancement
   if (eraAdvancing) {
-    // Player made another combine while era is advancing — debounce a fresh pipeline
-    scheduleAdvancementPipeline();
+    // Player combined again while era is advancing — debounce a fresh pipeline,
+    // but only if we haven't already committed to the transition (busy = true).
+    if (!busy) scheduleAdvancementPipeline();
     return;
   }
   log.debug("era", "Checking era advancement...");
@@ -1282,7 +1283,7 @@ async function checkEraAdvancement() {
   eraAdvancing = true;
   pendingEraResult = result;
   chartEraBtn.classList.add("visible");
-  scheduleAdvancementPipeline(); // start choose-era + tapestry pipeline with 1s debounce
+  runAdvancementPipeline(); // first pipeline fires immediately — no debounce
 }
 
 function scheduleAdvancementPipeline() {
