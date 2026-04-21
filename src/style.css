@@ -774,8 +774,7 @@ body {
   border: 2px solid #ffd700;
   border-radius: 20px;
   padding: 32px 40px;
-  max-width: 90vw;
-  width: 90vw;
+  width: min(800px, 92vw);
   max-height: 90vh;
   max-height: 90dvh;
   overflow-y: auto;
@@ -1015,8 +1014,7 @@ body {
   border: 2px solid #ffd700;
   border-radius: 20px;
   padding: 32px 40px;
-  max-width: 90vw;
-  width: 90vw;
+  width: min(800px, 92vw);
   max-height: 90vh;
   max-height: 90dvh;
   overflow-y: auto;
@@ -1131,7 +1129,6 @@ body {
 }
 
 .era-tier-table {
-  width: 100%;
   border-collapse: collapse;
   margin-bottom: 6px;
   font-size: 11px;
@@ -1150,6 +1147,10 @@ body {
 
 .era-tier-table thead th:first-child {
   text-align: left;
+  position: sticky;
+  left: 0;
+  background: #16213e;
+  z-index: 2;
 }
 
 .era-tier-table tbody tr:nth-child(odd) {
@@ -1171,6 +1172,10 @@ body {
   font-size: 10px;
   white-space: nowrap;
   padding-right: 14px !important;
+  position: sticky;
+  left: 0;
+  background: #16213e;
+  z-index: 1;
 }
 
 .era-tier-total-col {
@@ -1221,7 +1226,7 @@ body {
   border: 2px solid #ffd700;
   border-radius: 16px;
   padding: 28px 36px;
-  width: min(680px, 92vw);
+  width: min(760px, 92vw);
   max-height: 90vh;
   max-height: 90dvh;
   overflow-y: auto;
