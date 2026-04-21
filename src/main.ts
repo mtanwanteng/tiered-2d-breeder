@@ -1566,7 +1566,7 @@ function showScoreboard() {
         ${renderEraStatCards(h)}
         <p class="victory-narrative">${esc(h.advancementNarrative)}</p>
         <div class="victory-items">${topItems}${h.discoveredItems.length > 8 ? '\u2026' : ''}</div>
-        <canvas class="victory-graph" id="scoreboard-graph-${i}"></canvas>
+        <div class="victory-graph-wrap"><canvas class="victory-graph" id="scoreboard-graph-${i}"></canvas></div>
       </div>
     `;
   }).join('');
@@ -1686,7 +1686,7 @@ function showVictory(narrative?: string) {
           ${renderEraStatCards(h)}
           <p class="victory-narrative">${esc(h.advancementNarrative)}</p>
           <div class="victory-items">${topItems}${h.discoveredItems.length > 8 ? "..." : ""}</div>
-          <canvas class="victory-graph" id="victory-graph-${i}"></canvas>
+          <div class="victory-graph-wrap"><canvas class="victory-graph" id="victory-graph-${i}"></canvas></div>
         </div>
       `;
     })
