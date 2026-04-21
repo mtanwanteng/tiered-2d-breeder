@@ -774,7 +774,7 @@ body {
   border: 2px solid #ffd700;
   border-radius: 20px;
   padding: 32px 40px;
-  width: min(800px, 92vw);
+  width: min(900px, 95vw);
   max-height: 90vh;
   max-height: 90dvh;
   overflow-y: auto;
@@ -1176,6 +1176,13 @@ body {
   left: 0;
   background: #16213e;
   z-index: 1;
+}
+
+/* Inside victory era cards (.victory-era bg is #0f3460), even rows are
+   transparent so the card background shows through — match it on sticky cells */
+.victory-era .era-tier-table thead th:first-child,
+.victory-era .era-tier-table tbody tr:nth-child(even) .era-tier-label {
+  background: #0f3460;
 }
 
 .era-tier-total-col {
