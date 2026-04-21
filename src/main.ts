@@ -1106,7 +1106,7 @@ function findOverlap(dragged: CombineItem): CombineItem | null {
 
 function clearAllGlow() {
   for (const item of items) {
-    item.el.classList.remove("glow-green", "glow-red");
+    item.el.classList.remove("glow-green", "glow-red", "combo-reject");
   }
 }
 
@@ -1117,7 +1117,7 @@ function updateOverlapGlow(dragged: CombineItem) {
 
   if (dragged.name === other.name || dragged.tier === 5 || other.tier === 5) {
     dragged.el.classList.add("glow-red");
-    other.el.classList.add("glow-red");
+    other.el.classList.add("glow-red", "combo-reject");
   } else {
     dragged.el.classList.add("glow-green");
     other.el.classList.add("glow-green");

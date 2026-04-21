@@ -439,6 +439,23 @@ body {
   100% { transform: scale(1); }
 }
 
+.combo-reject::before,
+.combo-reject::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  width: 80%;
+  height: 3px;
+  background: rgba(255, 60, 60, 0.95);
+  border-radius: 2px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.combo-reject::before { transform: translateY(-50%) rotate(45deg); }
+.combo-reject::after  { transform: translateY(-50%) rotate(-45deg); }
+
 /* --- Combining placeholder --- */
 .combine-placeholder {
   position: absolute;
