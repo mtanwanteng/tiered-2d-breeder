@@ -201,7 +201,14 @@ app.innerHTML = `
   </div>
   <div id="goal-tooltip"></div>
   <div id="result-toast"></div>
-  <div id="thanks-toast">Thanks for playing! <button id="thanks-toast-close">&times;</button></div>
+  <div id="thanks-toast">
+    <div id="thanks-toast-body">
+      <div id="thanks-toast-title">Thanks for playing!</div>
+      <a id="thanks-toast-discord" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">Join our Discord to keep updated!</a>
+      <div id="thanks-toast-feedback">Send us feedback at <a href="mailto:info@alwayshungrygames.com">info@alwayshungrygames.com</a></div>
+    </div>
+    <button id="thanks-toast-close">&times;</button>
+  </div>
   <div id="era-toast">
     <h3 id="era-toast-title"></h3>
     <div id="era-toast-stats"></div>

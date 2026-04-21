@@ -668,18 +668,53 @@ body {
   background: #1e2a3a;
   border: 1px solid #3a4a5a;
   color: #ccc;
-  padding: 10px 16px 10px 20px;
-  border-radius: 8px;
+  padding: 14px 16px 14px 20px;
+  border-radius: 10px;
   font-size: 14px;
   display: none;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
   z-index: 100;
-  white-space: nowrap;
+  max-width: min(420px, 90vw);
 }
 
 #thanks-toast.visible {
   display: flex;
+}
+
+#thanks-toast-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#thanks-toast-title {
+  font-weight: 600;
+  color: #eee;
+}
+
+#thanks-toast-discord {
+  color: #7289da;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+#thanks-toast-discord:hover {
+  text-decoration: underline;
+}
+
+#thanks-toast-feedback {
+  font-size: 12px;
+  color: #888;
+}
+
+#thanks-toast-feedback a {
+  color: #8cf;
+  text-decoration: none;
+}
+
+#thanks-toast-feedback a:hover {
+  text-decoration: underline;
 }
 
 #thanks-toast-close {
@@ -690,6 +725,7 @@ body {
   cursor: pointer;
   padding: 0;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 #thanks-toast-close:hover {
