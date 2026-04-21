@@ -891,6 +891,21 @@ body {
   -webkit-overflow-scrolling: touch;
   margin-top: 10px;
   border-radius: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.victory-graph-wrap::-webkit-scrollbar {
+  height: 5px;
+}
+
+.victory-graph-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.victory-graph-wrap::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
 }
 
 .victory-graph {
@@ -1162,11 +1177,27 @@ body {
 .era-tier-table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  text-align: left;       /* prevent panel's text-align:center from centering the table oddly */
+  scrollbar-width: thin;  /* Firefox */
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.era-tier-table-wrap::-webkit-scrollbar {
+  height: 5px;
+}
+
+.era-tier-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.era-tier-table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
 }
 
 .era-tier-table {
   border-collapse: collapse;
-  margin-bottom: 6px;
+  margin: 0 auto 6px;   /* auto left/right centers the table when narrower than wrapper */
   font-size: 11px;
 }
 
