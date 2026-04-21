@@ -1516,6 +1516,32 @@ function renderEraStatCards(h: { actions: ActionLogEntry[]; discoveredItems: str
   return `${tierTable}${favoriteRow}`;
 }
 
+function renderEraCard(h: EraHistory, canvasId: string): string {
+  const seeds = h.startingSeeds.map(esc).join("  ");
+  const topItems = h.discoveredItems.slice(0, 8).map(esc).join(", ");
+  return `
+    <div class="victory-era">
+      <h4>${esc(h.eraName)}</h4>
+      <div class="victory-seeds">Started with: ${seeds}</div>
+      ${renderEraStatCards(h)}
+      <p class="victory-narrative">${esc(h.advancementNarrative)}</p>
+      <div class="victory-items">${topItems}${h.discoveredItems.length > 8 ? "\u2026" : ""}</div>
+      <div class="victory-graph-wrap"><canvas class="victory-graph" id="${canvasId}"></canvas></div>
+    </div>
+  `;
+}
+
+function renderEraGraphs(history: EraHistory[], canvasIdPrefix: string): void {
+  requestAnimationFrame(() => {
+    history.forEach((h, i) => {
+      const canvas = document.getElementById(`${canvasIdPrefix}-${i}`) as HTMLCanvasElement | null;
+      if (!canvas || h.actions.length === 0) return;
+      const seedNames = h.startingSeeds.map((s) => s.replace(/^.+\s/, ""));
+      renderCombinationGraph(canvas, h.actions, seedNames);
+    });
+  });
+}
+
 function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: string, onContinue: () => void) {
   hideToast();
   document.getElementById("era-summary-era-name")!.textContent = record.eraName;
@@ -1558,20 +1584,7 @@ function showScoreboard() {
     return;
   }
 
-  const timelineHtml = history.map((h, i) => {
-    const seeds = h.startingSeeds.map(esc).join('\u00A0\u00A0');
-    const topItems = h.discoveredItems.slice(0, 8).map(esc).join(', ');
-    return `
-      <div class="victory-era">
-        <h4>${esc(h.eraName)}</h4>
-        <div class="victory-seeds">Started with: ${seeds}</div>
-        ${renderEraStatCards(h)}
-        <p class="victory-narrative">${esc(h.advancementNarrative)}</p>
-        <div class="victory-items">${topItems}${h.discoveredItems.length > 8 ? '\u2026' : ''}</div>
-        <div class="victory-graph-wrap"><canvas class="victory-graph" id="scoreboard-graph-${i}"></canvas></div>
-      </div>
-    `;
-  }).join('');
+  const timelineHtml = history.map((h, i) => renderEraCard(h, `scoreboard-graph-${i}`)).join("");
 
   const totalItems = history.reduce((n, h) => n + h.discoveredItems.length, 0);
 
@@ -1585,15 +1598,7 @@ function showScoreboard() {
 
   scoreboardTimeline.innerHTML = timelineHtml + totalsHtml;
   scoreboardOverlay.classList.add("visible");
-
-  requestAnimationFrame(() => {
-    history.forEach((h, i) => {
-      const canvas = document.getElementById(`scoreboard-graph-${i}`) as HTMLCanvasElement | null;
-      if (!canvas || h.actions.length === 0) return;
-      const seedNames = h.startingSeeds.map((s) => s.replace(/^.+\s/, ''));
-      renderCombinationGraph(canvas, h.actions, seedNames);
-    });
-  });
+  renderEraGraphs(history, "scoreboard-graph");
 }
 
 function showEraToast(title: string, text: string, completedEra?: { eraName: string; combineCount: number; itemCount: number; topItems: string[] }) {
@@ -1678,20 +1683,7 @@ function showVictory(narrative?: string) {
 
   // Build timeline
   victoryTimeline.innerHTML = eraManager.history
-    .map((h, i) => {
-      const seeds = h.startingSeeds.map(esc).join("  ");
-      const topItems = h.discoveredItems.slice(0, 8).map(esc).join(", ");
-      return `
-        <div class="victory-era">
-          <h4>${esc(h.eraName)}</h4>
-          <div class="victory-seeds">Started with: ${seeds}</div>
-          ${renderEraStatCards(h)}
-          <p class="victory-narrative">${esc(h.advancementNarrative)}</p>
-          <div class="victory-items">${topItems}${h.discoveredItems.length > 8 ? "..." : ""}</div>
-          <div class="victory-graph-wrap"><canvas class="victory-graph" id="victory-graph-${i}"></canvas></div>
-        </div>
-      `;
-    })
+    .map((h, i) => renderEraCard(h, `victory-graph-${i}`))
     .join("");
 
   // Inject auth section before actions
@@ -1706,14 +1698,7 @@ function showVictory(narrative?: string) {
   victoryOverlay.classList.add("visible");
 
   // Render graphs after DOM is visible
-  requestAnimationFrame(() => {
-    eraManager.history.forEach((h, i) => {
-      const canvas = document.getElementById(`victory-graph-${i}`) as HTMLCanvasElement | null;
-      if (!canvas || h.actions.length === 0) return;
-      const seedNames = h.startingSeeds.map((s) => s.replace(/^.+\s/, "")); // strip emoji prefix
-      renderCombinationGraph(canvas, h.actions, seedNames);
-    });
-  });
+  renderEraGraphs(eraManager.history, "victory-graph");
 }
 
 const handleVictoryShare = async () => {
