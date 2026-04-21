@@ -778,7 +778,6 @@ body {
   width: 90vw;
   max-height: 90vh;
   max-height: 90dvh;
-  overflow-x: hidden;
   overflow-y: auto;
   text-align: center;
 }
@@ -1020,7 +1019,6 @@ body {
   width: 90vw;
   max-height: 90vh;
   max-height: 90dvh;
-  overflow-x: hidden;
   overflow-y: auto;
   text-align: center;
 }
