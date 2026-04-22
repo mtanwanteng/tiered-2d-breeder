@@ -15,30 +15,6 @@ function DiscordIcon({ size = 15 }: { size?: number }) {
   );
 }
 
-function VideoModal({ onClose }: { onClose: () => void }) {
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
-  }, [onClose]);
-
-  return (
-    <div className="htp-video-backdrop" onClick={onClose}>
-      <div className="htp-video-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="htp-video-close" onClick={onClose}>&times;</button>
-        <video
-          className="htp-video-player"
-          src="/how-to-play.mp4"
-          autoPlay
-          loop
-          playsInline
-          muted
-        />
-      </div>
-    </div>
-  );
-}
-
 const HTP_VIEWED_KEY = "htp_viewed";
 
 export function AuthOverlay() {
@@ -47,13 +23,11 @@ export function AuthOverlay() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [htpOpen, setHtpOpen] = useState(false);
-  const [videoOpen, setVideoOpen] = useState(false);
   const [hasViewedHtp, setHasViewedHtp] = useState(false);
   const htpRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const isFirstSessionRef = useRef(false); // true when this is the player's first HTP view
   const htpWasOpenRef = useRef(false);     // tracks open→close transition for dismiss event
-  const videoWatchedRef = useRef(false);   // whether video was played in this HTP session
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const name = useAuthStore((s) => s.name);
   const avatarUrl = useAuthStore((s) => s.avatarUrl);
@@ -87,9 +61,8 @@ export function AuthOverlay() {
       localStorage.setItem(HTP_VIEWED_KEY, "true");
       setHasViewedHtp(true);
     } else if (htpWasOpenRef.current) {
-      posthog?.capture("htp_dismissed", { video_watched: videoWatchedRef.current });
+      posthog?.capture("htp_dismissed");
       htpWasOpenRef.current = false;
-      videoWatchedRef.current = false;
     }
   }, [htpOpen, posthog]);
 
@@ -233,12 +206,18 @@ export function AuthOverlay() {
 
               <div className="htp-layout">
                 <div className="htp-col-main">
-                  <button className="htp-play-btn" onClick={() => { videoWatchedRef.current = true; posthog?.capture("htp_video_played"); setVideoOpen(true); }}>
-                    ▶ Play Video
-                  </button>
+                  <video
+                    className="htp-inline-video"
+                    src="/how-to-play.mp4"
+                    autoPlay
+                    loop
+                    playsInline
+                    muted
+                  />
 
                   <ol className="htp-steps">
-                    <li>Drag two tiles together to <strong>combine</strong> them into something new.</li>
+                    <li>Drag items out of inventory</li>
+                    <li>Drag two tiles together to <strong>combine</strong> them into something new. <span className="htp-example">🍓 Berry + 💧 Water = 🍇 Juice</span></li>
                     <li>Discover new <strong>ideas</strong> and build up your civilization.</li>
                     <li>Complete era goals to <strong>advance through history</strong>.</li>
                     <li>Reach the <strong>Age of Plenty</strong> to win.</li>
@@ -304,8 +283,6 @@ export function AuthOverlay() {
           )}
         </div>
       </div>
-
-      {videoOpen && <VideoModal onClose={() => { posthog?.capture("htp_video_closed"); setVideoOpen(false); }} />}
 
       <AuthModal
         isOpen={isModalOpen}

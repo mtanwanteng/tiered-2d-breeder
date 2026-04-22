@@ -1808,77 +1808,12 @@ body {
   vertical-align: middle;
 }
 
-.htp-play-btn {
-  width: 100%;
-  background: #0d1b2e;
-  border: 1px solid #3a5070;
-  border-radius: 8px;
-  color: #eee;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 10px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-  letter-spacing: 0.02em;
-}
-
-.htp-play-btn:hover {
-  background: #1a2e50;
-  border-color: #5a80a0;
-}
-
-.htp-video-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.88);
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.htp-video-modal {
-  position: relative;
-  background: #0d1b2e;
-  border: 2px solid #3a5070;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 0 60px rgba(0, 100, 200, 0.3);
-  display: inline-flex;
-}
-
-.htp-video-close {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid #3a5070;
-  color: #eee;
-  font-size: 20px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-.htp-video-close:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.htp-video-player {
+.htp-inline-video {
   display: block;
-  width: auto;
-  height: auto;
-  max-width: 90vw;
-  max-height: 90vh;
-  max-height: 90dvh;
-  max-height: 90dvh;
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border: 1px solid #3a5070;
 }
 
 .htp-steps {
@@ -1895,6 +1830,13 @@ body {
 
 .htp-steps strong {
   color: #eee;
+}
+
+.htp-example {
+  display: block;
+  font-size: 11px;
+  color: #78909c;
+  margin-top: 2px;
 }
 
 .htp-layout {
