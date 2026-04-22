@@ -33,9 +33,12 @@ export class EraManager {
     return this.getSeedsForEra(this.currentIndex);
   }
 
-  /** Get the seeds for any era by index, resolving from pool if needed */
-  getSeedsForEra(idx: number): ElementData[] {
-    if (this.resolvedSeeds.has(idx)) return this.resolvedSeeds.get(idx)!;
+  /** Get the seeds for any era by index, resolving from pool if needed.
+   *  Pass reroll=true to bypass the cache and re-shuffle — used by select-five's
+   *  Change Era so each visit to the same era produces a fresh random selection,
+   *  matching the base-edition behavior where each era is only entered once. */
+  getSeedsForEra(idx: number, reroll = false): ElementData[] {
+    if (!reroll && this.resolvedSeeds.has(idx)) return this.resolvedSeeds.get(idx)!;
     const era = allEras[idx];
     const seeds = era.seedPool && era.seedCount
       ? shuffle(era.seedPool).slice(0, era.seedCount)

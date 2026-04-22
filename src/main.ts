@@ -1313,7 +1313,9 @@ function s5HandleChangeEra() {
   // Soft reset: clear all workspace tiles and palette items. Collection slots persist (carry over).
   for (const item of [...items]) removeItem(item);
   paletteItems.innerHTML = "";
-  const newSeeds = eraManager.getSeedsForEra(selectFiveEraIndex);
+  // Re-roll so each Change Era into the same era produces a fresh random selection
+  // (base-edition only enters each era once, so the cached selection is normally fine).
+  const newSeeds = eraManager.getSeedsForEra(selectFiveEraIndex, true);
   for (const seed of newSeeds) addToPalette(seed, true);
   posthog.capture("select_five_era_changed", {
     to_era: eraManager.current.name,
