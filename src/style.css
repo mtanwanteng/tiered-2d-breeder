@@ -2499,3 +2499,539 @@ body {
   background: rgba(255, 215, 0, 0.14);
   border-color: rgba(255, 215, 0, 0.8);
 }
+
+/* ===================== Select-Five Mode ===================== */
+
+/* Tighten Bari directly below palette items in s5 — no auto-push, no surrounding padding */
+#app:has(#selection-panel) #bari {
+  margin-top: 0;
+  padding: 0;
+}
+
+/* Kill surrounding padding/margin around the Change Era button in s5 */
+#app:has(#selection-panel) #restart-btn {
+  margin: 0;
+}
+
+/* Desktop /select-five: auth buttons sit immediately left of the Your Collection panel
+   (panel is 260px wide, so right: 260px puts the auth-overlay's right edge flush against
+   the panel's left edge). Popup stays default-oriented (opens leftward). */
+.auth-overlay--s5 {
+  right: 260px;
+  left: auto;
+}
+
+/* Panel itself doesn't scroll — only the .s5-scroll middle region does.
+   Title (top) and Finalize button (bottom) stay pinned because they're outside
+   the scrollable child. */
+#selection-panel {
+  width: 260px;
+  background: #16213e;
+  border-left: 2px solid #0f3460;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.s5-title {
+  margin: 0;
+  font-size: 16px;
+  color: #e94560;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.s5-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.s5-goal {
+  margin: 0;
+  font-size: 13px;
+  color: #ffd700;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.s5-prompt {
+  margin: 0;
+  font-size: 11px;
+  color: #b0bec5;
+  line-height: 1.45;
+}
+
+#selection-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.selection-slot {
+  position: relative;
+  width: 100%;
+  min-height: 48px;
+  border: 2px dashed #3a5070;
+  border-radius: 10px;
+  background: rgba(15, 52, 96, 0.2);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  user-select: none;
+}
+
+.selection-slot .slot-empty-hint {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.18);
+  font-weight: 700;
+  margin: 0 auto;
+}
+
+.selection-slot.slot-occupied {
+  border-style: solid;
+  border-color: rgba(255, 215, 0, 0.55);
+  background: rgba(255, 215, 0, 0.06);
+}
+
+.selection-slot.slot-hover {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.16);
+}
+
+.slot-emoji {
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.slot-name {
+  font-size: 12px;
+  color: #eee;
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slot-tier {
+  font-size: 10px;
+  color: #ffd700;
+  flex-shrink: 0;
+}
+
+.slot-remove-btn {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.selection-slot.slot-occupied:hover .slot-remove-btn {
+  display: flex;
+}
+
+.slot-remove-btn:hover {
+  background: rgba(233, 69, 96, 0.45);
+  color: #fff;
+}
+
+/* Invisible placeholder slot: exists only to keep the 5th slot at half-width in the
+   2-per-row nested portrait layout. Hidden by default; surfaced in the mobile portrait
+   media query below. */
+.selection-slot.slot-placeholder {
+  display: none;
+}
+
+/* Duplicate-drop rejection flash */
+.selection-slot.slot-reject {
+  border-color: #ff4d5e !important;
+  background: rgba(255, 77, 94, 0.25) !important;
+  animation: s5-slot-shake 0.35s ease-in-out;
+}
+
+@keyframes s5-slot-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+#selection-finalize-btn {
+  flex-shrink: 0;
+  padding: 10px;
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 8px;
+  color: #ffd700;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+#selection-finalize-btn:not([disabled]) {
+  opacity: 1;
+  animation: chart-btn-pulse 2s ease-in-out infinite;
+}
+
+#selection-finalize-btn:not([disabled]):hover {
+  animation: none;
+  background: rgba(255, 215, 0, 0.18);
+  border-color: rgba(255, 215, 0, 0.85);
+}
+
+#selection-finalize-btn[disabled] {
+  cursor: not-allowed;
+}
+
+/* Finalize intent modal */
+#finalize-intent-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+#finalize-intent-modal.visible {
+  display: flex;
+}
+
+.s5-modal-panel {
+  background: #0d1b2e;
+  border: 2px solid rgba(255, 215, 0, 0.45);
+  border-radius: 14px;
+  padding: 32px;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: 0 0 60px rgba(255, 215, 0, 0.2);
+  text-align: center;
+}
+
+.s5-modal-title {
+  margin: 0 0 22px;
+  font-size: 18px;
+  color: #eee;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.s5-modal-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.s5-modal-buttons button {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  border: 1px solid #3a5070;
+  background: #1a2e50;
+  color: #eee;
+}
+
+.s5-btn-keep {
+  background: rgba(255, 215, 0, 0.12) !important;
+  border-color: rgba(255, 215, 0, 0.5) !important;
+  color: #ffd700 !important;
+}
+
+.s5-btn-keep:hover {
+  background: rgba(255, 215, 0, 0.22) !important;
+}
+
+.s5-btn-gift {
+  background: rgba(144, 202, 249, 0.12) !important;
+  border-color: rgba(144, 202, 249, 0.5) !important;
+  color: #90caf9 !important;
+}
+
+.s5-btn-gift:hover {
+  background: rgba(144, 202, 249, 0.22) !important;
+}
+
+.s5-btn-continue:hover {
+  background: #24426e;
+}
+
+/* Share screen */
+#select-five-share-screen {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+}
+
+#select-five-share-screen.visible {
+  display: flex;
+}
+
+.s5-share-panel {
+  background: #0d1b2e;
+  border: 2px solid rgba(255, 215, 0, 0.45);
+  border-radius: 14px;
+  padding: 32px;
+  max-width: 900px;
+  width: 100%;
+  box-shadow: 0 0 60px rgba(255, 215, 0, 0.2);
+  text-align: center;
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+#select-five-share-card {
+  background: #0d1b2e;
+  width: 560px;
+  max-width: 100%;
+  padding: 32px 28px;
+  border-radius: 12px;
+  margin: 0 auto 20px;
+  border: 1px solid rgba(255, 215, 0, 0.25);
+}
+
+.s5-card-header {
+  margin: 0 0 24px;
+  font-size: 28px;
+  color: #ffd700;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+.s5-card-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.s5-card-tile {
+  background: #16213e;
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+}
+
+.s5-card-tile--empty {
+  opacity: 0.3;
+  border-style: dashed;
+}
+
+.s5-card-emoji {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.s5-card-name {
+  flex: 1;
+  font-size: 15px;
+  color: #eee;
+  text-align: left;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.s5-card-tier {
+  font-size: 13px;
+  color: #ffd700;
+  flex-shrink: 0;
+}
+
+.s5-card-footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.s5-share-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.s5-share-actions button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #3a5070;
+  background: #1a2e50;
+  color: #eee;
+  transition: background 0.15s;
+}
+
+.s5-share-download {
+  background: rgba(255, 215, 0, 0.12) !important;
+  border-color: rgba(255, 215, 0, 0.5) !important;
+  color: #ffd700 !important;
+}
+
+.s5-share-download:hover {
+  background: rgba(255, 215, 0, 0.22) !important;
+}
+
+.s5-share-continue:hover {
+  background: #24426e;
+}
+
+/* Small portrait phones: collection pane nests inside the palette (DOM-reparented in main.ts).
+   Palette items retain their normal horizontal layout. */
+@media (max-width: 600px) and (orientation: portrait) {
+  /* Keep the zoom controls visible regardless of scroll/zoom — pin the inventory header */
+  #inventory-header {
+    position: sticky;
+    top: 0;
+    background: #16213e;
+    z-index: 3;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  /* Revert auth-overlay to top-right on small portrait (no side sidebar here) */
+  .auth-overlay--s5 {
+    right: 12px;
+    left: auto;
+  }
+
+  /* Selection panel nested inside palette (DOM-reparented to be first child) */
+  #palette > #selection-panel {
+    width: 100%;
+    border-left: none;
+    border-bottom: 1px solid #0f3460;
+    padding: 8px 0 12px;
+    margin: 0 0 10px;
+    gap: 6px;
+  }
+
+  /* On mobile portrait (nested): slots first, then goal, then prompt */
+  #palette > #selection-panel #selection-slots {
+    order: 1;
+  }
+  #palette > #selection-panel .s5-goal {
+    order: 2;
+    font-size: 11px;
+  }
+  #palette > #selection-panel .s5-prompt {
+    order: 3;
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  #palette > #selection-panel #selection-slots {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* Two slots per row at equal width */
+  #palette > #selection-panel .selection-slot {
+    flex: 0 0 calc(50% - 2px);
+    min-width: 0;
+    min-height: 42px;
+    padding: 4px 6px;
+    gap: 4px;
+  }
+
+  /* Placeholder becomes visible-as-space only in the nested portrait layout so the
+     5th real slot stays at 50% width (not grown to fill its row) */
+  #palette > #selection-panel .slot-placeholder {
+    display: flex;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Finalize button moved outside the collection frame — remove auto margin push */
+  #palette > #selection-finalize-btn {
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
+
+  #palette > #selection-panel .slot-name {
+    font-size: 9px;
+  }
+
+  #palette > #selection-panel .slot-tier {
+    font-size: 8px;
+  }
+
+  #palette > #selection-panel .slot-emoji {
+    font-size: 18px;
+  }
+
+  #palette > #selection-panel .slot-name {
+    font-size: 9px;
+  }
+
+  .s5-modal-panel,
+  .s5-share-panel {
+    padding: 20px;
+  }
+
+  .s5-modal-buttons button,
+  .s5-share-actions button {
+    width: 100%;
+  }
+
+  .s5-card-tile {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .s5-card-emoji {
+    font-size: 26px;
+  }
+
+  .s5-card-name {
+    font-size: 13px;
+  }
+}

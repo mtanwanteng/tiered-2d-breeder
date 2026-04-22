@@ -1,7 +1,8 @@
-import type { ElementData, ActionLogEntry, EraHistory, ModelId } from "./types";
+import type { ElementData, ActionLogEntry, EraHistory, ModelId, Tier } from "./types";
 import { log } from "./logger";
 
-const SAVE_KEY = "bari-save";
+export const SAVE_KEY = "bari-save";
+export const SELECT_FIVE_SAVE_KEY = "bari-select-five-save";
 
 export interface SaveData {
   version: 1;
@@ -16,20 +17,23 @@ export interface SaveData {
   eraResolvedSeeds: Record<number, ElementData[]>;
   eraGoalStates: Record<number, { met: boolean; narrative?: string }[][] | { met: boolean; narrative?: string }[]>;
   paletteItems: ElementData[];
+  // select-five mode only (absent in normal saves)
+  selectedSlots?: ({ name: string; tier: Tier } | null)[];
+  selectFiveEraIndex?: number;
 }
 
-export function saveGame(data: SaveData): void {
+export function saveGame(data: SaveData, key: string = SAVE_KEY): void {
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    localStorage.setItem(key, JSON.stringify(data));
     log.debug("system", "Game saved");
   } catch (err) {
     log.error("system", `Save failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
 
-export function loadGame(): SaveData | null {
+export function loadGame(key: string = SAVE_KEY): SaveData | null {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return null;
     const data = JSON.parse(raw) as SaveData;
     if (data.version !== 1) return null;
@@ -41,7 +45,7 @@ export function loadGame(): SaveData | null {
   }
 }
 
-export function clearSave(): void {
-  localStorage.removeItem(SAVE_KEY);
+export function clearSave(key: string = SAVE_KEY): void {
+  localStorage.removeItem(key);
   log.info("system", "Save data cleared");
 }

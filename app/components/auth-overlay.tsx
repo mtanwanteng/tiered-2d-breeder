@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePostHog } from "posthog-js/react";
+import { usePathname } from "next/navigation";
 import { authClient } from "../auth-client";
 import { authStore, useAuthStore } from "../../src/store/auth";
 import { isDiscordActivity } from "../../src/discord";
@@ -16,8 +17,12 @@ function DiscordIcon({ size = 15 }: { size?: number }) {
 }
 
 const HTP_VIEWED_KEY = "htp_viewed";
+const HTP_VIEWED_KEY_S5 = "htp_viewed_s5";
 
 export function AuthOverlay() {
+  const pathname = usePathname();
+  const isSelectFive = pathname === "/select-five";
+  const htpKey = isSelectFive ? HTP_VIEWED_KEY_S5 : HTP_VIEWED_KEY;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fromVictory, setFromVictory] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -36,15 +41,15 @@ export function AuthOverlay() {
 
   // On mount: initialise viewed flag; auto-open HTP on first visit
   useEffect(() => {
-    const viewed = localStorage.getItem(HTP_VIEWED_KEY) === "true";
+    const viewed = localStorage.getItem(htpKey) === "true";
     setHasViewedHtp(viewed);
     if (!viewed) {
       isFirstSessionRef.current = true;
       setHtpOpen(true);
-      localStorage.setItem(HTP_VIEWED_KEY, "true");
+      localStorage.setItem(htpKey, "true");
       setHasViewedHtp(true);
     }
-  }, []);
+  }, [htpKey]);
 
   // Fire htp_first_opened once posthog is ready (may lag behind mount on first visit)
   useEffect(() => {
@@ -58,13 +63,13 @@ export function AuthOverlay() {
   useEffect(() => {
     if (htpOpen) {
       htpWasOpenRef.current = true;
-      localStorage.setItem(HTP_VIEWED_KEY, "true");
+      localStorage.setItem(htpKey, "true");
       setHasViewedHtp(true);
     } else if (htpWasOpenRef.current) {
       posthog?.capture("htp_dismissed");
       htpWasOpenRef.current = false;
     }
-  }, [htpOpen, posthog]);
+  }, [htpOpen, posthog, htpKey]);
 
   // Close HTP popup when clicking outside
   useEffect(() => {
@@ -137,7 +142,7 @@ export function AuthOverlay() {
 
   return (
     <>
-      <div className="auth-overlay">
+      <div className={`auth-overlay${isSelectFive ? " auth-overlay--s5" : ""}`}>
         {isLoggedIn ? (
           <div className="account-wrapper" ref={accountRef}>
             <button
@@ -215,13 +220,22 @@ export function AuthOverlay() {
                     muted
                   />
 
-                  <ol className="htp-steps">
-                    <li>Drag items out of inventory</li>
-                    <li>Drag two tiles together to <strong>combine</strong> them into something new. <span className="htp-example">🍓 Berry + 💧 Water = 🍇 Juice</span></li>
-                    <li>Discover new <strong>ideas</strong> and build up your civilization.</li>
-                    <li>Complete era goals to <strong>advance through history</strong>.</li>
-                    <li>Reach the <strong>Age of Plenty</strong> to win.</li>
-                  </ol>
+                  {isSelectFive ? (
+                    <ol className="htp-steps">
+                      <li>Drag items out of inventory</li>
+                      <li>Drag two tiles together to <strong>combine</strong> them into something new. <span className="htp-example">🍓 Berry + 💧 Water = 🍇 Juice</span></li>
+                      <li>Pick your <strong>5 favorites</strong> and drop them into the Collection panel</li>
+                      <li>Click <strong>Change Era</strong> to explore a different starting inventory</li>
+                    </ol>
+                  ) : (
+                    <ol className="htp-steps">
+                      <li>Drag items out of inventory</li>
+                      <li>Drag two tiles together to <strong>combine</strong> them into something new. <span className="htp-example">🍓 Berry + 💧 Water = 🍇 Juice</span></li>
+                      <li>Discover new <strong>ideas</strong> and build up your civilization.</li>
+                      <li>Complete era goals to <strong>advance through history</strong>.</li>
+                      <li>Reach the <strong>Age of Plenty</strong> to win.</li>
+                    </ol>
+                  )}
                 </div>
 
                 <div className="htp-tapestry-promo">
@@ -246,7 +260,7 @@ export function AuthOverlay() {
               {!isLoggedIn && !isDiscordActivity() && (
                 <div className="htp-cta">
                   <p className="htp-cta-text">
-                    <strong>Sign in</strong> to save your civilization and share your journey with friends.
+                    <strong>Sign in</strong> to save your {isSelectFive ? "discoveries" : "civilization"} and share your journey with friends.
                   </p>
                   <button className="htp-cta-btn" onClick={openLogin}>
                     Sign in to save &amp; share

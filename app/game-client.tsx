@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePostHog } from "posthog-js/react";
 import { AuthOverlay } from "./components/auth-overlay";
 
-export default function GameClient() {
+export default function GameClient({ selectFiveMode = false }: { selectFiveMode?: boolean } = {}) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const posthog = usePostHog();
 
@@ -13,13 +13,13 @@ export default function GameClient() {
 
     void import("../src/main").then(({ mountGame }) => {
       if (!containerRef.current) return;
-      cleanup = mountGame(containerRef.current);
+      cleanup = mountGame(containerRef.current, selectFiveMode);
     });
 
     return () => {
       cleanup?.();
     };
-  }, []);
+  }, [selectFiveMode]);
 
   useEffect(() => {
     if (!posthog) return;

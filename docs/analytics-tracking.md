@@ -189,6 +189,33 @@
 
 ---
 
+## Experiment: `select_five` (route: `/select-five`)
+
+Testing whether players continue combining past a required testing time purely to find their 5 favorite tiles. PostHog super-property `experiment: "select_five"` is registered on mount and attached to every event from this route (including existing `combination_created`, `tile_spawned`, `item_discovered`). `era_name` is set to `"select-five"` on those shared events. Filter with `properties.experiment == "select_five"` for experiment-only queries; omit the super-property to compare against baseline.
+
+### Events
+
+| Event | Fires when | Properties |
+|---|---|---|
+| `select_five_started` | Fresh page load, no prior save | `session_id` |
+| `select_five_resumed` | Page load restores from `bari-select-five-save` | `slots_filled_at_resume`, `combinations_at_resume`, `era_index_at_resume` |
+| `select_five_era_changed` | Player clicks "Change Era" | `to_era`, `era_index` |
+| `slot_filled` | Tile dropped into an empty slot | `slot_index`, `tile_name`, `tile_tier`, `combinations_at_time`, `session_duration_ms` |
+| `slot_swapped` | Tile replaces an occupied slot (workspace→slot or slot→slot) | `slot_index`, `new_tile`, `new_tier`, `ejected_tile`, `ejected_tier`, `session_duration_ms` |
+| `slot_cleared` | × button on a filled slot | `slot_index`, `tile_name`, `session_duration_ms` |
+| `selection_all_slots_filled` | All 5 slots filled for the first time in session | `session_duration_ms`, `combinations_made`, `items_discovered`, `selected_tiles: [{name,tier}]` |
+| `select_five_finalize_intent` | Finalize button → any intent modal choice | `choice: "keep" \| "gift" \| "continue"`, `finalize_count`, `session_duration_ms`, `combinations_made`, `items_discovered`, `post_full_slot_changes`, `selected_tiles` |
+| `select_five_post_finalize_combine` | Every combine after the first finalize of any type | `combinations_since_finalize`, `session_duration_ms` — **primary experiment metric** |
+
+### Notes
+
+- `session_duration_ms` resets to 0 on every page load (not persisted) — correlate against external testing-framework time cutoff during analysis.
+- `post_full_slot_changes` counts slot add/remove/swap actions that happen after all 5 slots are filled; useful for measuring indecision / engagement with the final 5.
+- "Continue hunting" is an intentional behavioral test: players presented with a clear exit can still choose to keep playing. Every `choice: "continue"` that precedes further combines is a positive signal.
+- Action log is capped at 500 entries in save to keep localStorage bounded; PostHog events still fire for every combine beyond that.
+
+---
+
 ## TODO — Mechanics to instrument
 
 > When adding a new game mechanic, check if it creates player behavior worth measuring. If so, add an entry here with the proposed event name, where it fires, and what insight it enables.

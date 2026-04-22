@@ -30,18 +30,34 @@ export class EraManager {
 
   /** Get the seeds for the current era, resolving from pool if needed */
   getSeeds(): ElementData[] {
-    const idx = this.currentIndex;
-    if (this.resolvedSeeds.has(idx)) return this.resolvedSeeds.get(idx)!;
+    return this.getSeedsForEra(this.currentIndex);
+  }
 
-    const era = this.current;
-    let seeds: ElementData[];
-    if (era.seedPool && era.seedCount) {
-      seeds = shuffle(era.seedPool).slice(0, era.seedCount);
-    } else {
-      seeds = era.seeds;
-    }
+  /** Get the seeds for any era by index, resolving from pool if needed */
+  getSeedsForEra(idx: number): ElementData[] {
+    if (this.resolvedSeeds.has(idx)) return this.resolvedSeeds.get(idx)!;
+    const era = allEras[idx];
+    const seeds = era.seedPool && era.seedCount
+      ? shuffle(era.seedPool).slice(0, era.seedCount)
+      : era.seeds;
     this.resolvedSeeds.set(idx, seeds);
     return seeds;
+  }
+
+  /** Total number of eras available */
+  get totalEras(): number {
+    return allEras.length;
+  }
+
+  /** Get an era by index (for select-five cycling) */
+  getEraByIndex(idx: number): Era {
+    return allEras[idx];
+  }
+
+  /** Set the current era by index (used for select-five mode where era is not advanced through normal flow) */
+  setCurrentEraIndex(idx: number): void {
+    this.currentIndex = idx;
+    this.advancementCheckedAt = 0;
   }
 
   /** Get eras the player can advance to, respecting the minimum eras rule */
