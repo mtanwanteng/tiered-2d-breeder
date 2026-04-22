@@ -1681,11 +1681,12 @@ function spawnItem(data: ElementData, x: number, y: number): CombineItem {
     dragSourceSlotIndex = null;
     dragOffsetX = e.clientX - item.x - workspace.getBoundingClientRect().left;
     dragOffsetY = e.clientY - item.y - workspace.getBoundingClientRect().top;
-    // Switch to fixed so the tile renders above the palette/selection panel during drag
+    // Switch to fixed so the tile renders above the palette during drag.
+    // s5 needs z-index 100 to clear the selection panel; base game stays at 10.
     el.style.position = 'fixed';
     el.style.left = `${e.clientX - dragOffsetX}px`;
     el.style.top = `${e.clientY - dragOffsetY}px`;
-    el.style.zIndex = "100";
+    el.style.zIndex = selectFiveMode ? "100" : "10";
   });
 
   return item;
@@ -2377,11 +2378,12 @@ function addToPalette(entry: ElementData, isSeed = false) {
     dragSourceSlotIndex = null;
     dragOffsetX = 36;
     dragOffsetY = 36;
-    // Switch to fixed immediately so the tile is visible over the palette/selection panel
+    // Switch to fixed immediately so the tile is visible over the palette.
+    // s5 needs z-index 100 to clear the selection panel; base game stays at 10.
     item.el.style.position = 'fixed';
     item.el.style.left = `${e.clientX - 36}px`;
     item.el.style.top = `${e.clientY - 36}px`;
-    item.el.style.zIndex = "100";
+    item.el.style.zIndex = selectFiveMode ? "100" : "10";
   });
   paletteItems.appendChild(div);
 }
