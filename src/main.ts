@@ -2031,7 +2031,11 @@ async function doEraTransition(result: { narrative: string }) {
     }
 
     let choice: { era: Era; narrative: string };
-    if (preComputedChoice) {
+    // Guard against a stale pre-computed choice leaking across era boundaries —
+    // a background pipeline that started in an earlier era may have finished
+    // late and written `latestEraChoice` pointing at the current era or one
+    // behind it. Only use it when its target era is strictly ahead.
+    if (preComputedChoice && preComputedChoice.era.order > eraManager.current.order) {
       choice = preComputedChoice;
     } else {
       showToast("Bari is charting the next age...", null);
@@ -2068,6 +2072,12 @@ async function doEraTransition(result: { narrative: string }) {
         persistGame();
         busy = false;
         eraAdvancing = false;
+        // Drop any pipeline state that might have been written while the player
+        // was reading the summary — prevents a late-arriving stale result from
+        // an earlier-era pipeline leaking into the next transition.
+        latestEraSnapshot = null;
+        latestEraChoice = null;
+        latestTapestryPromise = null;
         clearPipelineHud();
         await showTapestry();
         persistGame();
