@@ -18,7 +18,8 @@ export interface SaveData {
   eraGoalStates: Record<number, { met: boolean; narrative?: string }[][] | { met: boolean; narrative?: string }[]>;
   paletteItems: ElementData[];
   // select-five mode only (absent in normal saves)
-  selectedSlots?: ({ name: string; tier: Tier } | null)[];
+  // emoji/color included so slot rendering doesn't depend on era-seed re-roll state across refreshes
+  selectedSlots?: ({ name: string; tier: Tier; emoji?: string; color?: string } | null)[];
   selectFiveEraIndex?: number;
 }
 

@@ -55,7 +55,8 @@ let dragOffsetY = 0;
 let busy = false;
 
 // --- Select-five mode state ---
-interface SelectionSlot { index: number; el: HTMLElement; item: { name: string; tier: Tier } | null; }
+type SelectionSlotItem = { name: string; tier: Tier; emoji: string; color: string };
+interface SelectionSlot { index: number; el: HTMLElement; item: SelectionSlotItem | null; }
 const selectionSlots: SelectionSlot[] = [];
 let selectFiveEraIndex = 0;
 let hasLoggedAllFilled = false;
@@ -65,7 +66,7 @@ let combinesSinceFinalize = 0;
 let postFullSlotChanges = 0;
 let sessionStartTime = Date.now();
 let dragSourceSlotIndex: number | null = null;
-let pendingS5SlotRestore: ({ name: string; tier: Tier } | null)[] | null = null;
+let pendingS5SlotRestore: ({ name: string; tier: Tier; emoji?: string; color?: string } | null)[] | null = null;
 const MAX_ACTION_LOG = 500;
 const eraNameForAnalytics = () => selectFiveMode ? "select-five" : eraManager.current.name;
 
@@ -899,7 +900,7 @@ function persistGame() {
       eraResolvedSeeds: {},
       eraGoalStates: {},
       paletteItems: buildPaletteData(),
-      selectedSlots: selectionSlots.map((s) => s.item ? { name: s.item.name, tier: s.item.tier } : null),
+      selectedSlots: selectionSlots.map((s) => s.item ? { name: s.item.name, tier: s.item.tier, emoji: s.item.emoji, color: s.item.color } : null),
       selectFiveEraIndex,
     };
     saveGame(data, SELECT_FIVE_SAVE_KEY);
@@ -1117,24 +1118,20 @@ function s5FindElementData(name: string, tier: Tier): ElementData | null {
 }
 
 function s5RenderSlot(slot: SelectionSlot) {
+  const removeBtn = slot.el.parentElement?.querySelector<HTMLButtonElement>(".slot-remove-btn");
   if (!slot.item) {
     slot.el.classList.remove("slot-occupied");
     slot.el.innerHTML = `<span class="slot-empty-hint">${slot.index + 1}</span>`;
+    if (removeBtn) removeBtn.hidden = true;
     return;
   }
   slot.el.classList.add("slot-occupied");
-  const data = s5FindElementData(slot.item.name, slot.item.tier);
   slot.el.innerHTML = `
-    <span class="slot-emoji">${esc(data?.emoji ?? "❓")}</span>
+    <span class="slot-emoji">${esc(slot.item.emoji || "❓")}</span>
     <span class="slot-name">${esc(slot.item.name)}</span>
     <span class="slot-tier">${tierStars(slot.item.tier)}</span>
-    <button class="slot-remove-btn" aria-label="Remove">×</button>
   `;
-  const removeBtn = slot.el.querySelector<HTMLButtonElement>(".slot-remove-btn");
-  removeBtn?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    s5EjectFromSlot(slot);
-  });
+  if (removeBtn) removeBtn.hidden = false;
 }
 
 function s5UpdateSelectionUI() {
@@ -1195,7 +1192,7 @@ function findNearestSlot(clientX: number, clientY: number): SelectionSlot | null
 }
 
 function tryDropIntoSlot(item: CombineItem, slot: SelectionSlot) {
-  const newItem = { name: item.name, tier: item.tier };
+  const newItem: SelectionSlotItem = { name: item.name, tier: item.tier, emoji: item.emoji, color: item.color };
   const sourceIdx = dragSourceSlotIndex;
 
   // Duplicate guard: reject if another slot (not target, not source) already has this tile
@@ -1267,14 +1264,19 @@ function tryDropIntoSlot(item: CombineItem, slot: SelectionSlot) {
   } else {
     // Occupied: eject the existing tile back to workspace center
     const ejected = slot.item;
-    const ejectedData = s5FindElementData(ejected.name, ejected.tier);
+    const lookup = s5FindElementData(ejected.name, ejected.tier);
+    const ejectedData: ElementData = {
+      name: ejected.name, tier: ejected.tier,
+      emoji: ejected.emoji || lookup?.emoji || "❓",
+      color: ejected.color || lookup?.color || "#777",
+      description: lookup?.description ?? "",
+      narrative: lookup?.narrative ?? "",
+    };
     slot.item = newItem;
     s5RenderSlot(slot);
     removeItem(item);
-    if (ejectedData) {
-      const wsRect = workspace.getBoundingClientRect();
-      spawnItem(ejectedData, wsRect.width / 2 - 36, wsRect.height / 2 - 36);
-    }
+    const wsRect = workspace.getBoundingClientRect();
+    spawnItem(ejectedData, wsRect.width / 2 - 36, wsRect.height / 2 - 36);
     posthog.capture("slot_swapped", {
       slot_index: slot.index,
       new_tile: newItem.name,
@@ -1290,14 +1292,9 @@ function tryDropIntoSlot(item: CombineItem, slot: SelectionSlot) {
 
 function s5EjectFromSlot(slot: SelectionSlot) {
   if (!slot.item) return;
-  const { name, tier } = slot.item;
-  const data = s5FindElementData(name, tier);
+  const { name } = slot.item;
   slot.item = null;
   s5RenderSlot(slot);
-  if (data) {
-    const wsRect = workspace.getBoundingClientRect();
-    spawnItem(data, wsRect.width / 2 - 36, wsRect.height / 2 - 36);
-  }
   posthog.capture("slot_cleared", {
     slot_index: slot.index,
     tile_name: name,
@@ -1417,10 +1414,17 @@ if (selectFiveMode) {
     <h3 class="s5-title">Carry Over</h3>
     <div class="s5-scroll">
       <p class="s5-goal">Select up to 5 tiles you want to keep! These will carry over as you play and can be used for further combining.</p>
-      <p class="s5-prompt">Think of tiles as custom Lego pieces. Our mission is to make digital Lego-like sets. Stay tuned for further updates on what your favorite tiles can be used for!  -alwayshungry.games devs</p>
+      <p class="s5-prompt">Think of tiles as custom Lego pieces. Our mission is to make digital Lego-like sets. Stay tuned for further updates on what your favorite tiles can be used for!<br>  - alwayshungry.games dev team</p>
       <div id="selection-slots">
-        ${[0,1,2,3,4].map(i => `<div class="selection-slot" data-slot="${i}"></div>`).join('')}
-        <div class="selection-slot slot-placeholder" aria-hidden="true"></div>
+        ${[0,1,2,3,4].map(i => `
+          <div class="slot-row">
+            <div class="selection-slot" data-slot="${i}"></div>
+            <button class="slot-remove-btn" data-slot-idx="${i}" aria-label="Remove" hidden>×</button>
+          </div>
+        `).join('')}
+        <div class="slot-row slot-placeholder-row" aria-hidden="true">
+          <div class="selection-slot slot-placeholder"></div>
+        </div>
       </div>
     </div>
     <button id="selection-finalize-btn" disabled>Finalize Collection</button>
@@ -1465,10 +1469,26 @@ if (selectFiveMode) {
     selectionSlots.push(slot);
   });
 
-  // 2. Change restart button to "Change Era"
+  // Wire X-button click handlers once (buttons are permanent DOM, toggled via hidden attribute)
+  selectionPanel.querySelectorAll<HTMLButtonElement>(".slot-remove-btn[data-slot-idx]").forEach((btn) => {
+    const idx = Number(btn.dataset.slotIdx);
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const slot = selectionSlots[idx];
+      if (slot) s5EjectFromSlot(slot);
+    });
+  });
+
+  // 2. Change restart button to "Change Era" with a warning caption beneath it
   restartButton.removeEventListener("click", handleRestart);
   restartButton.textContent = "Change Era";
   restartButton.addEventListener("click", s5HandleChangeEra);
+  if (!document.getElementById("s5-change-era-warning")) {
+    const warning = document.createElement("div");
+    warning.id = "s5-change-era-warning";
+    warning.textContent = "⚠️ Warning: Resets Inventory and Items on Board";
+    restartButton.insertAdjacentElement("afterend", warning);
+  }
 
   // 3. Hide main-game overlays that don't apply
   ["victory-overlay", "era-summary-overlay", "era-toast", "scoreboard-btn", "scoreboard-overlay", "tapestry-overlay"].forEach((id) => {
@@ -1514,10 +1534,22 @@ if (selectFiveMode) {
   // 6. Wire finalize button
   document.getElementById("selection-finalize-btn")?.addEventListener("click", s5HandleFinalizeClick);
 
-  // 7. Restore slots if save had them
+  // 7. Restore slots if save had them. Older saves stored only {name, tier}; look up emoji/color
+  // by walking eraManager seeds, then recipe cache, falling back to a neutral placeholder.
   if (pendingS5SlotRestore) {
     for (let i = 0; i < selectionSlots.length; i++) {
-      selectionSlots[i].item = pendingS5SlotRestore[i] ?? null;
+      const raw = pendingS5SlotRestore[i];
+      if (!raw) { selectionSlots[i].item = null; continue; }
+      if (raw.emoji && raw.color) {
+        selectionSlots[i].item = { name: raw.name, tier: raw.tier, emoji: raw.emoji, color: raw.color };
+      } else {
+        const data = s5FindElementData(raw.name, raw.tier);
+        selectionSlots[i].item = {
+          name: raw.name, tier: raw.tier,
+          emoji: data?.emoji ?? "❓",
+          color: data?.color ?? "#777",
+        };
+      }
     }
     pendingS5SlotRestore = null;
   }
@@ -1535,39 +1567,28 @@ if (selectFiveMode) {
     const slot = selectionSlots[idx];
     if (!slot?.item) return;
     e.preventDefault();
-    const data = s5FindElementData(slot.item.name, slot.item.tier);
-    if (!data) return;
-    // Clear the slot visually (item will be restored if drop returns)
-    const restoreItem = slot.item;
-    slot.item = null;
-    s5RenderSlot(slot);
+    // Slots behave like inventory: dragging spawns a reusable copy and leaves the slot filled.
+    // Removal is only via the X button. Use a fuller lookup for description/narrative, but fall
+    // back to slot.item's stored emoji/color so the spawn never shows a ? (fixes stale-seed bug).
+    const lookup = s5FindElementData(slot.item.name, slot.item.tier);
+    const data: ElementData = {
+      name: slot.item.name,
+      tier: slot.item.tier,
+      emoji: slot.item.emoji || lookup?.emoji || "❓",
+      color: slot.item.color || lookup?.color || "#777",
+      description: lookup?.description ?? "",
+      narrative: lookup?.narrative ?? "",
+    };
     const wsRect = workspace.getBoundingClientRect();
     const item = spawnItem(data, e.clientX - wsRect.left - 36, e.clientY - wsRect.top - 36);
-    dragSourceSlotIndex = idx;
     dragItem = item;
+    dragSourceSlotIndex = null;
     dragOffsetX = 36;
     dragOffsetY = 36;
     item.el.style.position = "fixed";
     item.el.style.left = `${e.clientX - 36}px`;
     item.el.style.top = `${e.clientY - 36}px`;
     item.el.style.zIndex = "100";
-    // If the drag is cancelled (e.g. dropped outside), restore the slot on pointerup listener elsewhere
-    const restore = () => {
-      if (dragSourceSlotIndex === idx && slot.item === null) {
-        // Still null → the drop didn't go into a slot, item was either removed or kept in workspace
-        // If the item still exists in items[], it's been kept in the workspace — don't restore slot
-        const stillInWorkspace = items.some((it) => it.id === item.id);
-        if (!stillInWorkspace) {
-          // Dropped outside workspace → item was removed → restore the slot
-          slot.item = restoreItem;
-          s5RenderSlot(slot);
-          s5UpdateSelectionUI();
-          persistGame();
-        }
-      }
-      document.removeEventListener("pointerup", restore);
-    };
-    document.addEventListener("pointerup", restore, { once: true });
   });
 }
 
