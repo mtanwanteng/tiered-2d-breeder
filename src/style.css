@@ -2926,9 +2926,8 @@ body {
 /* Small portrait phones: collection pane nests inside the palette (DOM-reparented in main.ts).
    Palette items retain their normal horizontal layout. */
 @media (max-width: 600px) and (orientation: portrait) {
-  /* Keep the zoom controls visible regardless of scroll/zoom — pin the inventory header.
-     Scoped to s5 (where the nested selection panel can make the palette tall) via :has(). */
-  #app:has(#selection-panel) #inventory-header {
+  /* Keep the zoom controls visible regardless of scroll/zoom — pin the inventory header */
+  #inventory-header {
     position: sticky;
     top: 0;
     background: #16213e;
