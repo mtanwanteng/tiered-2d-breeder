@@ -22,7 +22,7 @@ export function AuthModal({ isOpen, fromVictory, onClose }: AuthModalProps) {
   if (!isOpen) return null;
 
   const handleSignIn = async (provider: "google" | "discord") => {
-    await authClient.signIn.social({ provider, callbackURL: "/" });
+    await authClient.signIn.social({ provider, callbackURL: window.location.pathname });
   };
 
   return (
