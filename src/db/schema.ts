@@ -115,3 +115,33 @@ export const tapestry = pgTable(
     index("tapestry_created_at_idx").on(t.createdAt),
   ]
 );
+
+// --- bari-playground-owned ---
+// Mirrored from ../bari-playground/src/db/schema.ts. Both repos keep every table in
+// the shared Neon DB defined in their schema.ts (no drizzle `tablesFilter`), so
+// `drizzle-kit push` from either project is non-destructive. Keep this block in sync
+// with bari's schema.ts when the definition changes there.
+
+export const bariGeneratedMap = pgTable(
+  "bari_generated_map",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    anonId: text("anon_id"),
+    eraName: text("era_name").notNull(),
+    bucket: text("bucket").notNull(),
+    s3Key: text("s3_key").notNull(),
+    mimeType: text("mime_type").notNull(),
+    byteSize: integer("byte_size").notNull(),
+    prompt: text("prompt").notNull(),
+    spatialSnapshot: jsonb("spatial_snapshot").notNull(),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("bari_generated_map_user_id_idx").on(t.userId),
+    index("bari_generated_map_anon_id_idx").on(t.anonId),
+    index("bari_generated_map_created_at_idx").on(t.createdAt),
+  ]
+);
