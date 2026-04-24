@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { anonId } = (await req.json()) as { anonId?: string };
+  const { anonId } = (await req.json().catch(() => ({}))) as { anonId?: string };
   const now = new Date();
 
   await db
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
   const ph = getPostHogClient();
   if (ph) {
-    ph.capture({ distinctId: session.user.id, event: 'session_started' });
+    ph.capture({ distinctId: session.user.id, event: 'session_started', properties: { app: 'breeder' } });
     await ph.shutdown();
   }
 

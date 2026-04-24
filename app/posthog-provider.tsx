@@ -24,6 +24,10 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
         console.log(`[PostHog] Initialized ✓ distinct_id=${ph.get_distinct_id()}`)
       },
     })
+
+    // Super-property attached to every event so this project's data is cleanly
+    // separable from bari-playground's in the shared PostHog project.
+    posthog.register({ app: 'breeder' })
   }, [])
 
   return <PHProvider client={posthog}>{children}</PHProvider>

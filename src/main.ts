@@ -1652,6 +1652,14 @@ const handlePointerUp = (e: PointerEvent) => {
   item.el.style.left = `${item.x}px`;
   item.el.style.top = `${item.y}px`;
   item.el.style.zIndex = "1";
+  posthog.capture('tile_placed', {
+    item: item.name,
+    tier: item.tier,
+    x: Math.round(item.x),
+    y: Math.round(item.y),
+    era_name: eraNameForAnalytics(),
+    from_slot: dragSourceSlotIndex !== null,
+  });
   checkOverlap(item);
 };
 
