@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
   const ph = getPostHogClient();
   if (ph) {
-    ph.capture({ distinctId: session.user.id, event: 'session_started', properties: { app: 'breeder' } });
+    ph.capture({ distinctId: session.user.id, event: 'session_started', properties: { app: 'architect' } });
     await ph.shutdown();
   }
 

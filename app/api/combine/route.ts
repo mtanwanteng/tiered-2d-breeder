@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     const distinctId = session?.user?.id ?? anonId ?? 'anonymous';
     const ph = getPostHogClient();
     if (ph) {
-      ph.capture({ distinctId, event: 'ai_combination_requested', properties: { app: 'breeder', model, tier, era_name: eraName, run_id: runId, input_tokens: inputTokens, output_tokens: outputTokens } });
+      ph.capture({ distinctId, event: 'ai_combination_requested', properties: { app: 'architect', model, tier, era_name: eraName, run_id: runId, input_tokens: inputTokens, output_tokens: outputTokens } });
       await ph.shutdown();
     }
 
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
 
     const ph = getPostHogClient();
     if (ph) {
-      ph.capture({ distinctId: 'anonymous', event: 'ai_combination_error', properties: { app: 'breeder', model, error_type: String(error) } });
+      ph.capture({ distinctId: 'anonymous', event: 'ai_combination_error', properties: { app: 'architect', model, error_type: String(error) } });
       await ph.shutdown();
     }
 

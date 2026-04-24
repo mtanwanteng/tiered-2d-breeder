@@ -75,7 +75,7 @@ You MUST choose one of the listed era names exactly as written.`;
     const distinctId = session?.user?.id ?? anonId ?? 'anonymous';
     const ph = getPostHogClient();
     if (ph) {
-      ph.capture({ distinctId, event: 'ai_era_choose_requested', properties: { app: 'breeder', model, era_name: currentEra, run_id: runId, input_tokens: inputTokens, output_tokens: outputTokens } });
+      ph.capture({ distinctId, event: 'ai_era_choose_requested', properties: { app: 'architect', model, era_name: currentEra, run_id: runId, input_tokens: inputTokens, output_tokens: outputTokens } });
       await ph.shutdown();
     }
 

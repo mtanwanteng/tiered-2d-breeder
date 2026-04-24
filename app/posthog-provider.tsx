@@ -27,7 +27,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
     // Super-property attached to every event so this project's data is cleanly
     // separable from bari-playground's in the shared PostHog project.
-    posthog.register({ app: 'breeder' })
+    posthog.register({ app: 'architect' })
   }, [])
 
   return <PHProvider client={posthog}>{children}</PHProvider>
