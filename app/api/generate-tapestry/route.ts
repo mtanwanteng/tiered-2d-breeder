@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "../../auth";
 import { callGeminiImage, getAccessToken } from "../../../lib/server/vertex";
 import { createTapestryRecord } from "../../../src/db/tapestries";
+import { getPostHogClient } from "../../../src/lib/posthog-server";
 import type { TapestryGameData } from "../../../src/types";
 import {
   buildTapestryObjectKey,
@@ -33,10 +34,12 @@ Story: ${narrative}`;
 
   try {
     const session = await auth.api.getSession({ headers: request.headers });
+    const distinctId = session?.user?.id ?? anonId ?? "anonymous";
     const token = await getAccessToken();
     const { base64, mimeType } = await callGeminiImage(token, prompt);
     let tapestryId: string | null = null;
     let sharePath: string | null = null;
+    let storedByteSize: number | null = null;
 
     let ssoExpired = false;
 
@@ -59,6 +62,7 @@ Story: ${narrative}`;
             key,
             mimeType,
           });
+          storedByteSize = stored.byteSize;
           console.log(`[TAP] ok → image ${mimeType} tapestryId=${tapestryId} s3://${stored.bucket}/${stored.key} (${stored.byteSize} bytes)`);
 
           await createTapestryRecord({
@@ -90,9 +94,47 @@ Story: ${narrative}`;
       }
     }
 
+    const ph = getPostHogClient();
+    if (ph) {
+      ph.capture({
+        distinctId,
+        event: "tapestry_generated",
+        properties: {
+          app: "architect",
+          run_id: runId,
+          era_name: eraName,
+          next_era_name: nextEraName,
+          image_model: "gemini-2.5-flash-image",
+          mime_type: mimeType,
+          saved_to_storage: Boolean(tapestryId),
+          sso_expired: ssoExpired,
+          byte_size: storedByteSize,
+        },
+      });
+      await ph.shutdown();
+    }
+
     return NextResponse.json({ base64, mimeType, tapestryId, sharePath, ssoExpired });
   } catch (error) {
     console.error("[TAP] Failed (generation or S3 upload):", error);
+
+    const ph = getPostHogClient();
+    if (ph) {
+      ph.capture({
+        distinctId: anonId ?? "anonymous",
+        event: "tapestry_generation_error",
+        properties: {
+          app: "architect",
+          run_id: runId,
+          era_name: eraName,
+          next_era_name: nextEraName,
+          image_model: "gemini-2.5-flash-image",
+          error_type: error instanceof Error ? error.message : String(error),
+        },
+      });
+      await ph.shutdown();
+    }
+
     return NextResponse.json(
       { error: `Generation failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${error instanceof Error ? error.message : String(error)}` : ""}` },
       { status: 500 },
