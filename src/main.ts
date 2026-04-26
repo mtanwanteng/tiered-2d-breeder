@@ -14,6 +14,8 @@ import { isDiscordActivity } from "./discord";
 import { getOrCreateAnonId } from "./identity";
 import posthog from "posthog-js";
 import { toPng } from "html-to-image";
+import { createArrowTrail, type ArrowTrailHandle } from "./arrow-trail";
+import type { EraIdeaTilePick } from "./types";
 
 // --- Types ---
 interface CombineItem {
@@ -68,6 +70,16 @@ let sessionStartTime = Date.now();
 let dragSourceSlotIndex: number | null = null;
 let pendingS5SlotRestore: ({ name: string; tier: Tier; emoji?: string; color?: string } | null)[] | null = null;
 const MAX_ACTION_LOG = 500;
+
+// --- In-game era idea slot state ---
+// One slot above #chart-era-btn ("Next Age →") in the era-objectives panel. Visible only while
+// the era is ready to advance. Filled by dragging a workspace tile into it; #chart-era-btn is
+// disabled until the slot is filled. On click the picked tile is captured, attached to the
+// just-completed era's history record (after recordHistory runs), persisted server-side, and
+// rendered above the corresponding cube in #era-progress.
+type EraIdeaSlotItem = SelectionSlotItem & { description?: string; narrative?: string };
+let pendingEraIdeaTile: EraIdeaSlotItem | null = null;
+let eraIdeaArrowTrail: ArrowTrailHandle | null = null;
 const eraNameForAnalytics = () => selectFiveMode ? "select-five" : eraManager.current.name;
 
 // --- DOM setup ---
@@ -86,9 +98,13 @@ function renderEraProgress() {
 
   let html = "";
 
-  // Completed eras: dim cube + single glowing dash
-  for (const h of eraManager.history) {
-    html += `<div class="era-cube era-cube--done" title="${esc(h.eraName)}"></div>`;
+  // Completed eras: dim cube + single glowing dash. Idea tile (if picked) sits above the cube.
+  for (let i = 0; i < eraManager.history.length; i++) {
+    const h = eraManager.history[i];
+    const ideaTile = h.ideaTilePick
+      ? `<div class="era-cube-idea" data-era-idea-idx="${i}" title="${esc(h.eraName)} — kept ${esc(h.ideaTilePick.name)} (drag to spawn)">${esc(h.ideaTilePick.emoji || "❓")}</div>`
+      : "";
+    html += `<div class="era-cube era-cube--done" title="${esc(h.eraName)}">${ideaTile}</div>`;
     html += `<div class="era-dots"><span class="era-dash"></span></div>`;
   }
 
@@ -108,6 +124,41 @@ function renderEraProgress() {
   el.innerHTML = html;
   // Scroll right so active cube is always visible
   el.scrollLeft = el.scrollWidth;
+  wireEraCubeIdeaTiles();
+}
+
+// Make each idea tile attached to a completed era cube draggable: spawning a workspace copy
+// without depleting the cube tile (inventory-style, like the select-five carry-over slots).
+function wireEraCubeIdeaTiles() {
+  document.querySelectorAll<HTMLElement>(".era-cube-idea[data-era-idea-idx]").forEach((el) => {
+    el.addEventListener("pointerdown", (e) => {
+      if (busy) return;
+      const idx = Number(el.dataset.eraIdeaIdx);
+      const h = eraManager.history[idx];
+      const pick = h?.ideaTilePick;
+      if (!pick) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const data: ElementData = {
+        name: pick.name,
+        tier: pick.tier,
+        emoji: pick.emoji || "❓",
+        color: pick.color || "#777",
+        description: pick.description ?? "",
+        narrative: pick.narrative ?? "",
+      };
+      const wsRect = workspace.getBoundingClientRect();
+      const item = spawnItem(data, e.clientX - wsRect.left - 36, e.clientY - wsRect.top - 36);
+      dragItem = item;
+      dragSourceSlotIndex = null;
+      dragOffsetX = 36;
+      dragOffsetY = 36;
+      item.el.style.position = "fixed";
+      item.el.style.left = `${e.clientX - 36}px`;
+      item.el.style.top = `${e.clientY - 36}px`;
+      item.el.style.zIndex = "100";
+    });
+  });
 }
 
 function renderGoals() {
@@ -177,7 +228,11 @@ app.innerHTML = `
         </div>
       </div>
       <div id="era-goals"></div>
-      <button id="chart-era-btn">Next Age →</button>
+      <div id="era-idea-slot-wrapper" hidden>
+        <div class="era-idea-prompt">Save an idea tile for this era</div>
+        <div id="era-idea-slot" class="era-idea-slot"></div>
+      </div>
+      <button id="chart-era-btn" disabled>Next Age →</button>
     </div>
     <div id="inventory-header">
       <h2>Inventory</h2>
@@ -1636,6 +1691,28 @@ const handlePointerUp = (e: PointerEvent) => {
     }
   }
 
+  // Era idea-slot drop (only when slot wrapper is shown — i.e. era ready to advance)
+  const ideaWrapper = document.getElementById("era-idea-slot-wrapper");
+  if (ideaWrapper && !ideaWrapper.hasAttribute("hidden")) {
+    const slotEl = document.getElementById("era-idea-slot");
+    if (slotEl) {
+      const r = slotEl.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+        pendingEraIdeaTile = {
+          name: item.name,
+          tier: item.tier,
+          emoji: item.emoji,
+          color: item.color,
+          description: item.description,
+          narrative: item.narrative,
+        };
+        renderEraIdeaSlot();
+        removeItem(item);
+        return;
+      }
+    }
+  }
+
   const rect = workspace.getBoundingClientRect();
 
   // If released outside the workspace, remove the item
@@ -1922,6 +1999,7 @@ async function checkEraAdvancement() {
   eraAdvancing = true;
   pendingEraResult = result;
   chartEraBtn.classList.add("visible");
+  showEraIdeaSlot();
   runAdvancementPipeline(); // first pipeline fires immediately — no debounce
 }
 
@@ -2026,6 +2104,28 @@ async function doEraTransition(result: { narrative: string }) {
       completedEraActions,
     });
     eraManager.recordHistory(completedEraActions, result.narrative, inventory, completedEraStartedAt, completedAt, completedEraSpawnCounts, completedEraSpawnByTier);
+
+    // Attach the player's idea-tile pick (captured by the slot above #chart-era-btn) to the
+    // just-recorded era and fire-and-forget persistence to the user's account.
+    if (pendingEraIdeaTile) {
+      const picked = pendingEraIdeaTile;
+      const newRecord = eraManager.history[eraManager.history.length - 1];
+      const pick: EraIdeaTilePick = {
+        name: picked.name,
+        tier: picked.tier,
+        emoji: picked.emoji,
+        color: picked.color,
+        description: picked.description,
+        narrative: picked.narrative,
+        pickedAt: Date.now(),
+      };
+      newRecord.ideaTilePick = pick;
+      void persistEraIdeaTile(newRecord.eraName, pick);
+      pendingEraIdeaTile = null;
+      renderEraIdeaSlot();
+      renderEraProgress();
+    }
+
     eraActionLog = [];
     eraStartedAt = Date.now();
     eraSpawnCounts = {};
@@ -2114,6 +2214,7 @@ async function doEraTransition(result: { narrative: string }) {
   } catch (err) {
     log.error("era", `[ERA-TRN] Era transition failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : ""}`);
     chartEraBtn.classList.remove("visible");
+    hideEraIdeaSlot();
     busy = false;
     eraAdvancing = false;
     pendingEraResult = null;
@@ -2208,6 +2309,83 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
     onContinue();
   };
   eraSummaryOverlay.classList.add("visible");
+}
+
+function renderEraIdeaSlot() {
+  const wrapper = document.getElementById("era-idea-slot-wrapper");
+  const slotEl = document.getElementById("era-idea-slot");
+  const btn = chartEraBtn as HTMLButtonElement;
+  if (!wrapper || !slotEl) return;
+  const wrapperVisible = !wrapper.hasAttribute("hidden");
+  if (pendingEraIdeaTile) {
+    slotEl.classList.add("slot-occupied");
+    slotEl.innerHTML = `
+      <span class="slot-emoji">${esc(pendingEraIdeaTile.emoji || "\u2753")}</span>
+      <span class="slot-name">${esc(pendingEraIdeaTile.name)}</span>
+      <span class="slot-tier">${tierStars(pendingEraIdeaTile.tier)}</span>
+    `;
+    btn.disabled = !wrapperVisible; // keep disabled when wrapper hidden (no era ready)
+    eraIdeaArrowTrail?.setActive(false);
+  } else {
+    slotEl.classList.remove("slot-occupied");
+    slotEl.innerHTML = `<span class="slot-empty-hint">Drop a tile here</span>`;
+    btn.disabled = true;
+    if (wrapperVisible) eraIdeaArrowTrail?.setActive(true);
+  }
+}
+
+function ensureEraIdeaArrowTrail() {
+  if (eraIdeaArrowTrail) return eraIdeaArrowTrail;
+  const slotEl = document.getElementById("era-idea-slot");
+  if (!slotEl) return null;
+  // Arrow points AT the slot from the right (workspace direction). The era-objectives panel
+  // sits in the left sidebar (#palette), so the arrow body extends rightward into the workspace.
+  eraIdeaArrowTrail = createArrowTrail({ target: slotEl, direction: "right", color: "#ffd700", length: 200 });
+  document.body.appendChild(eraIdeaArrowTrail.el);
+  eraIdeaArrowTrail.attach();
+  return eraIdeaArrowTrail;
+}
+
+function showEraIdeaSlot() {
+  const wrapper = document.getElementById("era-idea-slot-wrapper");
+  if (!wrapper) return;
+  wrapper.removeAttribute("hidden");
+  pendingEraIdeaTile = null;
+  ensureEraIdeaArrowTrail();
+  renderEraIdeaSlot();
+  // Defer trail activation so the wrapper has laid out first
+  requestAnimationFrame(() => eraIdeaArrowTrail?.setActive(!pendingEraIdeaTile));
+}
+
+function hideEraIdeaSlot() {
+  const wrapper = document.getElementById("era-idea-slot-wrapper");
+  if (wrapper) wrapper.setAttribute("hidden", "");
+  pendingEraIdeaTile = null;
+  eraIdeaArrowTrail?.setActive(false);
+  renderEraIdeaSlot();
+}
+
+async function persistEraIdeaTile(eraName: string, tile: EraIdeaTilePick) {
+  try {
+    await fetch("/api/era-idea-tile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        anonId: getOrCreateAnonId(),
+        runId,
+        eraName,
+        tileName: tile.name,
+        tileTier: tile.tier,
+        tileEmoji: tile.emoji,
+        tileColor: tile.color,
+        tileDescription: tile.description ?? null,
+        tileNarrative: tile.narrative ?? null,
+      }),
+    });
+  } catch (err) {
+    const detail = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : "";
+    log.error("api", `[IDEA] persist failed${detail}`);
+  }
 }
 
 function showScoreboard() {
@@ -2378,9 +2556,15 @@ document.getElementById("thanks-toast-close")!.addEventListener("click", () => {
 
 chartEraBtn.addEventListener("click", () => {
   if (!pendingEraResult) return;
+  if (!pendingEraIdeaTile) return; // button is disabled but defensive
   const result = pendingEraResult;
   pendingEraResult = null;
   chartEraBtn.classList.remove("visible");
+  // Hide the slot wrapper (and stop the arrow trail). pendingEraIdeaTile stays set so
+  // doEraTransition can attach it to the new history record after recordHistory runs.
+  const wrapper = document.getElementById("era-idea-slot-wrapper");
+  if (wrapper) wrapper.setAttribute("hidden", "");
+  eraIdeaArrowTrail?.setActive(false);
   busy = true;
   doEraTransition(result);
 });

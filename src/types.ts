@@ -85,6 +85,17 @@ export interface Era {
   order: number;
 }
 
+/** Idea tile picked at era end, attached to the corresponding completed era */
+export interface EraIdeaTilePick {
+  name: string;
+  tier: Tier;
+  emoji: string;
+  color: string;
+  description?: string;
+  narrative?: string;
+  pickedAt: number; // ms timestamp
+}
+
 /** Record of what the player did in a completed era */
 export interface EraHistory {
   eraName: string;
@@ -96,6 +107,7 @@ export interface EraHistory {
   eraCompletedAt?: number;     // ms timestamp
   tileSpawnCounts?: Record<string, number>; // item name → times spawned from palette
   tileSpawnByTier?: Record<number, number>; // tier → total spawn count
+  ideaTilePick?: EraIdeaTilePick; // dropped into the era-summary slot before clicking Next Age
 }
 
 export interface TapestryGameData {

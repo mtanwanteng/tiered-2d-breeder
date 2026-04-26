@@ -3,6 +3,7 @@ import { auth } from "../../../auth";
 import { db } from "../../../../src/db";
 import { user } from "../../../../src/db/schema";
 import { claimAnonymousTapestriesForUser } from "../../../../src/db/tapestries";
+import { claimAnonymousEraIdeaTilesForUser } from "../../../../src/db/era-idea-tiles";
 import { eq, sql } from "drizzle-orm";
 import { getPostHogClient } from "../../../../src/lib/posthog-server";
 
@@ -41,6 +42,11 @@ export async function POST(req: NextRequest) {
     }
 
     await claimAnonymousTapestriesForUser({
+      anonId,
+      userId: session.user.id,
+    });
+
+    await claimAnonymousEraIdeaTilesForUser({
       anonId,
       userId: session.user.id,
     });

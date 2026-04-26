@@ -116,6 +116,35 @@ export const tapestry = pgTable(
   ]
 );
 
+// One row per era-end "idea tile" pick. The player drops an idea tile into the era-summary
+// slot before clicking Next Age; that pick is persisted here. anonId-only rows are claimed
+// onto a userId by the same record-activity flow that claims tapestries on first sign-in.
+export const eraIdeaTile = pgTable(
+  "era_idea_tile",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    anonId: text("anon_id"),
+    runId: text("run_id"),
+    eraName: text("era_name").notNull(),
+    tileName: text("tile_name").notNull(),
+    tileTier: integer("tile_tier").notNull(),
+    tileEmoji: text("tile_emoji").notNull(),
+    tileColor: text("tile_color").notNull(),
+    tileDescription: text("tile_description"),
+    tileNarrative: text("tile_narrative"),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (t) => [
+    index("era_idea_tile_user_id_idx").on(t.userId),
+    index("era_idea_tile_anon_id_idx").on(t.anonId),
+    index("era_idea_tile_run_id_idx").on(t.runId),
+    index("era_idea_tile_created_at_idx").on(t.createdAt),
+  ]
+);
+
 // --- bari-playground-owned ---
 // Mirrored from ../bari-playground/src/db/schema.ts. Both repos keep every table in
 // the shared Neon DB defined in their schema.ts (no drizzle `tablesFilter`), so
