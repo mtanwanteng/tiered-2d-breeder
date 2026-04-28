@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePostHog } from "posthog-js/react";
 import { AuthOverlay } from "./components/auth-overlay";
+import { OnboardingOverlay } from "./components/OnboardingOverlay";
 
 export default function GameClient({ selectFiveMode = false }: { selectFiveMode?: boolean } = {}) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -33,6 +34,7 @@ export default function GameClient({ selectFiveMode = false }: { selectFiveMode?
     <div style={{ position: "relative" }}>
       <div id="app" ref={containerRef} />
       <AuthOverlay />
+      {!selectFiveMode && <OnboardingOverlay />}
     </div>
   );
 }

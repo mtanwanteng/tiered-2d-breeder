@@ -25,6 +25,7 @@ import {
   playBrushWipe,
   scratchIn,
   playInkPointDispersal,
+  playWaxStamp,
 } from "./motion";
 import { audio, type CelloSustainHandle } from "./audio";
 
@@ -519,6 +520,7 @@ app.innerHTML = `
       <p id="victory-narrative"></p>
       <div id="victory-timeline"></div>
       <div class="victory-actions">
+        <a id="victory-library-link" href="/library">Open the library →</a>
         <button id="victory-share-btn" aria-label="Save victory screen"></button>
         <a id="victory-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Join our Discord</a>
         <button id="victory-continue-btn">Continue</button>
@@ -2553,6 +2555,16 @@ async function doEraTransition(result: { narrative: string }) {
       }
       clearSave();
       victoryShown = true;
+      // Run-end ceremony (spec §3.8): wax seal stamps onto the strip, cathedral
+      // bell rings (the only place this sound exists), heavy thud haptic, then
+      // the Age of Plenty overlay rises. The bell is wired through audio.* and
+      // produces silence today (audio kill-switch is on), but the timing is in
+      // place so flipping the switch lights the moment up.
+      await playRunEndSeal();
+      audio.playCathedralBell();
+      if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+        navigator.vibrate([60, 40, 30]);
+      }
       showVictory(victoryNarrative ?? undefined);
       return; // busy + eraAdvancing stay true until player clicks Continue Building
     }
@@ -3276,6 +3288,41 @@ function openRetirementOverlay(boundPreview: BoundTilePreview): Promise<"retired
       }
     })();
   });
+}
+
+/** Run-end wax seal — gilt "A" stamped onto the strip's center. Spec §3.8.
+ *  Spawns a transient div over the strip, plays the wax-stamp animation,
+ *  then leaves the seal in place for ~600ms before the victory overlay rises. */
+async function playRunEndSeal(): Promise<void> {
+  const stripEl = document.getElementById("era-progress");
+  if (!stripEl) return;
+
+  const seal = document.createElement("div");
+  seal.className = "run-end-seal";
+  seal.textContent = "A"; // gilt initial — the player's age sealed
+  // Position the seal centered horizontally over the strip, vertically anchored
+  // to the strip's middle. The strip is the player's history, so the seal
+  // belongs there.
+  const rect = stripEl.getBoundingClientRect();
+  Object.assign(seal.style, {
+    position: "fixed",
+    left: `${rect.left + rect.width / 2}px`,
+    top: `${rect.top + rect.height / 2}px`,
+    transform: "translate(-50%, -50%) scale(0)",
+    opacity: "0",
+  });
+  document.body.appendChild(seal);
+
+  await playWaxStamp(seal, { durationMs: 320, startScale: 1.4 });
+  // Leave the seal visible for a beat before victory rises
+  await new Promise<void>((resolve) => setTimeout(resolve, 600));
+  // Fade it out gracefully so it doesn't suddenly snap away when victory opens
+  seal.animate(
+    [{ opacity: 1 }, { opacity: 0 }],
+    { duration: 400, easing: "ease-out", fill: "forwards" },
+  ).onfinish = () => {
+    if (seal.parentElement) seal.parentElement.removeChild(seal);
+  };
 }
 
 async function commitRetirement(btn: HTMLElement, tileId: string): Promise<void> {
