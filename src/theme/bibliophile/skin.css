@@ -293,29 +293,12 @@
   color: var(--gilt);
 }
 
+/* The legacy chart-era-btn ("Next Age →" / "Release") is no longer used in the
+ * bibliophile flow — the hold-and-release gesture on the slot is the entire
+ * commit / cancel grammar. Hidden under the bibliophile theme; the JS still
+ * keeps a reference to it for select-five mode and legacy paths. */
 [data-theme="bibliophile"] #chart-era-btn {
-  margin: 12px 18px 14px;
-  padding: 10px 18px;
-  background: var(--oxblood);
-  color: var(--vellum);
-  border: 1px solid var(--gilt);
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 14px;
-  cursor: pointer;
-  border-radius: 2px;
-  transition: background 0.15s;
-  align-self: stretch;
-}
-[data-theme="bibliophile"] #chart-era-btn:hover:not([disabled]) {
-  background: var(--gilt);
-  color: var(--ink-black);
-}
-[data-theme="bibliophile"] #chart-era-btn[disabled] {
-  background: var(--leather-deep);
-  color: var(--marble-warm);
-  border-color: var(--leather-deep);
-  cursor: not-allowed;
+  display: none;
 }
 
 /* Hide visible chart-era-btn until era-idea-slot-wrapper is shown.
@@ -611,7 +594,9 @@
 }
 
 /* Wrapper for the tray + pagination buttons. Sits in the grid; #palette-items
-   inside it is the actual scroll surface. */
+   inside it is the actual scroll surface. overflow-x: hidden so the rubber-band
+   transform on #palette-items (overscroll feedback) doesn't spill into the
+   pagination plaques on either side. */
 [data-theme="bibliophile"] #idea-tray-row {
   grid-area: tray;
   background: var(--paper-dark);
@@ -621,6 +606,7 @@
   grid-template-columns: auto 1fr auto;
   align-items: stretch;
   position: relative;
+  overflow-x: hidden;
 }
 
 /* Embossed leather pagination plaques. Distinct from the tray surface (deeper
@@ -694,9 +680,15 @@
   display: none;
 }
 
-/* The actual horizontal-scroll tile row */
+/* The actual horizontal-scroll tile row.
+   End-spacing is applied via ::before / ::after pseudo-elements rather than
+   padding-x, because flex containers with overflow-x don't honor padding-right
+   at the scroll-end (a known browser quirk: the last child's right edge meets
+   the viewport without the right padding). The pseudo-elements double as a
+   thematic "end of the shelf" mark — a gilt vertical rule with a centered
+   diamond, like a manuscript editor's finis ornament. */
 [data-theme="bibliophile"] #palette-items {
-  padding: 0 6px;
+  padding: 0;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -712,6 +704,37 @@
   touch-action: pan-x;
   -webkit-overflow-scrolling: touch;
   min-width: 0; /* allow grid track to shrink so this can scroll horizontally */
+}
+
+[data-theme="bibliophile"] #palette-items::before,
+[data-theme="bibliophile"] #palette-items::after {
+  content: "";
+  flex: 0 0 18px;
+  align-self: stretch;
+  background:
+    /* Upper vertical gilt segment */
+    linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 20%,
+      var(--gilt) 20%,
+      var(--gilt) 44%,
+      transparent 44%
+    ) center / 1px 100% no-repeat,
+    /* Lower vertical gilt segment */
+    linear-gradient(
+      to bottom,
+      transparent 56%,
+      var(--gilt) 56%,
+      var(--gilt) 80%,
+      transparent 80%
+    ) center / 1px 100% no-repeat,
+    /* Centered gilt fleuron (small filled circle) between the two segments */
+    radial-gradient(circle at center, var(--gilt) 0 2.5px, transparent 2.5px)
+      center / 8px 8px no-repeat;
+  opacity: 0.85;
+  pointer-events: none;
+  user-select: none;
 }
 [data-theme="bibliophile"] #palette-items::-webkit-scrollbar { height: 6px; }
 [data-theme="bibliophile"] #palette-items::-webkit-scrollbar-thumb {
@@ -935,4 +958,47 @@
 [data-theme="bibliophile"] #era-summary-continue-btn:hover:not([disabled]) {
   background: var(--gilt);
   color: var(--ink-black);
+}
+
+/* Embedded frontispiece — the AI-painted chapter close. Spec §3.4 calls for a
+   brush-wipe reveal followed by scratch-in narrative. */
+[data-theme="bibliophile"] #era-summary-frontispiece-frame {
+  position: relative;
+  margin: 12px auto 16px;
+  width: min(100%, 560px);
+  aspect-ratio: 4 / 3;
+  border: 2px solid var(--leather-deep);
+  background:
+    radial-gradient(ellipse at center, rgba(168, 121, 74, 0.06), transparent 70%),
+    var(--paper-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Inner gilt rule for the bookplate feel */
+  box-shadow: inset 0 0 0 1px rgba(201, 168, 95, 0.3);
+}
+[data-theme="bibliophile"] #era-summary-frontispiece-spinner {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--marble-warm);
+  font-size: 13px;
+}
+[data-theme="bibliophile"] #era-summary-frontispiece {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+[data-theme="bibliophile"] #era-summary-frontispiece[hidden] { display: none; }
+
+/* Narrative under the frontispiece — Cardo italic, scratch-in animated by JS. */
+[data-theme="bibliophile"] .era-summary-narrative {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-black);
+  margin: 8px 18px 4px;
+  min-height: 1.5em;
 }

@@ -18,6 +18,13 @@ import { createArrowTrail, type ArrowTrailHandle } from "./arrow-trail";
 import type { EraIdeaTilePick } from "./types";
 import { chapterTag } from "./theme";
 import { chapterStripeColor } from "./theme/chapterColor";
+import {
+  startHoldArc,
+  type HoldArcHandle,
+  playBrassClasp,
+  playBrushWipe,
+  scratchIn,
+} from "./motion";
 
 // --- Types ---
 interface CombineItem {
@@ -82,6 +89,10 @@ const MAX_ACTION_LOG = 500;
 type EraIdeaSlotItem = SelectionSlotItem & { description?: string; narrative?: string };
 let pendingEraIdeaTile: EraIdeaSlotItem | null = null;
 let eraIdeaArrowTrail: ArrowTrailHandle | null = null;
+// Hold-to-commit handle, set when a tile is dropped into the bind slot. Resolves
+// to "complete" after 2.5s (auto-commit) or "cancel" if the player releases the tile
+// back to the workspace via the Release button. See spec §2.4, §3.3.
+let bindHoldHandle: HoldArcHandle | null = null;
 const eraNameForAnalytics = () => selectFiveMode ? "select-five" : eraManager.current.name;
 
 // --- DOM setup ---
@@ -390,6 +401,10 @@ app.innerHTML = `
         <div class="era-summary-completed-label">\u2714 Era Complete</div>
         <div class="era-summary-header">
           <h2 id="era-summary-era-name"></h2>
+        </div>
+        <div id="era-summary-frontispiece-frame">
+          <div id="era-summary-frontispiece-spinner">Painting the frontispiece\u2026</div>
+          <img id="era-summary-frontispiece" alt="" hidden />
         </div>
         <div id="era-summary-stat-cards"></div>
         <div id="era-summary-tile-detail"></div>
@@ -936,19 +951,108 @@ trayNext?.addEventListener("click", () => {
 });
 paletteItems.addEventListener("scroll", updateTrayPaginationVisibility, { passive: true });
 
+// --- Idea-tray rubber-band overscroll ---
+// At a boundary (start or end), wheel + touch attempts to scroll past trigger a
+// diminishing-return transform on #palette-items. On idle, the transform animates
+// back to 0. Bidirectional, visible on both touch and mouse wheel.
+const OVERSCROLL_MAX_PX = 64;
+const OVERSCROLL_FACTOR = 0.45;
+let overscrollPx = 0;
+let overscrollSnapTimer: ReturnType<typeof setTimeout> | null = null;
+let overscrollSnapping = false;
+
+function applyOverscroll(deltaPx: number) {
+  if (overscrollSnapping) {
+    paletteItems.style.transition = "";
+    overscrollSnapping = false;
+  }
+  // Diminishing returns — once we're near the cap, additional input has less effect.
+  const damping = 1 - Math.abs(overscrollPx) / OVERSCROLL_MAX_PX;
+  const next = overscrollPx + deltaPx * Math.max(0.05, damping) * OVERSCROLL_FACTOR;
+  overscrollPx = Math.max(-OVERSCROLL_MAX_PX, Math.min(OVERSCROLL_MAX_PX, next));
+  paletteItems.style.transform = `translateX(${overscrollPx}px)`;
+}
+
+function scheduleOverscrollSnap(delay = 90) {
+  if (overscrollSnapTimer) clearTimeout(overscrollSnapTimer);
+  overscrollSnapTimer = setTimeout(() => {
+    overscrollSnapTimer = null;
+    if (overscrollPx === 0) return;
+    overscrollSnapping = true;
+    paletteItems.style.transition = "transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+    paletteItems.style.transform = "translateX(0)";
+    setTimeout(() => {
+      paletteItems.style.transition = "";
+      overscrollPx = 0;
+      overscrollSnapping = false;
+    }, 340);
+  }, delay);
+}
+
 // Mouse wheel → horizontal scroll. Translate vertical wheel deltas (the common case
 // for both wheel mice and trackpad two-finger scroll) into horizontal scroll.
+// At a boundary, the wheel input drives rubber-band overscroll instead.
 paletteItems.addEventListener(
   "wheel",
   (e) => {
-    // Bypass when the user is already scrolling horizontally (shift+wheel, or trackpad
-    // horizontal swipe). Browser handles those natively.
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
     e.preventDefault();
-    paletteItems.scrollBy({ left: e.deltaY, behavior: "auto" });
+    const atStart = paletteItems.scrollLeft <= 0;
+    const atEnd =
+      paletteItems.scrollLeft + paletteItems.clientWidth >= paletteItems.scrollWidth - 1;
+    if ((atStart && e.deltaY < 0) || (atEnd && e.deltaY > 0)) {
+      // Wheel deltaY positive = scrolling-right intent. At the right boundary that
+      // should pull content visually LEFT (translate negative). Inverse on the left.
+      applyOverscroll(-e.deltaY);
+      scheduleOverscrollSnap();
+    } else {
+      paletteItems.scrollBy({ left: e.deltaY, behavior: "auto" });
+    }
   },
   { passive: false },
 );
+
+// Touch boundary overscroll — when scrollLeft is pinned at 0 or max and the player
+// keeps swiping in the boundary direction, accumulate visual stretch and snap on
+// release. Mid-bound horizontal swipes still scroll natively.
+let touchPrevX: number | null = null;
+let touchOverscrollEngaged = false;
+paletteItems.addEventListener("touchstart", (e) => {
+  if (e.touches.length !== 1) return;
+  touchPrevX = e.touches[0].clientX;
+  touchOverscrollEngaged = false;
+}, { passive: true });
+paletteItems.addEventListener("touchmove", (e) => {
+  if (e.touches.length !== 1 || touchPrevX === null) return;
+  const x = e.touches[0].clientX;
+  const dx = x - touchPrevX;
+  touchPrevX = x;
+  const atStart = paletteItems.scrollLeft <= 0;
+  const atEnd =
+    paletteItems.scrollLeft + paletteItems.clientWidth >= paletteItems.scrollWidth - 1;
+  // Touch dx positive = finger moves right. At the LEFT boundary (atStart) that is
+  // the boundary direction → translate right (overscroll positive). At the right
+  // boundary, dx negative is the boundary direction → translate left.
+  if ((atStart && dx > 0) || (atEnd && dx < 0)) {
+    e.preventDefault();
+    touchOverscrollEngaged = true;
+    applyOverscroll(dx);
+  } else if (touchOverscrollEngaged) {
+    // Player has reversed direction back into the scrollable range — snap & let
+    // native scroll resume.
+    touchOverscrollEngaged = false;
+    scheduleOverscrollSnap(0);
+  }
+}, { passive: false });
+const onTouchRelease = () => {
+  touchPrevX = null;
+  if (touchOverscrollEngaged) {
+    touchOverscrollEngaged = false;
+    scheduleOverscrollSnap(0);
+  }
+};
+paletteItems.addEventListener("touchend", onTouchRelease);
+paletteItems.addEventListener("touchcancel", onTouchRelease);
 
 // Re-evaluate pagination visibility whenever the inventory mutates.
 new MutationObserver(updateTrayPaginationVisibility).observe(paletteItems, { childList: true });
@@ -1832,9 +1936,13 @@ const handlePointerUp = (e: PointerEvent) => {
     }
   }
 
-  // Era idea-slot drop (only when slot wrapper is shown — i.e. era ready to advance)
+  // Era idea-slot drop (only when slot wrapper is shown — i.e. era ready to advance).
+  // Per spec §2.4 / §3.3, dropping puts the tile into an *idle* hold-arc state on
+  // the plate. A SEPARATE press-and-hold gesture on the slot fills the arc; release
+  // before 2.5s cancels (tile stays in the slot, ready for retry); reaching 2.5s
+  // commits. The "Release" button drags the tile back out to the workspace.
   const ideaWrapper = document.getElementById("era-idea-slot-wrapper");
-  if (ideaWrapper && !ideaWrapper.hasAttribute("hidden")) {
+  if (ideaWrapper && !ideaWrapper.hasAttribute("hidden") && !bindHoldHandle) {
     const slotEl = document.getElementById("era-idea-slot");
     if (slotEl) {
       const r = slotEl.getBoundingClientRect();
@@ -2347,8 +2455,11 @@ async function doEraTransition(result: { narrative: string }) {
         latestEraSnapshot = null;
         latestEraChoice = null;
         latestTapestryPromise = null;
+        // Frontispiece is now embedded in the era-summary spread itself (Phase 2),
+        // so the standalone tapestry overlay is no longer shown between chapters.
+        // Clear the consumed promise so the victory path doesn't try to re-show it.
+        tapestryPromise = null;
         clearPipelineHud();
-        await showTapestry();
         persistGame();
       });
     }
@@ -2437,25 +2548,97 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
   hideToast();
   document.getElementById("era-summary-era-name")!.textContent = record.eraName;
   document.getElementById("era-summary-stat-cards")!.innerHTML = renderEraStatCards(record);
-  document.getElementById("era-summary-narrative")!.textContent = record.advancementNarrative;
   const topItems = record.discoveredItems.slice(0, 16).join(", ");
   document.getElementById("era-summary-discovered")!.textContent = topItems + (record.discoveredItems.length > 16 ? "…" : "");
   document.getElementById("era-summary-next-name")!.textContent = nextEraName;
   document.getElementById("era-summary-next-text")!.textContent = nextNarrative;
-  const continueBtn = document.getElementById("era-summary-continue-btn")!;
+  const continueBtn = document.getElementById("era-summary-continue-btn") as HTMLButtonElement;
   continueBtn.textContent = `Begin ${nextEraName} \u2192`;
+  // Disable the continue button until the narrative finishes scratching in \u2014 the
+  // ceremony is paced; the player should sit with the frontispiece reveal.
+  continueBtn.disabled = true;
   continueBtn.onclick = () => {
     eraSummaryOverlay.classList.remove("visible");
     continueBtn.onclick = null;
     onContinue();
   };
+
+  // Reset frontispiece + narrative state for this opening.
+  const frontEl = document.getElementById("era-summary-frontispiece") as HTMLImageElement;
+  const spinnerEl = document.getElementById("era-summary-frontispiece-spinner");
+  const narrativeEl = document.getElementById("era-summary-narrative")!;
+  if (frontEl) {
+    frontEl.hidden = true;
+    frontEl.removeAttribute("src");
+    frontEl.style.clipPath = "";
+    frontEl.style.transform = "";
+  }
+  if (spinnerEl) {
+    spinnerEl.style.display = "block";
+    spinnerEl.style.opacity = "1";
+  }
+  narrativeEl.textContent = "";
+
   eraSummaryOverlay.classList.add("visible");
+
+  // Pace the spread: await the in-flight tapestry (frontispiece) image, brush-wipe
+  // it in, then scratch in the narrative, then enable Continue. The bind ceremony
+  // already started the tapestry generation in the background pipeline.
+  void revealEraSummaryContents(frontEl, spinnerEl, narrativeEl, record.advancementNarrative, continueBtn);
+}
+
+async function revealEraSummaryContents(
+  frontEl: HTMLImageElement | null,
+  spinnerEl: HTMLElement | null,
+  narrativeEl: HTMLElement,
+  narrative: string,
+  continueBtn: HTMLButtonElement,
+) {
+  // Frontispiece: await the tapestry promise, then brush-wipe reveal. If the promise
+  // doesn't yield an image (network failure / no S3), fall back to text-only.
+  let imageReady = false;
+  if (frontEl && tapestryPromise) {
+    try {
+      const result = await tapestryPromise;
+      if (result?.base64) {
+        frontEl.src = `data:${result.mimeType};base64,${result.base64}`;
+        await new Promise<void>((resolve) => {
+          if (frontEl.complete && frontEl.naturalWidth > 0) return resolve();
+          frontEl.onload = () => resolve();
+          frontEl.onerror = () => resolve();
+        });
+        if (spinnerEl) spinnerEl.style.display = "none";
+        frontEl.hidden = false;
+        await playBrushWipe(frontEl, { durationMs: 1400 });
+        imageReady = true;
+      }
+    } catch { /* fall through to text-only */ }
+  }
+  if (!imageReady && spinnerEl) {
+    spinnerEl.style.transition = "opacity 240ms ease-out";
+    spinnerEl.style.opacity = "0";
+    setTimeout(() => { spinnerEl.style.display = "none"; }, 260);
+  }
+
+  // Narrative: scratch-in (typewriter ~28ms/char). Skip on click anywhere inside
+  // the panel except the (still-disabled) continue button \u2014 keeps impatient players
+  // moving without breaking the ceremony for the rest.
+  const handle = scratchIn(narrativeEl, narrative, { msPerChar: 28 });
+  const skipOnce = (e: Event) => {
+    if ((e.target as HTMLElement).closest("#era-summary-continue-btn")) return;
+    handle.skip();
+  };
+  eraSummaryOverlay.addEventListener("click", skipOnce, { once: true });
+  await handle.promise;
+  eraSummaryOverlay.removeEventListener("click", skipOnce);
+
+  continueBtn.disabled = false;
 }
 
 function renderEraIdeaSlot() {
   const wrapper = document.getElementById("era-idea-slot-wrapper");
   const slotEl = document.getElementById("era-idea-slot");
-  const btn = chartEraBtn as HTMLButtonElement;
+  const promptEl = wrapper?.querySelector<HTMLElement>(".era-idea-prompt") ?? null;
   if (!wrapper || !slotEl) return;
   const wrapperVisible = !wrapper.hasAttribute("hidden");
   if (pendingEraIdeaTile) {
@@ -2465,12 +2648,15 @@ function renderEraIdeaSlot() {
       <span class="slot-name">${esc(pendingEraIdeaTile.name)}</span>
       <span class="slot-tier">${tierStars(pendingEraIdeaTile.tier)}</span>
     `;
-    btn.disabled = !wrapperVisible; // keep disabled when wrapper hidden (no era ready)
     eraIdeaArrowTrail?.setActive(false);
+    // Hold-and-release is the entire bind grammar; no button affordance needed.
+    if (promptEl) {
+      promptEl.textContent = bindHoldHandle && wrapperVisible ? "" : "Press and hold to bind";
+    }
   } else {
-    slotEl.classList.remove("slot-occupied");
+    slotEl.classList.remove("slot-occupied", "slot-holding");
     slotEl.innerHTML = `<span class="slot-empty-hint">Drop a tile here</span>`;
-    btn.disabled = true;
+    if (promptEl) promptEl.textContent = "Save an idea tile for this era";
     if (wrapperVisible) eraIdeaArrowTrail?.setActive(true);
   }
 }
@@ -2695,20 +2881,166 @@ document.getElementById("thanks-toast-close")!.addEventListener("click", () => {
   document.getElementById("thanks-toast")!.classList.remove("visible");
 });
 
-chartEraBtn.addEventListener("click", () => {
-  if (!pendingEraResult) return;
-  if (!pendingEraIdeaTile) return; // button is disabled but defensive
+// --- Bind ceremony (spec §3.3) — hold-to-commit gesture ---
+//
+// Flow:
+//   1. Goals met → showEraIdeaSlot() reveals the wrapper. Player drags a tile in.
+//   2. handlePointerUp's slot-drop branch sets pendingEraIdeaTile + renders. The
+//      tile sits in the plate at IDLE state — no arc filling yet.
+//   3. Player presses-and-holds on the slot → beginBindHold() starts the 2.5s arc.
+//      Releasing before 2.5s aborts the fill; the tile stays in the plate so the
+//      player can retry. Reaching 2.5s commits.
+//   4. The chart-era-btn is a "Release" affordance — clicking it returns the tile
+//      to the workspace, emptying the slot entirely.
+//   5. On commit, brass clasp plays and we route into doEraTransition().
+
+function beginBindHold() {
+  if (!pendingEraIdeaTile || !pendingEraResult) return;
+  if (bindHoldHandle) return; // already filling
+  if (busy) return;
+  const slotEl = document.getElementById("era-idea-slot");
+  if (!slotEl) return;
+  bindHoldHandle = startHoldArc({ target: slotEl, durationMs: 2500 });
+  slotEl.classList.add("slot-holding");
+
+  // Pointerup or pointercancel anywhere on the document aborts the fill (the player
+  // has lifted/lost the gesture). The tile remains in the slot at idle.
+  const releaseHold = () => {
+    document.removeEventListener("pointerup", releaseHold);
+    document.removeEventListener("pointercancel", releaseHold);
+    if (!bindHoldHandle) return;
+    const handle = bindHoldHandle;
+    handle.cancel(); // resolves the promise with "cancel"
+    setTimeout(() => handle.destroy(), 200);
+  };
+  document.addEventListener("pointerup", releaseHold);
+  document.addEventListener("pointercancel", releaseHold);
+
+  bindHoldHandle.promise.then((outcome) => {
+    document.removeEventListener("pointerup", releaseHold);
+    document.removeEventListener("pointercancel", releaseHold);
+    if (outcome === "complete") {
+      void commitBindCeremony();
+    } else {
+      bindHoldHandle = null;
+      slotEl.classList.remove("slot-holding");
+      renderEraIdeaSlot();
+    }
+  });
+
+  renderEraIdeaSlot();
+}
+
+// Attach the press-and-hold listener on the slot once. pendingEraIdeaTile guards
+// the no-tile case; beginBindHold also re-checks busy / handle state.
+//
+// Direction logic (matches the idea-tray's drag affordance):
+//   - Press and stay still → hold-arc fills, eventually commits
+//   - Press and move past 12px → cancel the hold AND drag the tile back out to
+//     the workspace under the pointer, so the player can re-place it or combine
+//     it. This is the spec-correct cancel gesture (§2.4 "lifting before 2.5s")
+//     extended to a drag-out so the tile doesn't get stranded in the slot.
+const SLOT_DRAG_OUT_PX = 12;
+document.getElementById("era-idea-slot")?.addEventListener("pointerdown", (e) => {
+  if (!pendingEraIdeaTile || bindHoldHandle) return;
+  if (busy) return;
+  e.preventDefault();
+
+  const startX = e.clientX;
+  const startY = e.clientY;
+  const tileSnapshot = pendingEraIdeaTile;
+  let dragStarted = false;
+
+  const onSlotMove = (moveEvent: PointerEvent) => {
+    if (dragStarted) return;
+    const dx = moveEvent.clientX - startX;
+    const dy = moveEvent.clientY - startY;
+    if (Math.hypot(dx, dy) < SLOT_DRAG_OUT_PX) return;
+
+    dragStarted = true;
+    cleanup();
+
+    // Cancel any in-flight hold; promise.then() will handle the post-cancel render.
+    if (bindHoldHandle) {
+      const handle = bindHoldHandle;
+      bindHoldHandle = null;
+      handle.cancel();
+      setTimeout(() => handle.destroy(), 200);
+    }
+
+    // Empty the slot; spawn the tile under the pointer; start a regular drag.
+    pendingEraIdeaTile = null;
+    document.getElementById("era-idea-slot")?.classList.remove("slot-holding");
+    renderEraIdeaSlot();
+
+    const data: ElementData = {
+      name: tileSnapshot.name,
+      tier: tileSnapshot.tier,
+      emoji: tileSnapshot.emoji,
+      color: tileSnapshot.color,
+      description: tileSnapshot.description ?? "",
+      narrative: tileSnapshot.narrative ?? "",
+    };
+    const wsRect = workspace.getBoundingClientRect();
+    const item = spawnItem(
+      data,
+      moveEvent.clientX - wsRect.left - 36,
+      moveEvent.clientY - wsRect.top - 36,
+    );
+    dragItem = item;
+    dragSourceSlotIndex = null;
+    dragOffsetX = 36;
+    dragOffsetY = 36;
+    item.el.style.position = "fixed";
+    item.el.style.left = `${moveEvent.clientX - 36}px`;
+    item.el.style.top = `${moveEvent.clientY - 36}px`;
+    item.el.style.zIndex = "100";
+
+    posthog.capture("bind_tile_dragged_out", { era_name: eraNameForAnalytics() });
+  };
+  const onSlotUp = () => cleanup();
+  const cleanup = () => {
+    document.removeEventListener("pointermove", onSlotMove);
+    document.removeEventListener("pointerup", onSlotUp);
+    document.removeEventListener("pointercancel", onSlotUp);
+  };
+  document.addEventListener("pointermove", onSlotMove);
+  document.addEventListener("pointerup", onSlotUp);
+  document.addEventListener("pointercancel", onSlotUp);
+
+  beginBindHold();
+});
+
+async function commitBindCeremony() {
+  if (!pendingEraResult) {
+    bindHoldHandle?.destroy();
+    bindHoldHandle = null;
+    return;
+  }
+  const slotEl = document.getElementById("era-idea-slot");
+  const handle = bindHoldHandle;
+  bindHoldHandle = null;
+  if (slotEl) slotEl.classList.remove("slot-holding");
+
+  posthog.capture("bind_committed", {
+    era_name: eraNameForAnalytics(),
+    bound_tile: pendingEraIdeaTile?.name,
+    bound_tier: pendingEraIdeaTile?.tier,
+  });
+
+  // Brass clasps + plate flash, then route into the existing era transition pipeline.
+  if (slotEl) await playBrassClasp(slotEl);
+
+  handle?.destroy();
+
   const result = pendingEraResult;
   pendingEraResult = null;
-  chartEraBtn.classList.remove("visible");
-  // Hide the slot wrapper (and stop the arrow trail). pendingEraIdeaTile stays set so
-  // doEraTransition can attach it to the new history record after recordHistory runs.
   const wrapper = document.getElementById("era-idea-slot-wrapper");
   if (wrapper) wrapper.setAttribute("hidden", "");
   eraIdeaArrowTrail?.setActive(false);
   busy = true;
   doEraTransition(result);
-});
+}
 
 // --- Palette management ---
 function addToPalette(entry: ElementData, isSeed = false) {
