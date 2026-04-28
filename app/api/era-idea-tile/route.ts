@@ -8,12 +8,14 @@ interface EraIdeaTilePayload {
   anonId?: string | null;
   runId?: string | null;
   eraName?: string;
+  chapterIndex?: number | null;
   tileName?: string;
   tileTier?: number;
   tileEmoji?: string;
   tileColor?: string;
   tileDescription?: string | null;
   tileNarrative?: string | null;
+  bindingStripeColor?: string | null;
 }
 
 export async function POST(req: NextRequest) {
@@ -35,12 +37,14 @@ export async function POST(req: NextRequest) {
       anonId: anonId ?? null,
       runId: runId ?? null,
       eraName,
+      chapterIndex: payload.chapterIndex ?? null,
       tileName,
       tileTier,
       tileEmoji,
       tileColor,
       tileDescription: payload.tileDescription ?? null,
       tileNarrative: payload.tileNarrative ?? null,
+      bindingStripeColor: payload.bindingStripeColor ?? null,
     });
   } catch (err) {
     const detail = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : "";

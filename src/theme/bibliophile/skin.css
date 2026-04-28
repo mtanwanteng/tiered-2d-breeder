@@ -979,6 +979,558 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────
+   BOOKPLATE — universal tile-motif sheet (library detail, strip peek,
+   bind peek, vault info card). Spec §1 / §3.5.
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] .bookplate-sheet {
+  background:
+    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--vellum);
+  border: 2px solid var(--leather-deep);
+  border-radius: 2px;
+  color: var(--ink-black);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  width: min(360px, 92vw);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+[data-theme="bibliophile"] .bookplate-stripe {
+  height: 6px;
+  width: 100%;
+  flex-shrink: 0;
+}
+[data-theme="bibliophile"] .bookplate-content {
+  padding: 18px 24px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+[data-theme="bibliophile"] .bookplate-attribution {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--oxblood);
+  margin-bottom: 10px;
+}
+[data-theme="bibliophile"] .bookplate-emoji {
+  font-size: 64px;
+  line-height: 1;
+  margin: 4px 0 8px;
+}
+[data-theme="bibliophile"] .bookplate-name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--ink-black);
+  line-height: 1.1;
+}
+[data-theme="bibliophile"] .bookplate-tier {
+  font-family: var(--font-serif);
+  color: var(--gilt);
+  letter-spacing: 4px;
+  font-size: 12px;
+  margin-top: 2px;
+}
+[data-theme="bibliophile"] .bookplate-narrative {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--leather-deep);
+  margin: 14px 8px 0;
+}
+[data-theme="bibliophile"] .bookplate-description {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--marble-cool);
+  margin: 6px 8px 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   LIBRARY PAGE — 6×4 shelf of bound tiles. Spec §3.5.
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] .library-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(168, 121, 74, 0.1), transparent 60%),
+    var(--paper-dark);
+  color: var(--vellum);
+  font-family: var(--font-serif);
+  padding: 24px max(16px, env(safe-area-inset-left)) 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+[data-theme="bibliophile"] .library-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+  max-width: 560px;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+[data-theme="bibliophile"] .library-back,
+[data-theme="bibliophile"] .library-vault-link {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--marble-warm);
+  text-decoration: none;
+}
+[data-theme="bibliophile"] .library-back { justify-self: start; }
+[data-theme="bibliophile"] .library-vault-link { justify-self: end; }
+[data-theme="bibliophile"] .library-back:hover,
+[data-theme="bibliophile"] .library-vault-link:hover {
+  color: var(--gilt);
+}
+[data-theme="bibliophile"] .library-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 24px;
+  color: var(--gilt);
+  margin: 0;
+  text-align: center;
+}
+[data-theme="bibliophile"] .library-counter {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--marble-warm);
+  margin: 0 0 18px;
+}
+[data-theme="bibliophile"] .library-counter--full {
+  color: var(--gilt);
+}
+[data-theme="bibliophile"] .library-empty,
+[data-theme="bibliophile"] .library-error {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--marble-warm);
+  text-align: center;
+  margin: 32px 16px;
+  max-width: 360px;
+}
+[data-theme="bibliophile"] .library-error {
+  color: var(--oxblood);
+}
+
+[data-theme="bibliophile"] .library-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 60px);
+  grid-auto-rows: 88px;
+  gap: 10px 12px;
+  padding: 16px;
+  background: var(--paper-dark);
+  border: 1px solid var(--leather-deep);
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+@media (min-width: 480px) {
+  [data-theme="bibliophile"] .library-grid {
+    grid-template-columns: repeat(4, 72px);
+    grid-auto-rows: 100px;
+    gap: 12px 16px;
+    padding: 20px;
+  }
+}
+
+[data-theme="bibliophile"] .library-slot {
+  border-radius: 2px;
+  border: 1px solid var(--leather-deep);
+  position: relative;
+  overflow: hidden;
+}
+[data-theme="bibliophile"] .library-slot--empty {
+  background: rgba(42, 31, 21, 0.6);
+}
+[data-theme="bibliophile"] .library-slot--filled {
+  background:
+    /* binding stripe on left + top edges, then marble */
+    linear-gradient(to right, var(--stripe) 4px, transparent 4px) no-repeat,
+    linear-gradient(to bottom, var(--stripe) 3px, transparent 3px) no-repeat,
+    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--vellum);
+  color: var(--ink-black);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px 4px;
+  font-family: var(--font-serif);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+[data-theme="bibliophile"] .library-slot--filled:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--gilt);
+}
+[data-theme="bibliophile"] .library-slot-emoji {
+  font-size: 24px;
+  line-height: 1;
+}
+[data-theme="bibliophile"] .library-slot-name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 9px;
+  margin-top: 4px;
+  color: var(--ink-black);
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   RETIREMENT OVERLAY — modal between bind commit and era summary
+   when library is at 24/24. Spec §3.6.
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] #retirement-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 18, 8, 0.78);
+  z-index: 220;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+[data-theme="bibliophile"] #retirement-overlay.visible {
+  display: flex;
+}
+[data-theme="bibliophile"] #retirement-modal {
+  background: transparent;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  overflow: hidden;
+}
+[data-theme="bibliophile"] #retirement-bound-tile-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+}
+[data-theme="bibliophile"] #retirement-bound-tile {
+  background:
+    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--vellum);
+  border: 2px solid var(--gilt);
+  border-radius: 2px;
+  padding: 8px 6px 6px;
+  width: 100px;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--ink-black);
+  font-family: var(--font-serif);
+  box-shadow: 0 0 0 1px var(--gilt), 0 0 24px 6px rgba(201, 168, 95, 0.3),
+    0 12px 32px rgba(0, 0, 0, 0.55);
+}
+[data-theme="bibliophile"] .retire-bound-emoji {
+  font-size: 36px;
+  line-height: 1;
+}
+[data-theme="bibliophile"] .retire-bound-name {
+  font-style: italic;
+  font-size: 13px;
+  margin-top: 4px;
+  text-align: center;
+  line-height: 1.1;
+  max-width: 92px;
+}
+[data-theme="bibliophile"] .retire-bound-tier {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--gilt);
+}
+[data-theme="bibliophile"] #retirement-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--gilt);
+  margin: 0;
+  text-align: center;
+}
+[data-theme="bibliophile"] #retirement-prompt {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--marble-warm);
+  margin: 0 0 4px;
+  text-align: center;
+}
+
+[data-theme="bibliophile"] #retirement-library-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 60px);
+  grid-auto-rows: 80px;
+  gap: 8px 10px;
+  padding: 14px;
+  background: var(--paper-dark);
+  border: 1px solid var(--leather-deep);
+  border-radius: 4px;
+  overflow-y: auto;
+  max-height: 50vh;
+  max-height: 50dvh;
+}
+@media (min-width: 480px) {
+  [data-theme="bibliophile"] #retirement-library-grid {
+    grid-template-columns: repeat(6, 64px);
+    grid-auto-rows: 88px;
+    gap: 10px;
+  }
+}
+[data-theme="bibliophile"] .retire-loading {
+  grid-column: 1 / -1;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--marble-warm);
+  text-align: center;
+  margin: 16px 0;
+  font-size: 13px;
+}
+[data-theme="bibliophile"] .retire-tile {
+  border: 1px solid var(--leather-deep);
+  border-radius: 2px;
+  background:
+    linear-gradient(to right, var(--stripe) 4px, transparent 4px) no-repeat,
+    linear-gradient(to bottom, var(--stripe) 3px, transparent 3px) no-repeat,
+    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--vellum);
+  color: var(--ink-black);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px 4px;
+  font-family: var(--font-serif);
+  position: relative;
+  transition: transform 0.12s, box-shadow 0.12s, opacity 0.2s;
+}
+[data-theme="bibliophile"] .retire-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
+}
+[data-theme="bibliophile"] .retire-tile--holding {
+  transform: translateY(-4px) scale(1.06);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--gilt);
+}
+[data-theme="bibliophile"] #retirement-library-grid:has(.retire-tile--holding) .retire-tile:not(.retire-tile--holding) {
+  opacity: 0.4;
+}
+[data-theme="bibliophile"] .retire-tile-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+[data-theme="bibliophile"] .retire-tile-name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 8px;
+  margin-top: 4px;
+  color: var(--ink-black);
+  max-width: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   VAULT PAGE — spine-only memorial of retired tiles. Spec §3.7.
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] .vault-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--paper-dark);
+  color: var(--vellum);
+  font-family: var(--font-serif);
+  padding: 24px max(16px, env(safe-area-inset-left)) 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+[data-theme="bibliophile"] .vault-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 100%;
+  max-width: 560px;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+[data-theme="bibliophile"] .vault-back {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--marble-warm);
+  text-decoration: none;
+  justify-self: start;
+}
+[data-theme="bibliophile"] .vault-back:hover { color: var(--gilt); }
+[data-theme="bibliophile"] .vault-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 24px;
+  color: var(--gilt);
+  margin: 0;
+  text-align: center;
+}
+[data-theme="bibliophile"] .vault-prologue {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--marble-warm);
+  text-align: center;
+  font-size: 13px;
+  margin: 0 0 24px;
+  max-width: 360px;
+}
+[data-theme="bibliophile"] .vault-empty,
+[data-theme="bibliophile"] .vault-error {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--marble-warm);
+  text-align: center;
+  margin: 32px 16px;
+  max-width: 360px;
+}
+[data-theme="bibliophile"] .vault-error { color: var(--oxblood); }
+
+[data-theme="bibliophile"] .vault-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 480px;
+}
+[data-theme="bibliophile"] .vault-spine {
+  width: 100%;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 12px;
+  background:
+    linear-gradient(to right, var(--stripe) 5px, transparent 5px) no-repeat,
+    var(--leather-deep);
+  border: 1px solid var(--ink-black);
+  border-radius: 1px;
+  cursor: pointer;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--marble-warm);
+  transition: background-color 0.15s, color 0.15s;
+}
+[data-theme="bibliophile"] .vault-spine:hover {
+  color: var(--vellum);
+  filter: brightness(1.15);
+}
+[data-theme="bibliophile"] .vault-spine-roman {
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
+
+[data-theme="bibliophile"] .vault-info-card {
+  background:
+    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--vellum);
+  border: 2px solid var(--leather-deep);
+  border-radius: 2px;
+  color: var(--ink-black);
+  padding: 28px 32px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(360px, 92vw);
+  text-align: center;
+}
+[data-theme="bibliophile"] .vault-info-line {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--oxblood);
+  margin: 0;
+}
+[data-theme="bibliophile"] .vault-info-attribution {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--marble-cool);
+  margin: 0 0 8px;
+}
+[data-theme="bibliophile"] .vault-info-close {
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid var(--leather-deep);
+  color: var(--leather-deep);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  padding: 6px 18px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+[data-theme="bibliophile"] .vault-info-close:hover {
+  background: var(--leather-deep);
+  color: var(--vellum);
+}
+
+/* Bookplate overlay — pull-up sheet backdrop. */
+[data-theme="bibliophile"] .bookplate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 18, 8, 0.78);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+[data-theme="bibliophile"] .bookplate-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--leather-deep);
+  background: var(--paper-dark);
+  color: var(--marble-warm);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+[data-theme="bibliophile"] .bookplate-close:hover {
+  color: var(--gilt);
+  border-color: var(--gilt);
+}
+
+/* ─────────────────────────────────────────────────────────────────────
    ERA SUMMARY OVERLAY — minimal reskin (full refit lands in Phase 2)
    ───────────────────────────────────────────────────────────────────── */
 

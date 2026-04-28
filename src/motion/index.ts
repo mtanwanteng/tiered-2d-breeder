@@ -8,3 +8,5 @@ export { playBrushWipe } from "./brush-wipe";
 export { scratchIn, type ScratchInOptions, type ScratchInHandle } from "./scratch-in";
 export { playPageTurn } from "./page-turn";
 export { startPlateBreathing, type PlateBreathingHandle } from "./plate-breathing";
+export { playInkPointDispersal, type InkPointDispersalOptions } from "./ink-point-dispersal";
+export { playWaxStamp, type WaxStampOptions } from "./wax-stamp";

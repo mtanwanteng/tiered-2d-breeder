@@ -24,6 +24,7 @@ import {
   playBrassClasp,
   playBrushWipe,
   scratchIn,
+  playInkPointDispersal,
 } from "./motion";
 import { audio, type CelloSustainHandle } from "./audio";
 
@@ -434,6 +435,16 @@ app.innerHTML = `
       <div id="card-catalog-body">
         <p class="card-catalog-empty">Your full catalog will appear here. Phase 4 wires the grid + search.</p>
       </div>
+    </div>
+  </div>
+  <div id="retirement-overlay">
+    <div id="retirement-modal">
+      <div id="retirement-bound-tile-frame">
+        <div id="retirement-bound-tile"></div>
+      </div>
+      <h2 id="retirement-title">twenty-four spaces. one must yield.</h2>
+      <p id="retirement-prompt">press and hold a tile to give it back to the world</p>
+      <div id="retirement-library-grid"></div>
     </div>
   </div>
   <div id="heatmap-overlay">
@@ -2838,6 +2849,16 @@ function hideEraIdeaSlot() {
 }
 
 async function persistEraIdeaTile(eraName: string, tile: EraIdeaTilePick) {
+  // Cache the chapter index + binding stripe color at write-time so library
+  // queries / renders don't have to recompute from era_name strings or hash
+  // the (era × tile × run) tuple again. Spec §11 schema notes.
+  const eraIndex = (() => {
+    for (let i = 0; i < eraManager.totalEras; i++) {
+      if (eraManager.getEraByIndex(i).name === eraName) return i;
+    }
+    return null;
+  })();
+  const stripe = chapterStripeColor(eraName, tile.name, runId);
   try {
     await fetch("/api/era-idea-tile", {
       method: "POST",
@@ -2846,12 +2867,14 @@ async function persistEraIdeaTile(eraName: string, tile: EraIdeaTilePick) {
         anonId: getOrCreateAnonId(),
         runId,
         eraName,
+        chapterIndex: eraIndex,
         tileName: tile.name,
         tileTier: tile.tier,
         tileEmoji: tile.emoji,
         tileColor: tile.color,
         tileDescription: tile.description ?? null,
         tileNarrative: tile.narrative ?? null,
+        bindingStripeColor: stripe,
       }),
     });
   } catch (err) {
@@ -3085,6 +3108,197 @@ function beginBindHold() {
   renderEraIdeaSlot();
 }
 
+// ────────────────────────────────────────────────────────────────────
+// Retirement ceremony (spec §3.6)
+// ────────────────────────────────────────────────────────────────────
+
+interface LibraryEntry {
+  id: string;
+  tileName: string;
+  tileTier: number;
+  tileEmoji: string;
+  tileColor: string;
+  tileDescription: string | null;
+  tileNarrative: string | null;
+  eraName: string;
+  chapterIndex: number | null;
+  runId: string | null;
+  bindingStripeColor: string | null;
+  createdAt: string;
+}
+
+let retirementHoldHandle: HoldArcHandle | null = null;
+
+/** True if the player has 24 non-retired bound tiles already; the next bind
+ *  must replace one. Fetches /api/library and checks length. Fail-open on
+ *  error so a network blip doesn't block the bind. */
+async function isLibraryFullForRetirement(): Promise<boolean> {
+  try {
+    const anonId = getOrCreateAnonId();
+    const r = await fetch(`/api/library?anonId=${encodeURIComponent(anonId)}`, {
+      credentials: "same-origin",
+    });
+    if (!r.ok) return false;
+    const data = (await r.json()) as { tiles?: LibraryEntry[] };
+    return (data.tiles?.length ?? 0) >= 24;
+  } catch {
+    return false;
+  }
+}
+
+interface BoundTilePreview {
+  name: string;
+  tier: Tier;
+  emoji: string;
+  color: string;
+}
+
+/** Open the retirement modal and resolve when the player either retires a
+ *  library tile (→ "retired") or cancels (→ "cancelled"). Cancellation in
+ *  Phase 4 minimum is via the ESC key or backdrop tap; the spec's "Don't keep
+ *  this chapter" affordance can be wired later. */
+function openRetirementOverlay(boundPreview: BoundTilePreview): Promise<"retired" | "cancelled"> {
+  return new Promise((resolve) => {
+    const overlay = document.getElementById("retirement-overlay");
+    const grid = document.getElementById("retirement-library-grid");
+    const boundEl = document.getElementById("retirement-bound-tile");
+    if (!overlay || !grid || !boundEl) {
+      resolve("cancelled");
+      return;
+    }
+
+    // Render the new tile suspended above
+    boundEl.innerHTML = `
+      <span class="retire-bound-emoji">${esc(boundPreview.emoji)}</span>
+      <span class="retire-bound-name">${esc(boundPreview.name)}</span>
+      <span class="retire-bound-tier">${tierStars(boundPreview.tier)}</span>
+    `;
+
+    grid.innerHTML = `<p class="retire-loading">Reading your library&hellip;</p>`;
+    overlay.classList.add("visible");
+
+    let settled = false;
+    const finish = (outcome: "retired" | "cancelled") => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      overlay.classList.remove("visible");
+      resolve(outcome);
+    };
+
+    const onBackdrop = (e: MouseEvent) => {
+      if (e.target === overlay) finish("cancelled");
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") finish("cancelled");
+    };
+    const cleanup = () => {
+      overlay.removeEventListener("click", onBackdrop);
+      document.removeEventListener("keydown", onKey);
+      if (retirementHoldHandle) {
+        retirementHoldHandle.cancel();
+        retirementHoldHandle = null;
+      }
+    };
+    overlay.addEventListener("click", onBackdrop);
+    document.addEventListener("keydown", onKey);
+
+    // Fetch the library content, render the grid
+    void (async () => {
+      try {
+        const anonId = getOrCreateAnonId();
+        const r = await fetch(`/api/library?anonId=${encodeURIComponent(anonId)}`, {
+          credentials: "same-origin",
+        });
+        const data = (await r.json()) as { tiles?: LibraryEntry[] };
+        const tiles = data.tiles ?? [];
+        if (tiles.length === 0) {
+          grid.innerHTML = `<p class="retire-loading">Your library is empty — nothing to retire.</p>`;
+          return;
+        }
+        grid.innerHTML = tiles
+          .map((t) => {
+            const stripe = t.bindingStripeColor ?? "var(--leather-deep)";
+            return `<button
+                class="retire-tile"
+                data-tile-id="${esc(t.id)}"
+                style="--stripe: ${esc(stripe)}"
+                title="${esc(t.tileName)} — ${esc(t.eraName)}"
+              >
+                <span class="retire-tile-emoji">${esc(t.tileEmoji)}</span>
+                <span class="retire-tile-name">${esc(t.tileName)}</span>
+              </button>`;
+          })
+          .join("");
+
+        // Wire press-and-hold on each tile.
+        grid.querySelectorAll<HTMLButtonElement>(".retire-tile").forEach((btn) => {
+          btn.addEventListener("pointerdown", (ev) => {
+            if (settled || retirementHoldHandle) return;
+            ev.preventDefault();
+            const tileId = btn.dataset.tileId!;
+            btn.classList.add("retire-tile--holding");
+            retirementHoldHandle = startHoldArc({ target: btn, durationMs: 2500 });
+
+            const releaseHold = () => {
+              document.removeEventListener("pointerup", releaseHold);
+              document.removeEventListener("pointercancel", releaseHold);
+              if (!retirementHoldHandle) return;
+              const h = retirementHoldHandle;
+              h.cancel();
+              setTimeout(() => h.destroy(), 200);
+            };
+            document.addEventListener("pointerup", releaseHold);
+            document.addEventListener("pointercancel", releaseHold);
+
+            retirementHoldHandle.promise.then(async (outcome) => {
+              document.removeEventListener("pointerup", releaseHold);
+              document.removeEventListener("pointercancel", releaseHold);
+              const h = retirementHoldHandle;
+              retirementHoldHandle = null;
+              if (outcome !== "complete") {
+                btn.classList.remove("retire-tile--holding");
+                return;
+              }
+              h?.destroy();
+              // Commit retirement: ink-point dispersal + API call
+              await commitRetirement(btn, tileId);
+              finish("retired");
+            });
+          });
+        });
+      } catch (err) {
+        const detail = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production"
+          ? `: ${err instanceof Error ? err.message : String(err)}`
+          : "";
+        log.error("api", `[RTR] library fetch failed${detail}`);
+        grid.innerHTML = `<p class="retire-loading">Could not read the library.</p>`;
+      }
+    })();
+  });
+}
+
+async function commitRetirement(btn: HTMLElement, tileId: string): Promise<void> {
+  // Visual: ink-point dispersal at the tile's center
+  await playInkPointDispersal({ target: btn, count: 9, durationMs: 1400 });
+  // Server: retire the chosen row
+  try {
+    const anonId = getOrCreateAnonId();
+    await fetch(`/api/era-idea-tile/${encodeURIComponent(tileId)}/retire`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ anonId }),
+      credentials: "same-origin",
+    });
+    posthog.capture("library_tile_retired", { tile_id: tileId });
+  } catch (err) {
+    const detail = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production"
+      ? `: ${err instanceof Error ? err.message : String(err)}`
+      : "";
+    log.error("api", `[RTR] retire failed${detail}`);
+  }
+}
+
 // Attach the press-and-hold listener on the slot once. pendingEraIdeaTile guards
 // the no-tile case; beginBindHold also re-checks busy / handle state.
 //
@@ -3200,6 +3414,33 @@ async function commitBindCeremony() {
   if (wrapper) wrapper.setAttribute("hidden", "");
   eraIdeaArrowTrail?.setActive(false);
   busy = true;
+
+  // Library full? Route into retirement ceremony before the era summary.
+  // Spec §2.3 / §3.6. The bound tile we just committed is captured here as a
+  // snapshot so the retirement overlay can display it; the snapshot stays in
+  // pendingEraIdeaTile so doEraTransition's existing persist path runs after
+  // the player chooses what to retire.
+  const libraryFull = await isLibraryFullForRetirement();
+  if (libraryFull && pendingEraIdeaTile) {
+    const outcome = await openRetirementOverlay({
+      name: pendingEraIdeaTile.name,
+      tier: pendingEraIdeaTile.tier,
+      emoji: pendingEraIdeaTile.emoji,
+      color: pendingEraIdeaTile.color,
+    });
+    if (outcome === "cancelled") {
+      // Player closed the overlay without retiring — restore game state and
+      // bail. The bind tile stays in slot at idle; chapter doesn't advance.
+      busy = false;
+      eraAdvancing = false;
+      pendingEraResult = result; // restore so a later commit can re-attempt
+      // Re-show the chart-era affordance + slot wrapper for retry
+      const w = document.getElementById("era-idea-slot-wrapper");
+      if (w) w.removeAttribute("hidden");
+      return;
+    }
+  }
+
   doEraTransition(result);
 }
 
