@@ -25,6 +25,7 @@ import {
   playBrushWipe,
   scratchIn,
 } from "./motion";
+import { audio, type CelloSustainHandle } from "./audio";
 
 // --- Types ---
 interface CombineItem {
@@ -93,6 +94,8 @@ let eraIdeaArrowTrail: ArrowTrailHandle | null = null;
 // to "complete" after 2.5s (auto-commit) or "cancel" if the player releases the tile
 // back to the workspace via the Release button. See spec §2.4, §3.3.
 let bindHoldHandle: HoldArcHandle | null = null;
+// Cello sustain that runs alongside the hold-arc (§7 master clock).
+let bindHoldCello: CelloSustainHandle | null = null;
 const eraNameForAnalytics = () => selectFiveMode ? "select-five" : eraManager.current.name;
 
 // --- DOM setup ---
@@ -2062,6 +2065,19 @@ const handlePointerUp = (e: PointerEvent) => {
   item.el.style.left = `${item.x}px`;
   item.el.style.top = `${item.y}px`;
   item.el.style.zIndex = "1";
+  // Writing-desk drop feedback (audio + visual + haptic):
+  //   - desk-tap: paper-on-wood thud
+  //   - ink-bleed ring: annular gilt halo emanating around the tile
+  //   - tile settling: scale-press (1.06 → 0.95 → 1.02 → 1.0) over 280ms,
+  //     reads as the tile finding its place
+  //   - 10ms haptic tap on touch devices
+  audio.playDeskTap();
+  spawnInkBleedRing(item);
+  item.el.classList.add("settling");
+  setTimeout(() => item.el.classList.remove("settling"), 300);
+  if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+    navigator.vibrate(10);
+  }
   posthog.capture('tile_placed', {
     item: item.name,
     tier: item.tier,
@@ -2073,8 +2089,35 @@ const handlePointerUp = (e: PointerEvent) => {
   checkOverlap(item);
 };
 
+// Brief gilt halo emanating from the tile's bookplate border. We measure the
+// tile's actual rendered bounds at spawn-time and size/position the halo to
+// match exactly, so the box-shadow always emanates symmetrically around the
+// tile regardless of any tile-size CSS changes or transforms in flight.
+function spawnInkBleedRing(item: CombineItem) {
+  const ring = document.createElement("div");
+  ring.className = "ink-bleed-ring";
+  const tileRect = item.el.getBoundingClientRect();
+  const wsRect = workspace.getBoundingClientRect();
+  ring.style.left = `${tileRect.left - wsRect.left}px`;
+  ring.style.top = `${tileRect.top - wsRect.top}px`;
+  ring.style.width = `${tileRect.width}px`;
+  ring.style.height = `${tileRect.height}px`;
+  workspace.appendChild(ring);
+  setTimeout(() => ring.remove(), 460);
+}
+
 document.addEventListener("pointermove", handlePointerMove);
 document.addEventListener("pointerup", handlePointerUp);
+
+// First user gesture resumes the AudioContext — browsers block autoplay until
+// the user interacts with the page (Chrome/Safari/Firefox autoplay policy).
+const resumeAudioOnce = () => {
+  audio.resume();
+  document.removeEventListener("pointerdown", resumeAudioOnce);
+  document.removeEventListener("keydown", resumeAudioOnce);
+};
+document.addEventListener("pointerdown", resumeAudioOnce);
+document.addEventListener("keydown", resumeAudioOnce);
 
 // --- HTML escape — always use for AI-generated content inserted via innerHTML ---
 function esc(s: string): string {
@@ -2178,6 +2221,11 @@ async function combine(a: CombineItem, b: CombineItem) {
   const midX = (a.x + b.x) / 2;
   const midY = (a.y + b.y) / 2;
 
+  // Combine-press cue at the moment of combination intent (woody knock with
+  // ±2st pitch variation). Pairs with playIdeaBloom() at completion when the
+  // new tile materializes — press first, bloom on resolve.
+  audio.playCombineKnock();
+
   // Remove parents and show combining placeholder
   removeItem(a);
   removeItem(b);
@@ -2233,6 +2281,10 @@ async function combine(a: CombineItem, b: CombineItem) {
   const child = spawnItem(elementData, midX, midY);
   child.el.classList.add("merging");
   setTimeout(() => child.el.classList.remove("merging"), 400);
+
+  // Idea-bloom cue: soft sine-pad swell + paper sparkle + tiny chime, ~600ms,
+  // matches the visual ink-bloom of the new tile materializing.
+  audio.playIdeaBloom();
 
   showToast(`${a.emoji} ${a.name} + ${b.emoji} ${b.name} = ${elementData.emoji} ${elementData.name}`);
   const isFirstDiscovery = !paletteItems.querySelector(`[data-name="${elementData.name}"]`);
@@ -2328,6 +2380,9 @@ async function checkEraAdvancement() {
 
   if (!result) return;
   if (eraAdvancing) return; // another call won the race while we awaited
+
+  // Spec §3.3 Bind-A: last objective ticks → singing-bowl strike (~1.4s tail).
+  audio.playSingingBowl();
 
   eraAdvancing = true;
   pendingEraResult = result;
@@ -2665,6 +2720,9 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
 
   eraSummaryOverlay.classList.add("visible");
 
+  // Paper rustle on the summary spread arriving (spec §7).
+  audio.playPaperRustle();
+
   // Pace the spread: await the in-flight tapestry (frontispiece) image, brush-wipe
   // it in, then scratch in the narrative, then enable Continue. The bind ceremony
   // already started the tapestry generation in the background pipeline.
@@ -2693,7 +2751,10 @@ async function revealEraSummaryContents(
         });
         if (spinnerEl) spinnerEl.style.display = "none";
         frontEl.hidden = false;
+        // Brush-canvas hum loops underneath the brush-wipe (spec §7).
+        const brush = audio.startBrushCanvas();
         await playBrushWipe(frontEl, { durationMs: 1400 });
+        brush.stop();
         imageReady = true;
       }
     } catch { /* fall through to text-only */ }
@@ -2985,6 +3046,9 @@ function beginBindHold() {
   const slotEl = document.getElementById("era-idea-slot");
   if (!slotEl) return;
   bindHoldHandle = startHoldArc({ target: slotEl, durationMs: 2500 });
+  // Cello G2 sustains for the duration of the hold (the master clock per §7).
+  // Resolves up a fifth on commit; gracefully exhales on cancel.
+  bindHoldCello = audio.startCelloSustain(98 /* G2 */);
   slotEl.classList.add("slot-holding");
 
   // Pointerup or pointercancel anywhere on the document aborts the fill (the player
@@ -3004,8 +3068,14 @@ function beginBindHold() {
     document.removeEventListener("pointerup", releaseHold);
     document.removeEventListener("pointercancel", releaseHold);
     if (outcome === "complete") {
+      // Cello resolves up a fifth — the audio half of the brass-clasp commit.
+      bindHoldCello?.resolve();
+      bindHoldCello = null;
       void commitBindCeremony();
     } else {
+      // Graceful exhale (G2 → F2, ~600ms). Spec §2.4 cancellation.
+      bindHoldCello?.fadeOut();
+      bindHoldCello = null;
       bindHoldHandle = null;
       slotEl.classList.remove("slot-holding");
       renderEraIdeaSlot();
@@ -3050,6 +3120,10 @@ document.getElementById("era-idea-slot")?.addEventListener("pointerdown", (e) =>
       bindHoldHandle = null;
       handle.cancel();
       setTimeout(() => handle.destroy(), 200);
+    }
+    if (bindHoldCello) {
+      bindHoldCello.fadeOut();
+      bindHoldCello = null;
     }
 
     // Empty the slot; spawn the tile under the pointer; start a regular drag.
@@ -3113,6 +3187,9 @@ async function commitBindCeremony() {
   });
 
   // Brass clasps + plate flash, then route into the existing era transition pipeline.
+  // Audio: 3-layer clasp (leather-press + brass tonic + cello tonic resolves) — the
+  // cello side already resolved when bindHoldHandle.promise settled "complete".
+  audio.playClaspSnap();
   if (slotEl) await playBrassClasp(slotEl);
 
   handle?.destroy();

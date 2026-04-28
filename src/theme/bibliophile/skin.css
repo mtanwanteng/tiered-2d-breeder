@@ -323,6 +323,51 @@
   min-height: 280px;
 }
 
+/* Ink-bleed halo at tile-drop point — a vague gilt ripple emanating outward
+ * from the tile's bookplate border. Width / height / left / top are set
+ * inline by spawnInkBleedRing(item) to match the tile's rendered bounds.
+ * Pure blur + spread (no hard edge) for a diffuse, atmospheric feel. */
+[data-theme="bibliophile"] .ink-bleed-ring {
+  position: absolute;
+  border-radius: 2px;
+  background: transparent;
+  pointer-events: none;
+  z-index: 2;
+  animation: ink-bleed-ring 520ms ease-out forwards;
+}
+@keyframes ink-bleed-ring {
+  0% {
+    box-shadow:
+      0 0 14px 2px rgba(201, 168, 95, 0.22),
+      0 0 28px 6px rgba(201, 168, 95, 0.10);
+    opacity: 1;
+  }
+  100% {
+    box-shadow:
+      0 0 36px 14px rgba(201, 168, 95, 0),
+      0 0 56px 22px rgba(201, 168, 95, 0);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="bibliophile"] .ink-bleed-ring { animation-duration: 240ms; }
+}
+
+/* Tile settling — a soft "lands and settles" cue. Slight initial scale, gentle
+ * press dip, monotonic return to natural size. No overshoot, no bounce. */
+@keyframes tile-settling {
+  0%   { transform: scale(1.03); }
+  45%  { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+[data-theme="bibliophile"] .combine-item.settling {
+  animation: tile-settling 320ms ease-out;
+  transform-origin: center center;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="bibliophile"] .combine-item.settling { animation: none; }
+}
+
 [data-theme="bibliophile"] #workspace-caption {
   position: absolute;
   top: 8px;
