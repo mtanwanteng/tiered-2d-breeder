@@ -21,8 +21,8 @@ Branch: `bibliophile-2026-04-27` → `origin/bibliophile-2026-04-27`
 | 4 — Library + Vault + Retirement | ✅ done | `2908d47` | DB helpers, 3 API routes, Bookplate component, /library + /vault pages, retirement ceremony with hold-to-commit + ink-point dispersal |
 | 5 — Onboarding + run end | ✅ done (minimum) | `c46b573` | Title-screen front-cover overlay; run-end wax seal + cathedral bell + haptic. Full 5-frame guided onboarding deferred to Phase 8. |
 | 6 — AI-thinking copy | ✅ done | `46cbd76` | Crossfade primitive, phase machine (start/longer/long/veryLong/failed/resolved), Bari pose CSS, hover-flicker fix on tray. Default thresholds: 0/8/16/24s. |
-| 7 — Accessibility | ⛔ pending | — | Reduced motion fallbacks, tap-to-commit alternative, high-contrast variant, font-size floor, settings page. Schema migration 0005 needed (user settings cols). |
-| 8 — Polish | ⛔ pending | — | Long-press tile narrative card, page-turn on all transitions, failed-combine shake, painted Bari art (Imagen?), naming sweep (PostHog `app` super-property), select-five disposition, full 5-frame onboarding. |
+| 7 — Accessibility | ✅ done | `31cab72` | Schema migration 0005 (user settings cols), `src/settings.ts` localStorage-source-of-truth + API sync, settings cog/drawer, tap-to-commit branch in `beginBindHold`, high-contrast token swap, user-forced reduced-motion (collapses transitions to 0.01ms), 14px body baseline + 11px UI label floor. |
+| 8 — Polish | ✅ done (minimum) | — | Failed-combine shake + inkwell-tap audio. Long-press → bookplate sheet (touch-only; mouse uses hover tooltip). Page-turn on era-summary continue. OG/Twitter metadata. Select-five reskin (slot/share-panel tokens). Painted Bari art and full 5-frame guided onboarding remain v1.1 — defer until product name finalizes (D5). |
 
 ---
 
@@ -107,57 +107,26 @@ From `docs/design/bibliophile-decisions.md`:
 
 ---
 
-## What's next (Phase 7)
+## Deferred to v1.1 (post-rebrand polish)
 
-**Goal:** Reduced-motion mode, tap-to-commit alternative, high-contrast variant, font-size floor.
+These were planned for Phase 8 but deferred — not blocking ship:
 
-**Files to create / edit (per plan):**
-- Edit every `src/motion/*.ts` primitive — the basic `prefers-reduced-motion`
-  fallbacks are already there. **Verify they actually trigger** in a
-  browser DevTools "emulate reduced motion" check. The hold-to-commit's
-  hold-arc still uses 2.5s linear (it's a clock; the spec says don't shorten).
-- Edit `src/main.ts` hold-to-commit — branch to tap-to-commit when a new
-  user setting is true. Tap once on slot → tap again within 4s commits.
-- New: `themes/bibliophile/tokens-high-contrast.css` —
-  `[data-theme="bibliophile"][data-contrast="high"]` swaps vellum/ink-black,
-  +50% border weights, removes marble pattern.
-- New: settings page or modal — toggles reduced motion, tap-to-commit,
-  high contrast, room tone.
-- Migration 0005 — adds `seen_first_retirement_speech`,
-  `prefers_reduced_motion`, `prefers_tap_to_commit`, `room_tone_enabled`
-  to `user`. ALTER-only with defaults.
-- Edit `src/style.css` — enforce `body { font-size: 14px }` and label
-  floor at 11px.
-
----
-
-## What's next (Phase 8)
-
-**Polish + ship-readiness pass.** From plan:
-
-- Long-press tile narrative card (slides in from below, reuses `Bookplate.tsx`)
-- `failed-combine-shake` motion primitive + wire on combine reject
-- Page-turn primitive triggers on era→era and era→library transitions
-  (currently only used inside the bind→summary transition)
-- Painted Bari art via Imagen (`/lib/server/vertex.ts → callGeminiImage`):
-  - prompt: "watercolor manuscript illustration, small apprentice mason,
-    cross-legged, hammer on knee, sepia + vellum palette, 4 poses: idle,
-    nod, wonder, patient"
-  - generate, save to `public/themes/bibliophile/bari/{idle,nod,wonder,patient}.png`,
-    swap CSS placeholder
-- Title-screen art: same Imagen approach for the front-cover library scene
-- Naming sweep:
-  - PostHog `app: 'architect'` rename (single server-side update across
-    `app/api/*/route.ts`)
-  - OG metadata in `app/layout.tsx`
-  - README rewrite
-- Select-five mode reskin (bibliophile tokens; mechanics untouched)
-- Full 5-frame guided onboarding (Bari + Fire+Wood + "Try." + scratch-in
-  narrative) — depends on Bari painted art being in place
-- Run-end ceremony precise timing (1.6s title scratch-in, 800ms stats fade,
-  1.5s library link reveal)
-- Remove the legacy how-to-play modal if onboarding subsumes it
-- `MAX_DISCOVERED_SLOTS` is already gone — verify no resurrected reference
+- **Painted Bari art via Imagen.** CSS pose classes ship; the painted PNGs
+  (idle / nod / wonder / patient) wait until the product name is final
+  so the prompt + asset pipeline can be batched with the title-screen art.
+- **Full 5-frame guided onboarding.** Phase 5 ships the front-cover overlay
+  + 11-chapter run-end. The 5-frame Bari-led guide ("Try." → torch →
+  "Light pushed back at the dark.") depends on painted Bari, so it follows.
+- **Title-screen library scene** via Imagen — same dependency.
+- **PostHog `app: 'architect'` rename.** D5 still open; flip in one
+  server-side pass when marketing locks the name. README rewrite goes
+  with that pass.
+- **Run-end ceremony precise timing** — current implementation fires the
+  wax seal + cathedral bell synchronously. Spec §3.8 specifies 1.6s title
+  scratch-in / 800ms stats fade / 1.5s library link reveal. Functional
+  today; fine-tuning is a polish item.
+- **Legacy how-to-play modal removal** — only safe to drop once full
+  guided onboarding lands.
 
 ---
 
@@ -177,5 +146,5 @@ No automated tests in the repo. Verification is manual:
 
 ---
 
-*Last updated after Phase 6 commit `46cbd76`. Update this file at the
+*Last updated after Phase 8 commit. Update this file at the
 end of each phase commit.*

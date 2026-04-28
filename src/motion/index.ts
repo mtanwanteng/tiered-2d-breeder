@@ -11,3 +11,4 @@ export { startPlateBreathing, type PlateBreathingHandle } from "./plate-breathin
 export { playInkPointDispersal, type InkPointDispersalOptions } from "./ink-point-dispersal";
 export { playWaxStamp, type WaxStampOptions } from "./wax-stamp";
 export { crossfade, type CrossfadeOptions } from "./crossfade";
+export { playFailedCombineShake, type ShakeOptions } from "./failed-combine-shake";

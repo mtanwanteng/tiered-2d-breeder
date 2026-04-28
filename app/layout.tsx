@@ -10,6 +10,17 @@ import { DiscordActivityProvider } from "./components/discord-activity-provider"
 export const metadata: Metadata = {
   title: "Idea Collector",
   description: "Every idea is a story. Every story builds a civilization.",
+  openGraph: {
+    title: "Idea Collector",
+    description: "Every idea is a story. Every story builds a civilization.",
+    type: "website",
+    siteName: "Idea Collector",
+  },
+  twitter: {
+    card: "summary",
+    title: "Idea Collector",
+    description: "Every idea is a story. Every story builds a civilization.",
+  },
 };
 
 export default function RootLayout({

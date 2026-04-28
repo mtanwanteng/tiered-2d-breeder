@@ -28,7 +28,7 @@ import {
   playWaxStamp,
 } from "./motion";
 import { audio, type CelloSustainHandle } from "./audio";
-import { crossfade } from "./motion";
+import { crossfade, playFailedCombineShake, playPageTurn } from "./motion";
 import { startAiThinking, aiThinkingCopy } from "./ai-thinking-state";
 import { initSettings, getSettings, setSetting } from "./settings";
 
@@ -260,6 +260,49 @@ function attachDragToSpawn(
     document.addEventListener("pointermove", onMove, { passive: false });
     document.addEventListener("pointerup", onCancel);
     document.addEventListener("pointercancel", onCancel);
+  });
+}
+
+// Touch-only long-press → opens the bookplate narrative card (Phase 8 / spec §6).
+// Mouse users get the same content via the hover .tooltip on each palette-item.
+function attachLongPress(
+  el: HTMLElement,
+  getData: () => ElementData | null,
+  durationMs = 600,
+  moveThresholdPx = 8,
+): void {
+  el.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse") return;
+    if (busy) return;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    let timer: number | null = window.setTimeout(() => {
+      const data = getData();
+      if (data) {
+        openTileInfo(data);
+        // Cancel the sibling drag-arming so a subsequent finger-lift doesn't spawn.
+        document.dispatchEvent(new PointerEvent("pointercancel", { bubbles: true }));
+      }
+      cleanup();
+    }, durationMs);
+    const onMove = (m: PointerEvent) => {
+      const dx = Math.abs(m.clientX - startX);
+      const dy = Math.abs(m.clientY - startY);
+      if (dx > moveThresholdPx || dy > moveThresholdPx) cleanup();
+    };
+    const onUp = () => cleanup();
+    const cleanup = () => {
+      if (timer !== null) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
+    };
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", onUp);
   });
 }
 
@@ -501,6 +544,9 @@ app.innerHTML = `
         </li>
       </ul>
     </div>
+  </div>
+  <div id="tile-info-overlay" hidden>
+    <div id="tile-info-sheet" class="bookplate-sheet" role="dialog" aria-modal="true" aria-label="Tile details"></div>
   </div>
   <div id="heatmap-overlay">
     <div id="heatmap-modal">
@@ -1103,6 +1149,39 @@ inputRoomTone?.addEventListener("change", (e) => {
   setSetting("roomToneEnabled", (e.target as HTMLInputElement).checked);
 });
 
+// --- Tile-info bookplate sheet (Phase 8) ---
+const tileInfoOverlay = document.getElementById("tile-info-overlay")!;
+const tileInfoSheet = document.getElementById("tile-info-sheet")!;
+
+function openTileInfo(entry: ElementData) {
+  const stars = entry.tier > 0 ? "★".repeat(Math.min(entry.tier, 5)) : "";
+  tileInfoSheet.innerHTML = `
+    <div class="bookplate-stripe" style="background: var(--leather-deep);"></div>
+    <div class="bookplate-content">
+      <div class="bookplate-emoji" aria-hidden="true">${esc(entry.emoji)}</div>
+      <div class="bookplate-name">${esc(entry.name)}</div>
+      ${stars ? `<div class="bookplate-tier">${stars}</div>` : ""}
+      ${entry.narrative ? `<p class="bookplate-narrative">&ldquo;${esc(entry.narrative)}&rdquo;</p>` : ""}
+      ${entry.description ? `<p class="bookplate-description">${esc(entry.description)}</p>` : ""}
+    </div>
+  `;
+  tileInfoOverlay.removeAttribute("hidden");
+  requestAnimationFrame(() => tileInfoOverlay.classList.add("visible"));
+}
+
+function closeTileInfo() {
+  tileInfoOverlay.classList.remove("visible");
+  setTimeout(() => {
+    if (!tileInfoOverlay.classList.contains("visible")) {
+      tileInfoOverlay.setAttribute("hidden", "");
+    }
+  }, 220);
+}
+
+tileInfoOverlay.addEventListener("click", (e) => {
+  if (e.target === tileInfoOverlay) closeTileInfo();
+});
+
 // Palette zoom
 const palette = document.getElementById("palette")!;
 let paletteZoom = 1.0;
@@ -1327,6 +1406,8 @@ const handleKeyDown = (e: KeyboardEvent) => {
     closeCardCatalog();
   } else if (e.key === "Escape" && settingsOverlay.classList.contains("visible")) {
     closeSettings();
+  } else if (e.key === "Escape" && tileInfoOverlay.classList.contains("visible")) {
+    closeTileInfo();
   }
 };
 document.addEventListener("keydown", handleKeyDown);
@@ -2321,7 +2402,15 @@ function checkOverlap(dropped: CombineItem) {
   if (busy) return;
   const other = findOverlap(dropped);
   if (!other) return;
-  if (dropped.name === other.name || dropped.tier === 5 || other.tier === 5) return;
+  if (dropped.name === other.name || dropped.tier === 5 || other.tier === 5) {
+    // Rejected pairing — same name (would dup) or one side is tier-5 (capped).
+    // Spec §6 failed-combine shake: 240ms, ±3px, dim 100→80→100. Plus the
+    // ink-bloom-fail audio cue (gated by audio kill-switch).
+    void playFailedCombineShake(dropped.el);
+    void playFailedCombineShake(other.el);
+    audio.playInkwellTap();
+    return;
+  }
   combine(dropped, other);
 }
 
@@ -2840,9 +2929,23 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
   // ceremony is paced; the player should sit with the frontispiece reveal.
   continueBtn.disabled = true;
   continueBtn.onclick = () => {
-    eraSummaryOverlay.classList.remove("visible");
     continueBtn.onclick = null;
-    onContinue();
+    const panel = document.getElementById("era-summary-panel");
+    const finish = () => {
+      eraSummaryOverlay.classList.remove("visible");
+      if (panel) {
+        panel.style.transform = "";
+        panel.style.opacity = "";
+        panel.style.filter = "";
+      }
+      onContinue();
+    };
+    // Peel the era-summary spread away into the next chapter (spec §6 page-turn).
+    if (panel) {
+      void playPageTurn(panel).then(finish);
+    } else {
+      finish();
+    }
   };
 
   // Reset frontispiece + narrative state for this opening.
@@ -3645,6 +3748,7 @@ function addToPalette(entry: ElementData, isSeed = false) {
       posthog.capture('tile_spawned', { item: data.name, tier: data.tier, era_name: eraNameForAnalytics() });
     },
   });
+  attachLongPress(div, () => entry);
   paletteItems.appendChild(div);
 }
 
