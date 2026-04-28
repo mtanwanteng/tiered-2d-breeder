@@ -1880,9 +1880,9 @@ if (selectFiveMode) {
 } else {
   renderEraName();
   renderGoals();
-  let initialSeeds = eraManager.getSeeds();
-  // First-visit guided onboarding (spec §3.1): hard-pin Fire and Wood as the
-  // first two seeds and pre-cache the Fire+Wood → Torch recipe so the bundled
+  // First-visit guided onboarding (spec §3.1): pin Fire and Wood into the
+  // Stone Age seed selection (the random picker would otherwise drop one or
+  // both) and pre-cache the Fire+Wood → Torch recipe so the bundled
   // narrative ("Light pushed back at the dark.") is what shows up regardless
   // of network state. The 5s ceremonial pause for that combine is enforced
   // inside combine() below.
@@ -1890,21 +1890,18 @@ if (selectFiveMode) {
     try { return !localStorage.getItem("idea-collector-onboarded"); }
     catch { return false; }
   })();
+  let initialSeeds: ElementData[];
   if (isFirstRun && eraManager.current.name === "Stone Age") {
     void primeOnboardingCache();
-    initialSeeds = sortFireWoodFirst(initialSeeds);
+    initialSeeds = eraManager.getSeedsForEraPinned(0, ["Fire", "Wood"]);
+  } else {
+    initialSeeds = eraManager.getSeeds();
   }
   log.info("era", `Starting ${eraManager.current.name} with seeds: ${initialSeeds.map((s) => s.name).join(", ")}`);
   for (const entry of initialSeeds) {
     addToPalette(entry, true);
   }
   posthog.capture('game_started', { era_name: eraManager.current.name });
-}
-
-/** Onboarding helper: ensure Fire and Wood lead the seed list. */
-function sortFireWoodFirst(seeds: ElementData[]): ElementData[] {
-  const order = (name: string) => name === "Fire" ? 0 : name === "Wood" ? 1 : 2;
-  return [...seeds].sort((a, b) => order(a.name) - order(b.name));
 }
 
 /** Onboarding helper: pre-populate the recipe cache with the Fire+Wood →

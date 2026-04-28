@@ -46,6 +46,24 @@ export class EraManager {
     return seeds;
   }
 
+  /** Resolve seeds for an era while guaranteeing the named tiles are present.
+   *  Used by onboarding to pin Fire + Wood into the Stone Age seed selection
+   *  even though the seedPool/seedCount picker is otherwise random. The result
+   *  is cached so subsequent getSeeds() calls return the same list. */
+  getSeedsForEraPinned(idx: number, pinnedNames: string[]): ElementData[] {
+    const era = allEras[idx];
+    const pool = era.seedPool ?? era.seeds;
+    const target = era.seedCount ?? pool.length;
+    const pinned = pinnedNames
+      .map((n) => pool.find((s) => s.name === n))
+      .filter((s): s is ElementData => !!s);
+    const others = pool.filter((s) => !pinned.some((p) => p.name === s.name));
+    const fillCount = Math.max(0, target - pinned.length);
+    const seeds = [...pinned, ...shuffle(others).slice(0, fillCount)];
+    this.resolvedSeeds.set(idx, seeds);
+    return seeds;
+  }
+
   /** Total number of eras available */
   get totalEras(): number {
     return allEras.length;
