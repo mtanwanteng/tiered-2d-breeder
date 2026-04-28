@@ -30,6 +30,7 @@ import {
 import { audio, type CelloSustainHandle } from "./audio";
 import { crossfade } from "./motion";
 import { startAiThinking, aiThinkingCopy } from "./ai-thinking-state";
+import { initSettings, getSettings, setSetting } from "./settings";
 
 // --- Types ---
 interface CombineItem {
@@ -448,6 +449,57 @@ app.innerHTML = `
       <h2 id="retirement-title">twenty-four spaces. one must yield.</h2>
       <p id="retirement-prompt">press and hold a tile to give it back to the world</p>
       <div id="retirement-library-grid"></div>
+    </div>
+  </div>
+  <button id="settings-btn" type="button" aria-label="Settings" title="Settings">⚙</button>
+  <div id="settings-overlay">
+    <div id="settings-modal">
+      <header id="settings-header">
+        <h2 id="settings-title">Settings</h2>
+        <button id="settings-close" type="button" aria-label="Close">&times;</button>
+      </header>
+      <ul id="settings-list">
+        <li class="settings-row">
+          <div>
+            <span class="settings-label">Reduced motion</span>
+            <span class="settings-hint">Replaces ink-bloom and brush-wipe with short fades.</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settings-reduced-motion" />
+            <span class="settings-toggle-slider"></span>
+          </label>
+        </li>
+        <li class="settings-row">
+          <div>
+            <span class="settings-label">Tap to commit</span>
+            <span class="settings-hint">Bind by tap-tap instead of holding for 2.5s.</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settings-tap-to-commit" />
+            <span class="settings-toggle-slider"></span>
+          </label>
+        </li>
+        <li class="settings-row">
+          <div>
+            <span class="settings-label">High contrast</span>
+            <span class="settings-hint">Swaps vellum and ink, thicker borders, no marble texture.</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settings-high-contrast" />
+            <span class="settings-toggle-slider"></span>
+          </label>
+        </li>
+        <li class="settings-row">
+          <div>
+            <span class="settings-label">Workshop room tone</span>
+            <span class="settings-hint">Quiet ambient loop under the play screen.</span>
+          </div>
+          <label class="settings-toggle">
+            <input type="checkbox" id="settings-room-tone" />
+            <span class="settings-toggle-slider"></span>
+          </label>
+        </li>
+      </ul>
     </div>
   </div>
   <div id="heatmap-overlay">
@@ -1008,6 +1060,49 @@ eraToggleBtn.addEventListener("click", () => {
   applyEraGoalsState();
 });
 
+// --- Settings drawer (Phase 7) ---
+initSettings();
+const settingsBtn = document.getElementById("settings-btn");
+const settingsOverlay = document.getElementById("settings-overlay")!;
+const settingsClose = document.getElementById("settings-close");
+const inputReducedMotion = document.getElementById("settings-reduced-motion") as HTMLInputElement | null;
+const inputTapToCommit = document.getElementById("settings-tap-to-commit") as HTMLInputElement | null;
+const inputHighContrast = document.getElementById("settings-high-contrast") as HTMLInputElement | null;
+const inputRoomTone = document.getElementById("settings-room-tone") as HTMLInputElement | null;
+
+function syncSettingsInputs() {
+  const s = getSettings();
+  if (inputReducedMotion) inputReducedMotion.checked = s.prefersReducedMotion;
+  if (inputTapToCommit) inputTapToCommit.checked = s.prefersTapToCommit;
+  if (inputHighContrast) inputHighContrast.checked = s.prefersHighContrast;
+  if (inputRoomTone) inputRoomTone.checked = s.roomToneEnabled;
+}
+syncSettingsInputs();
+
+const openSettings = () => {
+  syncSettingsInputs();
+  settingsOverlay.classList.add("visible");
+};
+const closeSettings = () => settingsOverlay.classList.remove("visible");
+settingsBtn?.addEventListener("click", openSettings);
+settingsClose?.addEventListener("click", closeSettings);
+settingsOverlay.addEventListener("click", (e) => {
+  if (e.target === settingsOverlay) closeSettings();
+});
+
+inputReducedMotion?.addEventListener("change", (e) => {
+  setSetting("prefersReducedMotion", (e.target as HTMLInputElement).checked);
+});
+inputTapToCommit?.addEventListener("change", (e) => {
+  setSetting("prefersTapToCommit", (e.target as HTMLInputElement).checked);
+});
+inputHighContrast?.addEventListener("change", (e) => {
+  setSetting("prefersHighContrast", (e.target as HTMLInputElement).checked);
+});
+inputRoomTone?.addEventListener("change", (e) => {
+  setSetting("roomToneEnabled", (e.target as HTMLInputElement).checked);
+});
+
 // Palette zoom
 const palette = document.getElementById("palette")!;
 let paletteZoom = 1.0;
@@ -1230,6 +1325,8 @@ const handleKeyDown = (e: KeyboardEvent) => {
     scoreboardOverlay.classList.remove("visible");
   } else if (e.key === "Escape" && cardCatalogOverlay.classList.contains("visible")) {
     closeCardCatalog();
+  } else if (e.key === "Escape" && settingsOverlay.classList.contains("visible")) {
+    closeSettings();
   }
 };
 document.addEventListener("keydown", handleKeyDown);
@@ -2840,9 +2937,12 @@ function renderEraIdeaSlot() {
       <span class="slot-tier">${tierStars(pendingEraIdeaTile.tier)}</span>
     `;
     eraIdeaArrowTrail?.setActive(false);
-    // Hold-and-release is the entire bind grammar; no button affordance needed.
+    // Hold-and-release is the bind grammar by default; tap-to-commit just taps once.
     if (promptEl) {
-      promptEl.textContent = bindHoldHandle && wrapperVisible ? "" : "Press and hold to bind";
+      const tapMode = getSettings().prefersTapToCommit;
+      promptEl.textContent = bindHoldHandle && wrapperVisible
+        ? ""
+        : tapMode ? "Tap to bind" : "Press and hold to bind";
     }
   } else {
     slotEl.classList.remove("slot-occupied", "slot-holding");
@@ -3109,22 +3209,30 @@ function beginBindHold() {
   bindHoldCello = audio.startCelloSustain(98 /* G2 */);
   slotEl.classList.add("slot-holding");
 
-  // Pointerup or pointercancel anywhere on the document aborts the fill (the player
-  // has lifted/lost the gesture). The tile remains in the slot at idle.
-  const releaseHold = () => {
-    document.removeEventListener("pointerup", releaseHold);
-    document.removeEventListener("pointercancel", releaseHold);
-    if (!bindHoldHandle) return;
-    const handle = bindHoldHandle;
-    handle.cancel(); // resolves the promise with "cancel"
-    setTimeout(() => handle.destroy(), 200);
-  };
-  document.addEventListener("pointerup", releaseHold);
-  document.addEventListener("pointercancel", releaseHold);
+  // Tap-to-commit accessibility mode (spec §8): in this mode pointerup does
+  // NOT abort the fill — the arc continues to its 2.5s commit even after the
+  // player lifts. Cancellation goes through drag-out (move past 12px) only.
+  // Default mode (hold-to-commit): pointerup / pointercancel aborts the fill.
+  const tapToCommit = getSettings().prefersTapToCommit;
+  let releaseHold: (() => void) | null = null;
+  if (!tapToCommit) {
+    releaseHold = () => {
+      document.removeEventListener("pointerup", releaseHold!);
+      document.removeEventListener("pointercancel", releaseHold!);
+      if (!bindHoldHandle) return;
+      const handle = bindHoldHandle;
+      handle.cancel(); // resolves the promise with "cancel"
+      setTimeout(() => handle.destroy(), 200);
+    };
+    document.addEventListener("pointerup", releaseHold);
+    document.addEventListener("pointercancel", releaseHold);
+  }
 
   bindHoldHandle.promise.then((outcome) => {
-    document.removeEventListener("pointerup", releaseHold);
-    document.removeEventListener("pointercancel", releaseHold);
+    if (releaseHold) {
+      document.removeEventListener("pointerup", releaseHold);
+      document.removeEventListener("pointercancel", releaseHold);
+    }
     if (outcome === "complete") {
       // Cello resolves up a fifth — the audio half of the brass-clasp commit.
       bindHoldCello?.resolve();

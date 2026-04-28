@@ -1,7 +1,12 @@
 // Shared helpers for motion primitives. See docs/design/bibliophile-spec.md §6, §8.
 
-/** True when the user has requested reduced motion (OS-level setting). */
+/** True when reduced motion is requested. The in-app settings drawer can
+ *  force this on (via [data-reduced-motion="true"] on <html>) regardless of
+ *  the OS setting; otherwise we fall back to the OS / browser preference. */
 export function isReducedMotion(): boolean {
+  if (typeof document !== "undefined") {
+    if (document.documentElement.dataset.reducedMotion === "true") return true;
+  }
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }

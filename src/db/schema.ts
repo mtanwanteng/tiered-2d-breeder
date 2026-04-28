@@ -18,6 +18,24 @@ export const user = pgTable("user", {
   anonId: text("anon_id").unique(),
   // Updated on every session creation — enables DAU/WAU/MAU, churn, D1/D7/D30 cohorts
   lastActiveAt: timestamp("last_active_at"),
+  // Bibliophile settings (Phase 7). Anonymous players store the same flags
+  // in localStorage; on first sign-in the auth claim flow merges them onto
+  // the user row.
+  seenFirstRetirementSpeech: boolean("seen_first_retirement_speech")
+    .$defaultFn(() => false)
+    .notNull(),
+  prefersReducedMotion: boolean("prefers_reduced_motion")
+    .$defaultFn(() => false)
+    .notNull(),
+  prefersTapToCommit: boolean("prefers_tap_to_commit")
+    .$defaultFn(() => false)
+    .notNull(),
+  prefersHighContrast: boolean("prefers_high_contrast")
+    .$defaultFn(() => false)
+    .notNull(),
+  roomToneEnabled: boolean("room_tone_enabled")
+    .$defaultFn(() => true)
+    .notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),
