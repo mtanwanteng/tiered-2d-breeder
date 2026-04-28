@@ -452,10 +452,23 @@
   border: 2px dashed var(--marble-warm);
   border-radius: 4px;
   min-height: 56px;
+  /* Own touches outright on touch devices — without this, iOS Safari interprets
+     a vertical pan as scroll and steals pointermove events from JS, breaking
+     both the drop detection and the drag-out-of-slot gesture. */
+  touch-action: none;
 }
 [data-theme="bibliophile"] .era-idea-slot.slot-occupied {
   border-color: var(--gilt);
   background: rgba(201, 168, 95, 0.1);
+}
+/* Drop-target feedback: when a workspace tile is dragged over the slot, the
+   slot lights up gilt to advertise that releasing here will commit. */
+[data-theme="bibliophile"] .era-idea-slot.slot-hover {
+  border-style: solid;
+  border-color: var(--gilt);
+  background: rgba(201, 168, 95, 0.18);
+  box-shadow: 0 0 0 1px var(--gilt), 0 0 18px 3px rgba(201, 168, 95, 0.35);
+  transition: background 0.15s ease-out, box-shadow 0.15s ease-out;
 }
 [data-theme="bibliophile"] .era-idea-slot .slot-empty-hint {
   font-family: var(--font-serif);
@@ -2138,6 +2151,170 @@
     animation: none;
     transition-duration: 200ms;
   }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   GUIDED ONBOARDING — Frames 02-05 dim chrome and highlight Fire+Wood.
+   Driven by data-onboarding=guide|merging|reveal on <html>.
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"][data-onboarding="guide"] #era-display,
+[data-theme="bibliophile"][data-onboarding="guide"] #era-progress,
+[data-theme="bibliophile"][data-onboarding="guide"] #menu-btn,
+[data-theme="bibliophile"][data-onboarding="guide"] #settings-btn,
+[data-theme="bibliophile"][data-onboarding="guide"] #bari,
+[data-theme="bibliophile"][data-onboarding="merging"] #era-display,
+[data-theme="bibliophile"][data-onboarding="merging"] #era-progress,
+[data-theme="bibliophile"][data-onboarding="merging"] #menu-btn,
+[data-theme="bibliophile"][data-onboarding="merging"] #settings-btn,
+[data-theme="bibliophile"][data-onboarding="merging"] #bari,
+[data-theme="bibliophile"][data-onboarding="reveal"] #era-display,
+[data-theme="bibliophile"][data-onboarding="reveal"] #era-progress,
+[data-theme="bibliophile"][data-onboarding="reveal"] #menu-btn,
+[data-theme="bibliophile"][data-onboarding="reveal"] #settings-btn,
+[data-theme="bibliophile"][data-onboarding="reveal"] #bari {
+  opacity: 0.22;
+  pointer-events: none;
+  transition: opacity 0.5s ease-out;
+}
+
+/* Inventory tray: dim everything except Fire and Wood; the rest of the
+   tile catalog is "asleep" until the first combine completes. */
+[data-theme="bibliophile"][data-onboarding="guide"]
+  .palette-item:not([data-name="Fire"]):not([data-name="Wood"]),
+[data-theme="bibliophile"][data-onboarding="merging"]
+  .palette-item:not([data-name="Fire"]):not([data-name="Wood"]),
+[data-theme="bibliophile"][data-onboarding="reveal"]
+  .palette-item:not([data-name="Fire"]):not([data-name="Wood"]) {
+  opacity: 0.28;
+  pointer-events: none;
+  transition: opacity 0.5s ease-out;
+}
+
+/* Highlight Fire and Wood with a slow gilt halo while in guide. */
+[data-theme="bibliophile"][data-onboarding="guide"] .palette-item[data-name="Fire"],
+[data-theme="bibliophile"][data-onboarding="guide"] .palette-item[data-name="Wood"] {
+  animation: onboarding-tile-pulse 2.4s ease-in-out infinite;
+  z-index: 2;
+}
+@keyframes onboarding-tile-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(201, 168, 95, 0);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px var(--gilt),
+      0 0 12px 2px rgba(201, 168, 95, 0.45);
+  }
+}
+
+/* Idle hint: when the player hasn't moved in ~4s, intensify the halo for
+   ~700ms (driven by data-onboarding-hint set from the React side). */
+[data-theme="bibliophile"][data-onboarding-hint="pulse"] .palette-item[data-name="Fire"],
+[data-theme="bibliophile"][data-onboarding-hint="pulse"] .palette-item[data-name="Wood"] {
+  animation: onboarding-tile-pulse-strong 700ms ease-out;
+}
+@keyframes onboarding-tile-pulse-strong {
+  0% {
+    box-shadow: 0 0 0 1px var(--gilt), 0 0 12px 2px rgba(201, 168, 95, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--gilt),
+      0 0 24px 8px rgba(201, 168, 95, 0.75);
+    transform: scale(1.04);
+  }
+  100% {
+    box-shadow: 0 0 0 1px var(--gilt), 0 0 12px 2px rgba(201, 168, 95, 0.45);
+  }
+}
+
+/* Floating "Try." prompt — italic Cardo, soft gilt, sits above workspace. */
+[data-theme="bibliophile"] .onboarding-try {
+  position: fixed;
+  top: 38%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(28px, 6vw, 38px);
+  color: var(--gilt);
+  letter-spacing: 1px;
+  pointer-events: none;
+  z-index: 235;
+  margin: 0;
+  opacity: 0;
+  text-shadow: 0 0 24px rgba(201, 168, 95, 0.35);
+  animation: onboarding-try-fade-in 800ms 200ms ease-out forwards;
+}
+@keyframes onboarding-try-fade-in {
+  from { opacity: 0; transform: translate(-50%, -45%); }
+  to   { opacity: 0.92; transform: translate(-50%, -50%); }
+}
+
+/* Frame 04 "held breath" — page desaturates while the combine resolves. */
+[data-theme="bibliophile"][data-onboarding="merging"] #workspace,
+[data-theme="bibliophile"][data-onboarding="reveal"] #workspace {
+  filter: saturate(0.55) brightness(0.9);
+  transition: filter 0.45s ease-out;
+}
+[data-theme="bibliophile"][data-onboarding="merging"] .onboarding-try,
+[data-theme="bibliophile"][data-onboarding="reveal"] .onboarding-try {
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+
+/* Frame 05 "reveal" — typewriter narrative card under the new tile. */
+[data-theme="bibliophile"] .onboarding-reveal {
+  position: fixed;
+  left: 50%;
+  bottom: 36%;
+  transform: translateX(-50%);
+  max-width: 320px;
+  margin: 0;
+  padding: 10px 18px;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(16px, 4.4vw, 20px);
+  line-height: 1.4;
+  text-align: center;
+  color: var(--ink-black);
+  background:
+    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--vellum);
+  border: 1px solid var(--gilt);
+  border-radius: 2px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  z-index: 235;
+  white-space: pre-wrap;
+}
+[data-theme="bibliophile"] .onboarding-reveal-caret {
+  display: inline-block;
+  margin-left: 1px;
+  color: var(--gilt);
+  animation: onboarding-caret-blink 900ms steps(2, end) infinite;
+}
+@keyframes onboarding-caret-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Reduced-motion override: disable the pulses + caret blink, keep static
+   highlights so the player can still see Fire and Wood are special. */
+[data-theme="bibliophile"][data-reduced-motion="true"] .palette-item[data-name="Fire"],
+[data-theme="bibliophile"][data-reduced-motion="true"] .palette-item[data-name="Wood"] {
+  animation: none !important;
+  box-shadow: 0 0 0 1px var(--gilt), 0 0 8px 2px rgba(201, 168, 95, 0.35);
+}
+[data-theme="bibliophile"][data-reduced-motion="true"] .onboarding-try {
+  animation: none;
+  opacity: 0.92;
+  transform: translate(-50%, -50%);
+}
+[data-theme="bibliophile"][data-reduced-motion="true"] .onboarding-reveal-caret {
+  animation: none;
+  opacity: 0.6;
 }
 
 /* ─────────────────────────────────────────────────────────────────────

@@ -28,7 +28,7 @@ import {
   playWaxStamp,
 } from "./motion";
 import { audio, type CelloSustainHandle } from "./audio";
-import { crossfade, playFailedCombineShake, playPageTurn } from "./motion";
+import { crossfade, playFailedCombineShake, playPageTurn, wait } from "./motion";
 import { startAiThinking, aiThinkingCopy } from "./ai-thinking-state";
 import { initSettings, getSettings, setSetting } from "./settings";
 
@@ -1880,12 +1880,45 @@ if (selectFiveMode) {
 } else {
   renderEraName();
   renderGoals();
-  const initialSeeds = eraManager.getSeeds();
+  let initialSeeds = eraManager.getSeeds();
+  // First-visit guided onboarding (spec §3.1): hard-pin Fire and Wood as the
+  // first two seeds and pre-cache the Fire+Wood → Torch recipe so the bundled
+  // narrative ("Light pushed back at the dark.") is what shows up regardless
+  // of network state. The 5s ceremonial pause for that combine is enforced
+  // inside combine() below.
+  const isFirstRun = (() => {
+    try { return !localStorage.getItem("idea-collector-onboarded"); }
+    catch { return false; }
+  })();
+  if (isFirstRun && eraManager.current.name === "Stone Age") {
+    void primeOnboardingCache();
+    initialSeeds = sortFireWoodFirst(initialSeeds);
+  }
   log.info("era", `Starting ${eraManager.current.name} with seeds: ${initialSeeds.map((s) => s.name).join(", ")}`);
   for (const entry of initialSeeds) {
     addToPalette(entry, true);
   }
   posthog.capture('game_started', { era_name: eraManager.current.name });
+}
+
+/** Onboarding helper: ensure Fire and Wood lead the seed list. */
+function sortFireWoodFirst(seeds: ElementData[]): ElementData[] {
+  const order = (name: string) => name === "Fire" ? 0 : name === "Wood" ? 1 : 2;
+  return [...seeds].sort((a, b) => order(a.name) - order(b.name));
+}
+
+/** Onboarding helper: pre-populate the recipe cache with the Fire+Wood →
+ *  Torch combine so the spec's "Light pushed back at the dark." narrative
+ *  always shows during the first guided combine, no AI roundtrip. */
+async function primeOnboardingCache(): Promise<void> {
+  await recipeStore.set(recipeKey("Fire", "Wood"), {
+    name: "Torch",
+    color: "#daa520",
+    tier: 2,
+    emoji: "🪔",
+    description: "A flame that travels.",
+    narrative: "Light pushed back at the dark.",
+  });
 }
 
 if (!selectFiveMode) initPipelineHud();
@@ -2396,8 +2429,23 @@ const handlePointerMove = (e: PointerEvent) => {
   dragItem.x = e.clientX - dragOffsetX - rect.left;
   dragItem.y = e.clientY - dragOffsetY - rect.top;
   updateOverlapGlow(dragItem);
+  updateEraIdeaSlotHover(e.clientX, e.clientY);
   if (selectFiveMode) updateSlotHover(e.clientX, e.clientY);
 };
+
+/** Highlight the era-idea slot while a workspace tile is dragged over it. */
+function updateEraIdeaSlotHover(clientX: number, clientY: number): void {
+  const wrapper = document.getElementById("era-idea-slot-wrapper");
+  const slotEl = document.getElementById("era-idea-slot");
+  if (!wrapper || !slotEl) return;
+  if (wrapper.hasAttribute("hidden") || pendingEraIdeaTile) {
+    slotEl.classList.remove("slot-hover");
+    return;
+  }
+  const r = slotEl.getBoundingClientRect();
+  const over = clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
+  slotEl.classList.toggle("slot-hover", over);
+}
 
 const handlePointerUp = (e: PointerEvent) => {
   if (!dragItem) return;
@@ -2405,6 +2453,7 @@ const handlePointerUp = (e: PointerEvent) => {
   dragItem = null;
   clearAllGlow();
   clearSlotHover();
+  document.getElementById("era-idea-slot")?.classList.remove("slot-hover");
 
   // Select-five: check if dropped into selection panel
   if (selectFiveMode) {
@@ -2634,6 +2683,11 @@ async function combine(a: CombineItem, b: CombineItem) {
   const midX = (a.x + b.x) / 2;
   const midY = (a.y + b.y) / 2;
 
+  // Onboarding hooks into these so its 5-frame guided flow can react.
+  document.dispatchEvent(new CustomEvent("game:combine-start", {
+    detail: { a: a.name, b: b.name },
+  }));
+
   // Combine-press cue at the moment of combination intent (woody knock with
   // ±2st pitch variation). Pairs with playIdeaBloom() at completion when the
   // new tile materializes — press first, bloom on resolve.
@@ -2657,6 +2711,15 @@ async function combine(a: CombineItem, b: CombineItem) {
   if (elementData) {
     isCacheHit = true;
     log.debug("game", `Cache hit: ${key} → ${elementData.name}`);
+    // Onboarding ceremony pause: hold the combine placeholder visible for 5s
+    // so the player feels the "held breath" beat from spec §3.1 Frame 04 even
+    // though the recipe is pre-cached. Triggered only on the first guided
+    // Fire+Wood combine.
+    const onboardingFrame = document.documentElement.dataset.onboarding;
+    const isGuidedFirstCombine =
+      (onboardingFrame === "guide" || onboardingFrame === "merging") &&
+      key === recipeKey("Fire", "Wood");
+    if (isGuidedFirstCombine) await wait(5000);
   } else {
     const childTier = Math.min(Math.max(a.tier, b.tier) + 1, 5) as Tier;
 
@@ -2719,6 +2782,15 @@ async function combine(a: CombineItem, b: CombineItem) {
   // Idea-bloom cue: soft sine-pad swell + paper sparkle + tiny chime, ~600ms,
   // matches the visual ink-bloom of the new tile materializing.
   audio.playIdeaBloom();
+
+  document.dispatchEvent(new CustomEvent("game:combine-end", {
+    detail: {
+      result: elementData.name,
+      emoji: elementData.emoji,
+      tier: elementData.tier,
+      childEl: child.el,
+    },
+  }));
 
   showToast(`${a.emoji} ${a.name} + ${b.emoji} ${b.name} = ${elementData.emoji} ${elementData.name}`);
   const isFirstDiscovery = !paletteItems.querySelector(`[data-name="${elementData.name}"]`);
@@ -3305,9 +3377,11 @@ function ensureEraIdeaArrowTrail() {
   if (eraIdeaArrowTrail) return eraIdeaArrowTrail;
   const slotEl = document.getElementById("era-idea-slot");
   if (!slotEl) return null;
-  // Arrow points AT the slot from the right (workspace direction). The era-objectives panel
-  // sits in the left sidebar (#palette), so the arrow body extends rightward into the workspace.
-  eraIdeaArrowTrail = createArrowTrail({ target: slotEl, direction: "right", color: "#ffd700", length: 200 });
+  // Arrow points UP at the slot from below (workspace direction). The bibliophile
+  // layout stacks vertically: slot at top of the page, workspace below it. Pointing
+  // downward keeps the arrow body inside the viewport on mobile (the prior "right"
+  // direction extended 200px past the slot's right edge → off-screen on iPhone).
+  eraIdeaArrowTrail = createArrowTrail({ target: slotEl, direction: "down", color: "#ffd700", length: 120 });
   document.body.appendChild(eraIdeaArrowTrail.el);
   eraIdeaArrowTrail.attach();
   return eraIdeaArrowTrail;
