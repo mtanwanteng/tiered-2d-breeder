@@ -530,6 +530,9 @@
   cursor: grab;
   z-index: 2;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+  /* Horizontal pans should scroll the strip natively; the JS drag-out only
+     commits on vertical-dominant motion (matches the idea-tray pattern). */
+  touch-action: pan-x;
 }
 [data-theme="bibliophile"] .era-cube-idea:hover {
   transform: scale(1.18);

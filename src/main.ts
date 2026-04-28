@@ -158,19 +158,113 @@ function renderEraProgress() {
   wireEraCubeIdeaTiles();
 }
 
+// --- Shared drag-from-source-tile-to-workspace helper ---
+//
+// Used by:
+//   - inventory bookplate cards (#palette-items > .palette-item) — Your Ideas tray
+//   - bound-chapter-cube tiles (.era-cube-idea) — the strip
+//
+// Both surfaces sit inside horizontal scroll containers, so the touch behavior
+// must distinguish "I'm scrolling the parent" from "I'm dragging this tile out":
+//   - Mouse: drag begins immediately on pointerdown.
+//   - Touch / pen: drag begins only when the player pulls VERTICALLY past the
+//     threshold. Horizontal motion releases to the browser's native scroll.
+const TOUCH_SPAWN_DRAG_THRESHOLD_PX = 10;
+
+interface DragSpawnHookOptions {
+  /** Pixels to offset the spawned tile's top-left from the pointer (default 36). */
+  offsetX?: number;
+  offsetY?: number;
+  /** Fires when the drag actually begins (after threshold for touch, immediately
+   *  for mouse). Use to record analytics, increment per-tile spawn counters, etc. */
+  onBegin?: (data: ElementData) => void;
+}
+
+function attachDragToSpawn(
+  targetEl: HTMLElement,
+  getData: () => ElementData | null,
+  opts: DragSpawnHookOptions = {},
+): void {
+  const offsetX = opts.offsetX ?? 36;
+  const offsetY = opts.offsetY ?? 36;
+
+  targetEl.addEventListener("pointerdown", (e) => {
+    if (busy) return;
+    const data = getData();
+    if (!data) return;
+
+    const beginDrag = (clientX: number, clientY: number) => {
+      const wsRect = workspace.getBoundingClientRect();
+      const item = spawnItem(
+        data,
+        clientX - wsRect.left - offsetX,
+        clientY - wsRect.top - offsetY,
+      );
+      dragItem = item;
+      dragSourceSlotIndex = null;
+      dragOffsetX = offsetX;
+      dragOffsetY = offsetY;
+      item.el.style.position = "fixed";
+      item.el.style.left = `${clientX - offsetX}px`;
+      item.el.style.top = `${clientY - offsetY}px`;
+      item.el.style.zIndex = "100";
+      opts.onBegin?.(data);
+    };
+
+    if (e.pointerType === "mouse") {
+      e.preventDefault();
+      e.stopPropagation();
+      beginDrag(e.clientX, e.clientY);
+      return;
+    }
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    let armed = true;
+    const onMove = (moveEvent: PointerEvent) => {
+      if (!armed) return;
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+      const adx = Math.abs(dx);
+      const ady = Math.abs(dy);
+      if (adx > ady && adx >= TOUCH_SPAWN_DRAG_THRESHOLD_PX) {
+        // Horizontal-dominant motion ⇒ scroll intent; release to browser.
+        armed = false;
+        cleanup();
+        return;
+      }
+      if (ady > adx && ady >= TOUCH_SPAWN_DRAG_THRESHOLD_PX) {
+        armed = false;
+        cleanup();
+        moveEvent.preventDefault();
+        beginDrag(moveEvent.clientX, moveEvent.clientY);
+      }
+    };
+    const onCancel = () => {
+      armed = false;
+      cleanup();
+    };
+    const cleanup = () => {
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onCancel);
+      document.removeEventListener("pointercancel", onCancel);
+    };
+    document.addEventListener("pointermove", onMove, { passive: false });
+    document.addEventListener("pointerup", onCancel);
+    document.addEventListener("pointercancel", onCancel);
+  });
+}
+
 // Make each idea tile attached to a completed era cube draggable: spawning a workspace copy
 // without depleting the cube tile (inventory-style, like the select-five carry-over slots).
 function wireEraCubeIdeaTiles() {
   document.querySelectorAll<HTMLElement>(".era-cube-idea[data-era-idea-idx]").forEach((el) => {
-    el.addEventListener("pointerdown", (e) => {
-      if (busy) return;
-      const idx = Number(el.dataset.eraIdeaIdx);
+    const idx = Number(el.dataset.eraIdeaIdx);
+    attachDragToSpawn(el, () => {
       const h = eraManager.history[idx];
       const pick = h?.ideaTilePick;
-      if (!pick) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const data: ElementData = {
+      if (!pick) return null;
+      return {
         name: pick.name,
         tier: pick.tier,
         emoji: pick.emoji || "❓",
@@ -178,16 +272,6 @@ function wireEraCubeIdeaTiles() {
         description: pick.description ?? "",
         narrative: pick.narrative ?? "",
       };
-      const wsRect = workspace.getBoundingClientRect();
-      const item = spawnItem(data, e.clientX - wsRect.left - 36, e.clientY - wsRect.top - 36);
-      dragItem = item;
-      dragSourceSlotIndex = null;
-      dragOffsetX = 36;
-      dragOffsetY = 36;
-      item.el.style.position = "fixed";
-      item.el.style.left = `${e.clientX - 36}px`;
-      item.el.style.top = `${e.clientY - 36}px`;
-      item.el.style.zIndex = "100";
     });
   });
 }
@@ -3058,75 +3142,12 @@ function addToPalette(entry: ElementData, isSeed = false) {
       <div class="tooltip-narrative">${esc(entry.narrative)}</div>
     </div>
   `;
-  // Spawn-and-drag from palette. Mouse: starts immediately. Touch: deferred until
-  // the pointer has moved past a small threshold, so a horizontal swipe over the
-  // idea tray can scroll (instead of starting a stray drag).
-  const TOUCH_DRAG_THRESHOLD_PX = 10;
-  div.addEventListener("pointerdown", (e) => {
-    if (busy) return;
-
-    const beginDrag = (clientX: number, clientY: number) => {
-      const rect = workspace.getBoundingClientRect();
-      const x = clientX - rect.left - 36;
-      const y = clientY - rect.top - 36;
-      const item = spawnItem(entry, x, y);
-      eraSpawnCounts[entry.name] = (eraSpawnCounts[entry.name] ?? 0) + 1;
-      eraSpawnByTier[entry.tier] = (eraSpawnByTier[entry.tier] ?? 0) + 1;
-      posthog.capture('tile_spawned', { item: entry.name, tier: entry.tier, era_name: eraNameForAnalytics() });
-      dragItem = item;
-      dragSourceSlotIndex = null;
-      dragOffsetX = 36;
-      dragOffsetY = 36;
-      item.el.style.position = 'fixed';
-      item.el.style.left = `${clientX - 36}px`;
-      item.el.style.top = `${clientY - 36}px`;
-      item.el.style.zIndex = "100";
-    };
-
-    if (e.pointerType === "mouse") {
-      e.preventDefault();
-      beginDrag(e.clientX, e.clientY);
-      return;
-    }
-
-    // Touch / pen: only commit to a drag if the user pulls UP or DOWN out of the tray.
-    // Horizontal motion is reserved for scrolling. Standard iOS list-with-draggable-items
-    // pattern: swipe sideways to scroll, pull off vertically to grab.
-    const startX = e.clientX;
-    const startY = e.clientY;
-    let armed = true;
-    const onMove = (moveEvent: PointerEvent) => {
-      if (!armed) return;
-      const dx = moveEvent.clientX - startX;
-      const dy = moveEvent.clientY - startY;
-      const adx = Math.abs(dx);
-      const ady = Math.abs(dy);
-      // Horizontal-dominant motion ⇒ scroll intent. Disarm; let the browser handle it.
-      if (adx > ady && adx >= TOUCH_DRAG_THRESHOLD_PX) {
-        armed = false;
-        cleanup();
-        return;
-      }
-      // Vertical-dominant motion past threshold ⇒ drag intent.
-      if (ady > adx && ady >= TOUCH_DRAG_THRESHOLD_PX) {
-        armed = false;
-        cleanup();
-        moveEvent.preventDefault();
-        beginDrag(moveEvent.clientX, moveEvent.clientY);
-      }
-    };
-    const onCancel = () => {
-      armed = false;
-      cleanup();
-    };
-    const cleanup = () => {
-      document.removeEventListener("pointermove", onMove);
-      document.removeEventListener("pointerup", onCancel);
-      document.removeEventListener("pointercancel", onCancel);
-    };
-    document.addEventListener("pointermove", onMove, { passive: false });
-    document.addEventListener("pointerup", onCancel);
-    document.addEventListener("pointercancel", onCancel);
+  attachDragToSpawn(div, () => entry, {
+    onBegin: (data) => {
+      eraSpawnCounts[data.name] = (eraSpawnCounts[data.name] ?? 0) + 1;
+      eraSpawnByTier[data.tier] = (eraSpawnByTier[data.tier] ?? 0) + 1;
+      posthog.capture('tile_spawned', { item: data.name, tier: data.tier, era_name: eraNameForAnalytics() });
+    },
   });
   paletteItems.appendChild(div);
 }
