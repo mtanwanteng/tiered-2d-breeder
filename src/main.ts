@@ -1027,6 +1027,8 @@ const handleRestart = () => {
   });
   restarting = true;
   clearSave();
+  // Replay onboarding on the next load — see OnboardingOverlay.tsx.
+  try { localStorage.removeItem("idea-collector-onboarded"); } catch {}
   location.reload();
 };
 
