@@ -10,6 +10,8 @@ export interface AuthState {
   provider: "google" | "discord" | null;
   openLogin: (() => void) | null;
   openLoginFromVictory: (() => void) | null;
+  openHowToPlay: (() => void) | null;
+  signOut: (() => Promise<void>) | null;
   resetGame: (() => void) | null;
   resetPlayer: (() => Promise<void>) | null;
 }
@@ -24,6 +26,8 @@ export const authStore = createStore<AuthState>()(
       provider: null,
       openLogin: null,
       openLoginFromVictory: null,
+      openHowToPlay: null,
+      signOut: null,
       resetGame: null,
       resetPlayer: null,
     })

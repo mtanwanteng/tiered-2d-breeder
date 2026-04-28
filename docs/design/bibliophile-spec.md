@@ -1919,3 +1919,27 @@ Use `npx drizzle-kit generate` to produce these from schema.ts edits — never h
 ---
 
 *End of specification. Updated: 2026-04-27. Source: design conversation, three consolidated parts plus strip-as-inventory and vault decisions; section 11 added 2026-04-27 to document data model and persistence.*
+
+---
+
+## Addendum A — Main menu (added 2026-04-28)
+
+### What the user asked for
+
+> Change "Restart Game" to **Menu**, put Restart Game, Sign In, How-To-Play, Debug Menu, and Scoreboard inside that menu. Choose a thematic menu display, order the menu elements with the best UI/UX game dev hat you have.
+
+### Constraints captured
+
+- **Single entry point.** The standalone floating buttons that previously housed each function (`#restart-btn` top-right, `#scoreboard-btn` bottom-right scroll icon, `#debug-toggle` floating bug, `.auth-overlay` chip + `.htp-btn`) are superseded — the play-screen chrome should expose a single Menu affordance.
+- **Thematic.** Book-of-hours treatment, not a hamburger or dot-cluster.
+- **UI/UX-first ordering.** Order by likely frequency of use during play, with destructive / dev actions guarded.
+- **Discoverability vs. atmosphere.** Menu must be findable on a first visit but should not dominate the chapter title row.
+
+### Implementation landed
+
+See `docs/design/bibliophile-decisions.md` **D23** for the resulting menu shape, ordering, and visual treatment.
+
+### Open questions deferred
+
+- **Account UX when signed in.** The Menu collapses signed-in account state to a single "Sign out" item; richer in-menu account preview (avatar, profile, tapestry list) is post-v1.
+- **First-session HTP behaviour.** Auth-overlay still renders the HTP popup the first time it mounts; only its trigger buttons are hidden. So first-visit HTP autoplay is preserved.

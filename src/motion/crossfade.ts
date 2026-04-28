@@ -32,11 +32,18 @@ export function crossfade(
     );
     out.onfinish = () => {
       target.textContent = newText;
+      out.cancel();
       const inAnim = target.animate(
         [{ opacity: 0 }, { opacity: 1 }],
         { duration: fadeInMs, easing: "ease-out", fill: "forwards" },
       );
-      inAnim.onfinish = () => resolve();
+      inAnim.onfinish = () => {
+        // Cancel so the persisted opacity:1 effect doesn't override later
+        // CSS class changes (e.g. .visible removal hiding the toast). Base
+        // style applies once cancelled — which is opacity:1 when visible.
+        inAnim.cancel();
+        resolve();
+      };
     };
   });
 }

@@ -218,7 +218,6 @@ body {
 }
 
 #goal-tooltip {
-  display: none;
   position: fixed;
   transform: translate(-50%, -100%);
   background: #1a2a1a;
@@ -232,11 +231,18 @@ body {
   width: 200px;
   white-space: normal;
   pointer-events: none;
-  z-index: 9999;
+  /* Sits above the play-screen UI but below modal overlays
+     (card catalog 200, retirement 220, tile-info 240, era summary 280). */
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-out, visibility 0s linear 0.3s;
 }
 
 #goal-tooltip.visible {
-  display: block;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease-out, visibility 0s linear 0s;
 }
 
 /* --- Model selector --- */

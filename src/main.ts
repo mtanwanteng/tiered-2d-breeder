@@ -443,7 +443,7 @@ app.innerHTML = `
     </div>
     <div id="inventory-header">
       <span id="inventory-caption">Your Ideas</span>
-      <button id="card-catalog-btn">Card Catalog →</button>
+      <button id="card-catalog-btn">Catalog →</button>
       <div id="palette-zoom-controls">
         <span id="palette-zoom-icon">\uD83D\uDD0D</span>
         <button id="palette-zoom-out">&#8722;</button>
@@ -456,7 +456,18 @@ app.innerHTML = `
       <button id="tray-next" class="tray-paginate" aria-label="Next page" type="button">&#8250;</button>
     </div>
     <div id="bari"><span id="bari-char">👦</span><span id="bari-tool">🔨</span></div>
-    <button id="restart-btn">Restart Game</button>
+    <button id="menu-btn" type="button" aria-haspopup="menu" aria-expanded="false">Menu</button>
+    <div id="menu-overlay" hidden>
+      <div id="menu-panel" role="menu" aria-label="Main menu">
+        <button class="menu-item" role="menuitem" data-menu="scoreboard">Scoreboard</button>
+        <button class="menu-item" role="menuitem" data-menu="how-to-play">How to Play</button>
+        <button class="menu-item" role="menuitem" data-menu="account" id="menu-item-account">Sign in</button>
+        <hr class="menu-divider" aria-hidden="true">
+        <button class="menu-item menu-item--destructive" role="menuitem" data-menu="restart">Restart game</button>
+        <button class="menu-item menu-item--debug" role="menuitem" data-menu="debug" id="menu-item-debug" hidden>Debug console</button>
+      </div>
+    </div>
+    <button id="restart-btn" hidden>Restart Game</button>
   </div>
   <div id="demo-reset-overlay">
     <div id="demo-reset-modal">
@@ -476,7 +487,7 @@ app.innerHTML = `
   <div id="card-catalog-overlay">
     <div id="card-catalog-modal">
       <div id="card-catalog-header">
-        <span id="card-catalog-title">Card Catalog</span>
+        <span id="card-catalog-title">Catalog</span>
         <button id="card-catalog-close">&times;</button>
       </div>
       <div id="card-catalog-body">
@@ -1088,6 +1099,135 @@ document.addEventListener("click", () => {
   }
 });
 
+// When a goal newly transitions met, spawn a per-goal narrative popup that
+// floats above the goal row for 5s, then fades. Multiple popups stack
+// (each anchored to its own row); cascade interval is 2.5s between starts
+// so a burst of newly-met goals shows as a sequence rather than all at once.
+// Click a popup to pin it (cancel the auto-fade); click again to dismiss.
+// On fade, the goal's characters pulse left-to-right with extra pop on the
+// trailing ⓘ to advertise that the goal can be clicked to re-read.
+let goalFlashSpawnAt = 0;
+const GOAL_FLASH_DISPLAY_MS = 5000;
+const GOAL_FLASH_FADE_MS = 300;
+const GOAL_FLASH_CASCADE_MS = 2500;
+
+function flashGoalNarrative(narrative: string): void {
+  const now = Date.now();
+  const startAt = Math.max(now, goalFlashSpawnAt);
+  goalFlashSpawnAt = startAt + GOAL_FLASH_CASCADE_MS;
+  setTimeout(() => spawnGoalFlash(narrative), Math.max(0, startAt - now));
+}
+
+function findGoalEl(narrative: string): HTMLElement | null {
+  const goals = document.querySelectorAll<HTMLElement>(".era-goal[data-narrative]");
+  for (const g of goals) if (g.dataset.narrative === narrative) return g;
+  return null;
+}
+
+function spawnGoalFlash(narrative: string): void {
+  const found = findGoalEl(narrative);
+  if (!found) return;
+  const target: HTMLElement = found;
+
+  const tip = document.createElement("div");
+  tip.className = "goal-popup";
+  tip.textContent = narrative;
+  document.body.appendChild(tip);
+
+  // Position above the goal row, centered horizontally, viewport-clamped.
+  const rect = target.getBoundingClientRect();
+  // Force layout to read offsetWidth/Height after textContent is set.
+  const tipW = tip.offsetWidth;
+  const tipH = tip.offsetHeight;
+  const margin = 6;
+  const center = rect.left + rect.width / 2;
+  const left = Math.max(tipW / 2 + margin, Math.min(window.innerWidth - tipW / 2 - margin, center));
+  const fitsAbove = rect.top - tipH - margin > 0;
+  const top = fitsAbove ? rect.top - margin : rect.bottom + margin + tipH;
+  tip.style.left = `${left}px`;
+  tip.style.top = `${top}px`;
+
+  // Fade-in next frame so the CSS transition catches the toggle.
+  requestAnimationFrame(() => tip.classList.add("visible"));
+
+  let pinned = false;
+  let autoFadeTimer: number | null = window.setTimeout(fadeAndCleanup, GOAL_FLASH_DISPLAY_MS);
+
+  function fadeAndCleanup() {
+    if (autoFadeTimer !== null) { clearTimeout(autoFadeTimer); autoFadeTimer = null; }
+    tip.classList.remove("visible");
+    setTimeout(() => {
+      tip.remove();
+      // After the popup disappears, advertise re-readability by glowing the
+      // goal text left-to-right and popping the trailing ⓘ marker.
+      pulseGoalAffordance(target);
+    }, GOAL_FLASH_FADE_MS + 20);
+  }
+
+  tip.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (!pinned) {
+      pinned = true;
+      if (autoFadeTimer !== null) { clearTimeout(autoFadeTimer); autoFadeTimer = null; }
+      tip.classList.add("goal-popup--pinned");
+    } else {
+      fadeAndCleanup();
+    }
+  });
+}
+
+function pulseGoalAffordance(goalEl: HTMLElement): void {
+  // Wrap the description text node's characters in spans with staggered
+  // animation-delay so the gilt highlight runs left-to-right. The trailing
+  // ⓘ span gets its own larger pop. Restore plain text after the animation
+  // completes so subsequent renderGoals() rounds aren't affected.
+  if (!goalEl.isConnected) return;
+  const infoEl = goalEl.querySelector<HTMLElement>(".era-goal-info");
+  // The description sits as the first text node before the optional ⓘ.
+  let textNode: Text | null = null;
+  for (const n of Array.from(goalEl.childNodes)) {
+    if (n.nodeType === Node.TEXT_NODE && (n.textContent ?? "").trim().length > 0) {
+      textNode = n as Text;
+      break;
+    }
+  }
+  if (!textNode) return;
+  const original = textNode.textContent ?? "";
+  const frag = document.createDocumentFragment();
+  const perCharMs = 28;
+  const charSpans: HTMLSpanElement[] = [];
+  for (let i = 0; i < original.length; i++) {
+    const span = document.createElement("span");
+    span.className = "era-goal-glow";
+    span.style.animationDelay = `${i * perCharMs}ms`;
+    span.textContent = original[i];
+    frag.appendChild(span);
+    charSpans.push(span);
+  }
+  textNode.replaceWith(frag);
+
+  // Extra pop on the trailing affordance marker, timed to land just after
+  // the last character lights up.
+  const totalCharsMs = original.length * perCharMs + 600;
+  if (infoEl) {
+    setTimeout(() => infoEl.classList.add("era-goal-info--pop"), totalCharsMs - 200);
+    setTimeout(() => infoEl.classList.remove("era-goal-info--pop"), totalCharsMs + 700);
+  }
+
+  // Restore a plain text node once the animation finishes — keeps the DOM
+  // small and immune to re-render races.
+  setTimeout(() => {
+    if (!goalEl.isConnected) return;
+    const restored = document.createTextNode(original);
+    if (charSpans[0]?.parentNode === goalEl) {
+      goalEl.insertBefore(restored, charSpans[0]);
+    } else {
+      goalEl.insertBefore(restored, infoEl ?? null);
+    }
+    for (const s of charSpans) s.remove();
+  }, totalCharsMs + 800);
+}
+
 // Era goals toggle
 const eraGoalsEl = document.getElementById("era-goals")!;
 const eraToggleBtn = document.getElementById("era-name-toggle")!;
@@ -1180,6 +1320,74 @@ function closeTileInfo() {
 
 tileInfoOverlay.addEventListener("click", (e) => {
   if (e.target === tileInfoOverlay) closeTileInfo();
+});
+
+// --- Main menu (Phase 8 polish) ---
+// Single entry-point button at top-right consolidates Scoreboard, How to Play,
+// Account/Sign in, Restart, Debug (dev only). Standalone floating buttons
+// remain in the DOM (some carry handler bindings) but are visually hidden.
+const menuBtn = document.getElementById("menu-btn") as HTMLButtonElement | null;
+const menuOverlay = document.getElementById("menu-overlay")!;
+const menuItemAccount = document.getElementById("menu-item-account") as HTMLButtonElement | null;
+const menuItemDebug = document.getElementById("menu-item-debug") as HTMLButtonElement | null;
+const isDevBuild = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";
+if (menuItemDebug && isDevBuild) menuItemDebug.hidden = false;
+
+function syncMenuAccountLabel() {
+  if (!menuItemAccount) return;
+  const s = authStore.getState();
+  menuItemAccount.textContent = s.isLoggedIn ? "Sign out" : "Sign in";
+}
+syncMenuAccountLabel();
+authStore.subscribe(syncMenuAccountLabel);
+
+function openMenu() {
+  syncMenuAccountLabel();
+  menuOverlay.removeAttribute("hidden");
+  requestAnimationFrame(() => menuOverlay.classList.add("visible"));
+  menuBtn?.setAttribute("aria-expanded", "true");
+}
+function closeMenu() {
+  menuOverlay.classList.remove("visible");
+  menuBtn?.setAttribute("aria-expanded", "false");
+  setTimeout(() => {
+    if (!menuOverlay.classList.contains("visible")) menuOverlay.setAttribute("hidden", "");
+  }, 220);
+}
+menuBtn?.addEventListener("click", () => {
+  if (menuOverlay.classList.contains("visible")) closeMenu();
+  else openMenu();
+});
+menuOverlay.addEventListener("click", (e) => {
+  if (e.target === menuOverlay) closeMenu();
+});
+menuOverlay.addEventListener("click", (e) => {
+  const item = (e.target as HTMLElement).closest<HTMLElement>(".menu-item");
+  if (!item) return;
+  const action = item.dataset.menu;
+  closeMenu();
+  switch (action) {
+    case "scoreboard":
+      // Existing #scoreboard-btn carries the open-on-click handler.
+      document.getElementById("scoreboard-btn")?.click();
+      break;
+    case "how-to-play":
+      authStore.getState().openHowToPlay?.();
+      break;
+    case "account": {
+      const s = authStore.getState();
+      if (s.isLoggedIn) void s.signOut?.();
+      else s.openLogin?.();
+      break;
+    }
+    case "restart":
+      handleRestart();
+      break;
+    case "debug":
+      // The dev-only debug-toggle injects itself into the body on initDebugConsole.
+      document.getElementById("debug-toggle")?.click();
+      break;
+  }
 });
 
 // Palette zoom
@@ -1408,6 +1616,8 @@ const handleKeyDown = (e: KeyboardEvent) => {
     closeSettings();
   } else if (e.key === "Escape" && tileInfoOverlay.classList.contains("visible")) {
     closeTileInfo();
+  } else if (e.key === "Escape" && menuOverlay.classList.contains("visible")) {
+    closeMenu();
   }
 };
 document.addEventListener("keydown", handleKeyDown);
@@ -2589,6 +2799,13 @@ async function checkEraAdvancement() {
     (el) => ({ name: el.dataset.name!, tier: Number(el.dataset.tier) }),
   ).filter((item) => item.tier > 1).map((item) => item.name);
 
+  // Snapshot which AI conditions were already met so we can flash narratives
+  // for the newly-met ones after the API check resolves.
+  const aiGoalRef = eraManager.current.goals.find((g) => g.minTier === undefined);
+  const wasMetSet = new Set(
+    aiGoalRef?.conditions.filter((c) => c.met).map((c) => c.description) ?? [],
+  );
+
   const result = await eraManager.checkAdvancement(
     eraActionLog,
     inventory,
@@ -2599,6 +2816,15 @@ async function checkEraAdvancement() {
   );
 
   renderGoals();
+
+  // Auto-pop newly-met goal narratives for ~3s, then fade. Queued sequentially.
+  if (aiGoalRef) {
+    for (const c of aiGoalRef.conditions) {
+      if (c.met && c.narrative && !wasMetSet.has(c.description)) {
+        flashGoalNarrative(c.narrative);
+      }
+    }
+  }
 
   if (!result) return;
   if (eraAdvancing) return; // another call won the race while we awaited
@@ -2917,6 +3143,24 @@ function renderEraGraphs(history: EraHistory[], canvasIdPrefix: string): void {
 
 function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: string, onContinue: () => void) {
   hideToast();
+  // Cancel any animation still applied to the panel (e.g. the page-turn
+  // animation from the previous era's continue, which uses fill: "forwards"
+  // and would otherwise leave the panel rotated/invisible on this open).
+  const summaryPanel = document.getElementById("era-summary-panel");
+  if (summaryPanel) {
+    summaryPanel.getAnimations().forEach((a) => a.cancel());
+    summaryPanel.style.transform = "";
+    summaryPanel.style.opacity = "";
+    summaryPanel.style.filter = "";
+    summaryPanel.style.transformOrigin = "";
+    summaryPanel.style.willChange = "";
+  }
+  // Defensively dismiss a pinned goal tooltip — its z-index sits above the
+  // overlay, so a leftover pin would mask the spread.
+  if (pinnedGoalInfo) {
+    pinnedGoalInfo = null;
+    goalTooltipEl.classList.remove("visible");
+  }
   document.getElementById("era-summary-era-name")!.textContent = record.eraName;
   document.getElementById("era-summary-stat-cards")!.innerHTML = renderEraStatCards(record);
   const topItems = record.discoveredItems.slice(0, 16).join(", ");
@@ -3761,6 +4005,9 @@ function addToPaletteIfNew(entry: ElementData) {
 // --- Toast notification ---
 let toastTimer: number;
 function showToast(msg: string, durationMs: number | null = 2000) {
+  // Cancel any persisted crossfade animations from the AI-thinking phase
+  // machine — they use fill: "forwards" and would otherwise pin opacity:1.
+  toast.getAnimations().forEach((a) => a.cancel());
   toast.textContent = msg;
   toast.classList.add("visible");
   clearTimeout(toastTimer);

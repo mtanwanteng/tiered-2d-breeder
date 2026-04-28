@@ -856,6 +856,10 @@
           {
             "description": "Advance navigation, cartography, or exploration capability",
             "met": false
+          },
+          {
+            "description": "Found a humanist movement or revive classical learning",
+            "met": false
           }
         ],
         "fallbackTier5Count": 5

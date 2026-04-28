@@ -60,24 +60,134 @@
   }
 }
 
-/* Hide the legacy restart button on the play screen — settings drawer comes in Phase 7. */
-[data-theme="bibliophile"] #restart-btn {
+/* Restart button is now folded into the Menu (Phase 8 polish). The element
+   stays in the DOM as a hidden handler bind point. */
+[data-theme="bibliophile"] #restart-btn { display: none; }
+
+/* The auth-overlay's standalone trigger buttons are superseded by the Menu.
+   Hide the chips but keep the .auth-overlay container visible so its child
+   popovers (HTP popup, account dropdown when programmatically opened) still
+   render. The login modal is a sibling of .auth-overlay and is unaffected. */
+[data-theme="bibliophile"] .auth-overlay .auth-login-btn,
+[data-theme="bibliophile"] .auth-overlay .auth-user-chip,
+[data-theme="bibliophile"] .auth-overlay .htp-btn {
+  display: none;
+}
+/* The HTP popup is anchored under the (now hidden) .htp-btn; recenter it. */
+[data-theme="bibliophile"] .htp-popup {
+  right: 12px !important;
+  top: 56px !important;
+}
+
+/* Standalone scoreboard button is folded into Menu; debug-toggle too. */
+[data-theme="bibliophile"] #scoreboard-btn { display: none; }
+[data-theme="bibliophile"] #debug-toggle { display: none; }
+
+/* ─────────────────────────────────────────────────────────────────────
+   MAIN MENU — gilt italic "Menu" link at top-right opens a parchment
+   dropdown of consolidated entry points (Scoreboard, How to Play,
+   Account, Restart, Debug). Spec §3.x menu addendum.
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] #menu-btn {
   position: fixed;
   top: 12px;
-  right: 12px;
+  right: 56px;
   z-index: 9;
   background: transparent;
-  color: var(--marble-warm);
+  color: var(--gilt);
   border: 1px solid var(--leather-deep);
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  padding: 4px 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+}
+[data-theme="bibliophile"] #menu-btn:hover,
+[data-theme="bibliophile"] #menu-btn[aria-expanded="true"] {
+  opacity: 1;
+  border-color: var(--gilt);
+  background: rgba(201, 168, 95, 0.08);
+}
+
+[data-theme="bibliophile"] #menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 245;
+  pointer-events: none;
+}
+[data-theme="bibliophile"] #menu-overlay[hidden] { display: none; }
+[data-theme="bibliophile"] #menu-overlay.visible { pointer-events: auto; }
+
+[data-theme="bibliophile"] #menu-panel {
+  position: absolute;
+  top: 48px;
+  right: 56px;
+  width: 200px;
+  background:
+    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--vellum);
+  border: 1px solid var(--leather-deep);
+  border-left: 4px solid var(--leather-deep);
+  border-radius: 0 2px 2px 0;
+  padding: 6px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 180ms ease-out, transform 180ms ease-out;
+}
+[data-theme="bibliophile"] #menu-overlay.visible #menu-panel {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-theme="bibliophile"] .menu-item {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  text-align: left;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-black);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+[data-theme="bibliophile"] .menu-item[hidden] { display: none; }
+[data-theme="bibliophile"] .menu-item:hover {
+  background: rgba(201, 168, 95, 0.18);
+  color: var(--leather-deep);
+}
+[data-theme="bibliophile"] .menu-item--destructive {
+  color: var(--oxblood);
+}
+[data-theme="bibliophile"] .menu-item--destructive:hover {
+  background: rgba(122, 62, 42, 0.12);
+  color: var(--oxblood);
+}
+[data-theme="bibliophile"] .menu-item--debug {
+  color: var(--marble-warm);
+  font-style: normal;
   font-size: 11px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 2px;
-  opacity: 0.6;
 }
-[data-theme="bibliophile"] #restart-btn:hover { opacity: 1; }
+[data-theme="bibliophile"] .menu-divider {
+  border: none;
+  border-top: 1px solid var(--leather-deep);
+  opacity: 0.4;
+  margin: 4px 12px;
+}
+
+[data-theme="bibliophile"][data-reduced-motion="true"] #menu-panel {
+  transition: none;
+}
 
 /* ─────────────────────────────────────────────────────────────────────
    HEADER STACK: chapter title bar + objectives card
@@ -257,6 +367,73 @@
   text-decoration-color: var(--marble-warm);
 }
 
+/* ─────────────────────────────────────────────────────────────────────
+   GOAL-MET FLASH: per-goal popup + post-fade glow advertising re-read.
+   Spec: D24 (goal-met cascade). Each new flash spawns its own .goal-popup
+   anchored over the row; click pins, click-again dismisses; auto-fade
+   after 5s; a left-to-right gilt highlight pulses across the row chars
+   on dismiss, with extra pop on the trailing ⓘ marker.
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] .goal-popup {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  background:
+    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--vellum);
+  border: 1px solid var(--leather-deep);
+  color: var(--ink-black);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 8px 12px;
+  border-radius: 2px;
+  width: 220px;
+  white-space: normal;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 60;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transition: opacity 0.3s ease-out, box-shadow 0.2s ease-out;
+}
+[data-theme="bibliophile"] .goal-popup.visible { opacity: 1; }
+[data-theme="bibliophile"] .goal-popup--pinned {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--gilt);
+}
+
+@keyframes era-goal-char-glow {
+  0%   { color: var(--ink-black); text-shadow: none; }
+  45%  { color: var(--gilt); text-shadow: 0 0 6px rgba(201, 168, 95, 0.6); }
+  100% { color: inherit; text-shadow: none; }
+}
+[data-theme="bibliophile"] .era-goal-glow {
+  /* `display: inline` keeps text wrapping natural across char spans. */
+  display: inline;
+  animation: era-goal-char-glow 600ms ease-out both;
+}
+
+@keyframes era-goal-info-pop {
+  0%   { transform: scale(1); color: #7a7; text-shadow: none; }
+  35%  { transform: scale(1.55); color: var(--gilt); text-shadow: 0 0 10px rgba(201, 168, 95, 0.85); }
+  60%  { transform: scale(1.15); color: var(--gilt); text-shadow: 0 0 6px rgba(201, 168, 95, 0.5); }
+  100% { transform: scale(1); color: #7a7; text-shadow: none; }
+}
+[data-theme="bibliophile"] .era-goal-info--pop {
+  display: inline-block;
+  transform-origin: center;
+  animation: era-goal-info-pop 800ms ease-out both;
+}
+
+[data-theme="bibliophile"][data-reduced-motion="true"] .goal-popup {
+  transition: opacity 0.01ms !important;
+}
+[data-theme="bibliophile"][data-reduced-motion="true"] .era-goal-glow,
+[data-theme="bibliophile"][data-reduced-motion="true"] .era-goal-info--pop {
+  animation: none !important;
+}
+
 /* Idea-slot inside the goals frame */
 [data-theme="bibliophile"] #era-idea-slot-wrapper {
   margin: 12px 18px 0;
@@ -371,8 +548,12 @@
 }
 
 [data-theme="bibliophile"] #workspace-caption {
+  /* The chapter strip (#era-progress) renders at the top of #workspace as a
+     normal-flow block child and sits at z:5; the caption — being decorative
+     atmosphere, not chrome — sits below it as a quiet footer-style label
+     instead of competing for the same top band. */
   position: absolute;
-  top: 8px;
+  bottom: 8px;
   left: 0;
   right: 0;
   text-align: center;
@@ -382,7 +563,7 @@
   color: var(--marble-warm);
   pointer-events: none;
   margin: 0;
-  z-index: 0;
+  z-index: 1;
 }
 
 [data-theme="bibliophile"] #workspace-hint {
@@ -611,6 +792,12 @@
   justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
+  /* Sit below the dragged combine-item (z:100 inline). Without this, mobile
+     sticky positioning (z:3 from style.css) and grid-row painting order let
+     the strip's paper-dark background clip a tile being dragged upward out
+     of the tray. */
+  position: relative;
+  z-index: 0;
 }
 [data-theme="bibliophile"] #inventory-header h2 { display: none; }
 [data-theme="bibliophile"] #inventory-caption {
@@ -850,6 +1037,23 @@
     var(--vellum);
 }
 [data-theme="bibliophile"] .palette-item:active { cursor: grabbing; }
+
+/* Edge-anchor the hover tooltip on the first / last tray tile. The tooltip is
+   200px wide and centered (translateX(-50%)) above its 86px parent — for
+   tiles at the tray edge that overflow extends past #palette-items'
+   scrollable area, growing scrollWidth, which then adjusts the scrollbar
+   and slides the tile out from under the cursor → hover loop. Anchoring
+   the tooltip to the tile edge keeps the overflow inside the tray. */
+[data-theme="bibliophile"] .palette-item:first-child .tooltip {
+  left: 0;
+  right: auto;
+  transform: none;
+}
+[data-theme="bibliophile"] .palette-item:last-child .tooltip {
+  left: auto;
+  right: 0;
+  transform: none;
+}
 [data-theme="bibliophile"] .palette-emoji {
   font-size: 26px;
   width: auto;

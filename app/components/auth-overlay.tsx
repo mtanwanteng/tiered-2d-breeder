@@ -103,12 +103,24 @@ export function AuthOverlay() {
         setFromVictory(true);
         setIsModalOpen(true);
       },
+      openHowToPlay: () => { setHtpOpen(true); },
+      signOut: async () => {
+        posthog?.capture("auth_logout");
+        await authClient.signOut();
+        authStore.getState().resetGame?.();
+      },
       resetPlayer: async () => {
         if (authStore.getState().isLoggedIn) await authClient.signOut();
         authStore.getState().resetGame?.();
       },
     });
-    return () => authStore.setState({ openLogin: null, openLoginFromVictory: null, resetPlayer: null });
+    return () => authStore.setState({
+      openLogin: null,
+      openLoginFromVictory: null,
+      openHowToPlay: null,
+      signOut: null,
+      resetPlayer: null,
+    });
   }, [posthog]);
 
   const handleSignOut = async () => {

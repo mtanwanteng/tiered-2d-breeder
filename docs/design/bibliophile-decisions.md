@@ -284,3 +284,44 @@ Future implementation passes should add entries below, dated and numbered (D23, 
 - **Spec edit:** {Yes — section X | No}
 - **Reversible if:** {what would change this}
 ```
+
+---
+
+### D23. Main menu — placement, ordering, visual treatment
+- **Status:** CLAUDE-DECIDED (user prompted; specifics chosen by Claude per UX best-practices; reversible)
+- **User ask:** "Change 'Restart Game' to Menu. Put Restart Game, Sign In, How-To-Play, Debug Menu, and Scoreboard inside that menu. Choose a thematic display, order with best UI/UX hat."
+
+#### Placement
+- **Top-right of the play screen, just left of the settings cog.** Replaces the previous `#restart-btn` slot (which was visually conspicuous and semantically narrow — only one of five things now folded in).
+- Pairs visually with `#settings-btn`: Settings = persistent player preferences (cog, gilt outlined); Menu = session actions (italic Cardo "Menu" label, gilt italic underline-on-hover). Two distinct affordances, similar weight, predictable cluster.
+
+#### Visual treatment — "ribbon-tab dropdown"
+- **Trigger:** Italic Cardo word "Menu" in gilt on transparent background, leather-deep border, subtle gilt highlight on hover / when open. No icon — words read clearly to first-time players, and the bibliophile world is text-led.
+- **Panel:** Parchment-on-leather dropdown, ~200px wide, anchors below-right of the trigger. Left edge has a thicker leather "spine" (4px border-left) — visually quotes a book's gathered binding. Slides in 180ms (transform + opacity) on open; collapses on outside-click, ESC, or item-click.
+- **Items:** Italic Cardo, ink-black on parchment, gilt-tinted hover background. Destructive item (Restart) wears oxblood. Debug item wears uppercase Inter in muted marble — visually demoted (a dev-only affordance shouldn't compete with player-facing actions).
+- **Hidden in production builds** (debug item only): gated by `NEXT_PUBLIC_VERCEL_ENV !== "production"`.
+
+#### Ordering (top-to-bottom)
+1. **Scoreboard** — most likely to be opened mid-run (peek progress, see prior chapters); cheap and read-only.
+2. **How to Play** — second-most-likely; refresh on rules without leaving the run.
+3. **Sign in / Sign out** — auth-state-aware label; auth modal opens via `authStore.openLogin`.
+4. *(divider)*
+5. **Restart game** — destructive, separated below the divider, oxblood-tinted to signal weight.
+6. **Debug console** — uppercase Inter, muted marble, dev-only.
+
+Reasoning: read-only and informational items at top → state-changing items below → destructive last. Divider visually separates "explore" from "commit" actions.
+
+#### Implementation notes
+- Standalone floating buttons that previously hosted each function are kept in the DOM (their event handlers stay bound) but visually hidden via CSS scoped to `[data-theme="bibliophile"]`:
+  - `#restart-btn`, `#scoreboard-btn`, `#debug-toggle` → `display: none`
+  - `.auth-overlay .auth-login-btn`, `.auth-user-chip`, `.htp-btn` → `display: none` (the popovers themselves stay)
+- Menu items dispatch through:
+  - `Scoreboard` → programmatic `.click()` on `#scoreboard-btn` (re-uses existing handler)
+  - `How to Play` → `authStore.getState().openHowToPlay?.()` (new store callback registered by `auth-overlay.tsx`)
+  - `Account` → `authStore.openLogin` / `authStore.signOut` based on `isLoggedIn`
+  - `Restart` → existing `handleRestart()` (confirms then `clearSave()` + reload)
+  - `Debug` → programmatic `.click()` on `#debug-toggle`
+- The HTP popup is positioned under the now-hidden `.htp-btn`; CSS overrides the popup's anchor to `right: 12px; top: 56px` so it sits beneath the Menu trigger when invoked.
+
+- **Spec edit:** Yes — Addendum A in §end of spec.
+- **Reversible if:** Naming finalizes and we want to expose Sign In as a more prominent first-class affordance again (likely re-promotion as a top-bar action), or if we decide the Menu should also surface tapestry / library shortcuts (currently those are reached via the era-summary spread + dedicated routes).
