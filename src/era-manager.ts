@@ -3,7 +3,6 @@ import { log } from "./logger";
 import erasData from "./eras.json";
 
 const allEras = (erasData as Era[]).sort((a, b) => a.order - b.order);
-const MIN_ERAS = 5;
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -63,29 +62,12 @@ export class EraManager {
     this.advancementCheckedAt = 0;
   }
 
-  /** Get eras the player can advance to, respecting the minimum eras rule */
+  /** Get the next eligible era. Bibliophile locks to a fixed 11-chapter arc:
+   *  every run walks every chapter in `order`. Returns the immediate next-by-order
+   *  era, or [] if already at the last era. */
   getEligibleNextEras(): Era[] {
-    // Future eras: everything after current in chronological order
-    const futureEras = allEras.filter((e) => e.order > this.current.order);
-    if (futureEras.length === 0) return [];
-
-    // erasCompleted includes the current era being finished now
-    const completedAfterThis = this.erasCompleted + 1;
-    const lockCount = Math.max(0, MIN_ERAS - completedAfterThis);
-
-    // Lock the last N eras from the FULL list
-    const maxOrder = allEras[allEras.length - 1 - lockCount]?.order ?? -1;
-    const eligible = futureEras.filter((e) => e.order <= maxOrder);
-
-    log.debug("era", `Eligible next eras (${completedAfterThis} completed, lock last ${lockCount}): ${eligible.map((e) => e.name).join(", ") || "none"}`);
-
-    // If nothing eligible due to lockCount but future eras exist, return the first future era
-    // (this handles edge cases where all middle eras were played)
-    if (eligible.length === 0 && futureEras.length > 0) {
-      return [futureEras[0]];
-    }
-
-    return eligible;
+    const next = allEras.find((e) => e.order > this.current.order);
+    return next ? [next] : [];
   }
 
   /** Whether the current era is Space Age (last era) */
@@ -183,60 +165,29 @@ export class EraManager {
     };
   }
 
-  /** Ask the AI which era to advance to */
+  /** Pick the next era and generate a narrative for the transition.
+   *  With Bibliophile's fixed 11-chapter arc, the next era is mechanical
+   *  (next-by-order); the AI's role here is narrative only. The signature
+   *  preserves the older `choose` shape for callers and analytics that still
+   *  refer to the era as "chosen". */
   async chooseNextEra(
     actionLog: ActionLogEntry[],
     inventory: string[],
     model: ModelId,
-    anonId?: string,
-    runId?: string,
+    _anonId?: string,
+    _runId?: string,
   ): Promise<{ era: Era; narrative: string }> {
     const eligible = this.getEligibleNextEras();
-
-    // If only one option, skip the AI call
-    if (eligible.length === 1) {
-      return {
-        era: eligible[0],
-        narrative: `Your civilization's path leads to the ${eligible[0].name}.`,
-      };
+    if (eligible.length === 0) {
+      throw new Error("chooseNextEra called from the last era");
     }
+    const next = eligible[0];
 
-    // Ask AI to pick
-    try {
-      const res = await fetch("/api/choose-era", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model,
-          completedEras: this.history.map((h) => h.eraName),
-          currentEra: this.current.name,
-          actionLog: actionLog.slice(-20),
-          inventory,
-          eligibleEras: eligible.map((e) => ({ name: e.name, order: e.order })),
-          anonId,
-          runId,
-        }),
-      });
-
-      if (res.ok) {
-        const result = await res.json() as { chosenEra: string; narrative: string };
-        const chosen = eligible.find((e) => e.name === result.chosenEra);
-        if (chosen) {
-          log.info("era", `AI chose: ${chosen.name}`);
-          return { era: chosen, narrative: result.narrative };
-        }
-      }
-    } catch (err) {
-      const chooseDetail = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : "";
-      log.error("api", `[ERA-CHO] Choose era failed${chooseDetail}`);
-    }
-
-    // Fallback: pick the first eligible era
-    const fallback = eligible[0];
-    log.warn("era", `AI era choice failed, falling back to ${fallback.name}`);
+    const narrative = await this.generateAdvancementNarrative(actionLog, inventory, model, next.name);
+    log.info("era", `Locked next era: ${next.name}`);
     return {
-      era: fallback,
-      narrative: `Your civilization advances to the ${fallback.name}.`,
+      era: next,
+      narrative: narrative ?? `Your civilization advances to the ${next.name}.`,
     };
   }
 

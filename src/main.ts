@@ -16,6 +16,8 @@ import posthog from "posthog-js";
 import { toPng } from "html-to-image";
 import { createArrowTrail, type ArrowTrailHandle } from "./arrow-trail";
 import type { EraIdeaTilePick } from "./types";
+import { chapterTag } from "./theme";
+import { chapterStripeColor } from "./theme/chapterColor";
 
 // --- Types ---
 interface CombineItem {
@@ -87,43 +89,61 @@ const modelOptions = MODELS.map(
   (m) => `<option value="${m.id}">${m.label}</option>`
 ).join("");
 
+// Bibliophile strip: every chapter renders as a leather-bound cube. State per cube:
+//   locked   — chapter not yet reached (dim leather, muted Roman numeral)
+//   active   — current chapter, goals incomplete (gilt italic Roman, bright)
+//   awaiting — current chapter, all goals met, awaiting bind (dashed inner border)
+//   bound    — completed chapter, shows kept-tile face + binding stripe color
+// See spec §4 "Strip behavior".
 function renderEraProgress() {
   const el = document.getElementById("era-progress");
   if (!el) return;
   if (victoryShown) { el.innerHTML = ""; return; }
 
-  const goal = eraManager.current.goals.find((g) => g.minTier === undefined);
-  const metCount = goal ? goal.conditions.filter((c) => c.met).length : 0;
-  const dotCount = goal ? goal.requiredCount : 5;
+  const totalEras = eraManager.totalEras;
+  const currentIdx = eraManager.history.length; // index into allEras of the active chapter
+
+  const aiGoal = eraManager.current.goals.find((g) => g.minTier === undefined);
+  const aiMet = aiGoal ? aiGoal.conditions.filter((c) => c.met).length >= aiGoal.requiredCount : true;
+  const tierGoal = eraManager.current.goals.find((g) => g.minTier !== undefined);
+  const tierMet = tierGoal?.conditions[0]?.met ?? true;
+  const awaitingBinding = aiMet && tierMet;
 
   let html = "";
 
-  // Completed eras: dim cube + single glowing dash. Idea tile (if picked) sits above the cube.
-  for (let i = 0; i < eraManager.history.length; i++) {
-    const h = eraManager.history[i];
-    const ideaTile = h.ideaTilePick
-      ? `<div class="era-cube-idea" data-era-idea-idx="${i}" title="${esc(h.eraName)} — kept ${esc(h.ideaTilePick.name)} (drag to spawn)">${esc(h.ideaTilePick.emoji || "❓")}</div>`
-      : "";
-    html += `<div class="era-cube era-cube--done" title="${esc(h.eraName)}">${ideaTile}</div>`;
-    html += `<div class="era-dots"><span class="era-dash"></span></div>`;
-  }
+  for (let i = 0; i < totalEras; i++) {
+    const era = eraManager.getEraByIndex(i);
+    const roman = ROMAN_NUMERALS[i + 1] ?? String(i + 1);
 
-  // Current era: bright glowing cube + progress dots
-  html += `<div class="era-cube era-cube--active" title="${eraManager.current.name}"></div>`;
-  html += `<div class="era-dots">`;
-  for (let i = 0; i < dotCount; i++) {
-    html += `<span class="era-dot${i < metCount ? " era-dot--lit" : ""}"></span>`;
-  }
-  html += `</div>`;
-
-  // Unknown next era (only if not last)
-  if (!eraManager.isLastEra) {
-    html += `<div class="era-cube era-cube--unknown" title="???"></div>`;
+    if (i < currentIdx) {
+      // BOUND state — completed chapter
+      const h = eraManager.history[i];
+      const pick = h?.ideaTilePick;
+      const stripe = pick ? chapterStripeColor(h.eraName, pick.name, runId) : "#5a4528";
+      const ideaTile = pick
+        ? `<div class="era-cube-idea" data-era-idea-idx="${i}" title="${esc(h.eraName)} — kept ${esc(pick.name)} (drag to spawn)">${esc(pick.emoji || "❓")}</div>`
+        : "";
+      html += `<div class="era-cube era-cube--bound" style="--stripe: ${stripe}" title="${esc(h.eraName)}">`
+        + `<span class="era-cube-roman">${roman}</span>`
+        + ideaTile
+        + `</div>`;
+    } else if (i === currentIdx) {
+      const stateClass = awaitingBinding ? "era-cube--awaiting" : "era-cube--active";
+      html += `<div class="era-cube ${stateClass}" title="${esc(era.name)}">`
+        + `<span class="era-cube-roman">${roman}</span>`
+        + `</div>`;
+    } else {
+      html += `<div class="era-cube era-cube--locked" title="${esc(era.name)}">`
+        + `<span class="era-cube-roman">${roman}</span>`
+        + `</div>`;
+    }
   }
 
   el.innerHTML = html;
-  // Scroll right so active cube is always visible
-  el.scrollLeft = el.scrollWidth;
+  // Scroll-anchor: keep the active cube visible (mid-strip preferred so the player sees a
+  // chunk of past + future on either side rather than always anchoring the active to the right).
+  const activeOffset = currentIdx * 60; // approximate; cube width ~56 + gap
+  el.scrollLeft = Math.max(0, activeOffset - el.clientWidth / 2);
   wireEraCubeIdeaTiles();
 }
 
@@ -170,10 +190,10 @@ function renderGoals() {
   const metCount = aiGoal ? aiGoal.conditions.filter((c) => c.met).length : 0;
   const counterEl = document.getElementById("era-goal-counter");
   if (counterEl) counterEl.textContent = aiGoal ? `(${metCount}/${aiGoal.requiredCount})` : "";
-  const tierMet = tierGoal?.conditions[0]?.met ?? false;
   const aiRequiredMet = aiGoal ? metCount >= aiGoal.requiredCount : false;
+  // The tier-floor goal is rendered as a badge in the chapter title bar (see renderEraName).
+  // The objectives card surfaces narrative-milestone (AI-judged) conditions only.
   goalsEl.innerHTML = `
-    ${tierGoal ? `<div class="era-goal${tierMet ? " met" : ""}">${tierGoal.conditions[0].description}</div>` : ""}
     ${aiGoal ? `<div class="era-goal-header">${aiRequiredMet ? `✔ ` : ``}Complete ${aiGoal.requiredCount} of ${aiGoal.conditions.length} tasks${aiRequiredMet ? `` : ` (${metCount} done)`}</div>
     ${aiGoal.conditions
       .map((c) => {
@@ -187,11 +207,47 @@ function renderGoals() {
       })
       .join("")}` : ""}
   `;
+  renderEraName();  // refresh tier-floor badge if the tier goal flipped
   renderEraProgress();
 }
 
+// Roman numerals for chapters I–XX (we have 11 chapters; XX is generous overhead).
+const ROMAN_NUMERALS = [
+  "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
+  "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX",
+];
+
 function renderEraName() {
-  document.getElementById("era-name")!.textContent = eraManager.current.name;
+  const era = eraManager.current;
+  const chapterNum = era.order + 1;
+  const roman = ROMAN_NUMERALS[chapterNum] ?? String(chapterNum);
+
+  const eraNameEl = document.getElementById("era-name")!;
+  eraNameEl.textContent = era.name;
+
+  const romanEl = document.getElementById("era-roman");
+  if (romanEl) romanEl.textContent = victoryShown ? "" : `Chapter ${roman}`;
+
+  // Italic chapter-theme tag from the active theme manifest (e.g. "Craft · Survival")
+  const tagEl = document.getElementById("era-theme-tag");
+  if (tagEl) tagEl.textContent = victoryShown ? "" : chapterTag(era.name);
+
+  // Tier-floor badge — surfaces the deterministic minTier goal as a subtle marker.
+  // Spec §3.2 "Goal model": tier-floor lives in the title bar; AI conditions live in the
+  // objectives card.
+  const tierBadgeEl = document.getElementById("era-tier-badge");
+  if (tierBadgeEl) {
+    const tierGoal = era.goals.find((g) => g.minTier !== undefined);
+    if (!victoryShown && tierGoal && tierGoal.minTier) {
+      const stars = "★".repeat(tierGoal.minTier);
+      tierBadgeEl.textContent = `requires ${stars}`;
+      tierBadgeEl.classList.toggle("met", tierGoal.conditions[0]?.met === true);
+      tierBadgeEl.hidden = false;
+    } else {
+      tierBadgeEl.hidden = true;
+      tierBadgeEl.textContent = "";
+    }
+  }
 }
 
 const SAVE_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
@@ -219,8 +275,13 @@ app.innerHTML = `
   <div id="palette">
     <div id="era-display">
       <div id="era-name-row">
-        <span id="era-name"></span>
+        <div id="era-name-stack">
+          <span id="era-roman"></span>
+          <span id="era-name"></span>
+          <span id="era-theme-tag"></span>
+        </div>
         <div id="era-name-right">
+          <span id="era-tier-badge"></span>
           <span id="era-goal-counter"></span>
           <button id="era-name-toggle" aria-expanded="true">
             <span id="era-toggle-icon">\u25BE</span>
@@ -235,14 +296,19 @@ app.innerHTML = `
       <button id="chart-era-btn" disabled>Next Age →</button>
     </div>
     <div id="inventory-header">
-      <h2>Inventory</h2>
+      <span id="inventory-caption">Your Ideas</span>
+      <button id="card-catalog-btn">Card Catalog →</button>
       <div id="palette-zoom-controls">
         <span id="palette-zoom-icon">\uD83D\uDD0D</span>
         <button id="palette-zoom-out">&#8722;</button>
         <button id="palette-zoom-in">&#43;</button>
       </div>
     </div>
-    <div id="palette-items"></div>
+    <div id="idea-tray-row">
+      <button id="tray-prev" class="tray-paginate" aria-label="Previous page" type="button">&#8249;</button>
+      <div id="palette-items"></div>
+      <button id="tray-next" class="tray-paginate" aria-label="Next page" type="button">&#8250;</button>
+    </div>
     <div id="bari"><span id="bari-char">\uD83D\uDC66</span><span id="bari-tool">\uD83D\uDD28</span></div>
     <button id="restart-btn">Restart Game</button>
   </div>
@@ -256,7 +322,22 @@ app.innerHTML = `
       </div>
     </div>
   </div>
-  <div id="workspace"><div id="era-progress"></div></div>
+  <div id="workspace">
+    <p id="workspace-caption">— the writing desk —</p>
+    <p id="workspace-hint">Place two ideas here to combine.</p>
+    <div id="era-progress"></div>
+  </div>
+  <div id="card-catalog-overlay">
+    <div id="card-catalog-modal">
+      <div id="card-catalog-header">
+        <span id="card-catalog-title">Card Catalog</span>
+        <button id="card-catalog-close">&times;</button>
+      </div>
+      <div id="card-catalog-body">
+        <p class="card-catalog-empty">Your full catalog will appear here. Phase 4 wires the grid + search.</p>
+      </div>
+    </div>
+  </div>
   <div id="heatmap-overlay">
     <div id="heatmap-modal">
       <div id="heatmap-header">
@@ -830,6 +911,64 @@ document.getElementById("palette-zoom-out")!.addEventListener("click", () => {
   applyPaletteZoom();
 });
 
+// Idea-tray pagination + wheel scroll (mouse wheel scrolls horizontally, ‹ › buttons
+// flip a near-page worth of cards). Touch users scroll natively; the drag handler
+// only commits on vertical motion (see addToPalette).
+const trayPrev = document.getElementById("tray-prev") as HTMLButtonElement | null;
+const trayNext = document.getElementById("tray-next") as HTMLButtonElement | null;
+
+function updateTrayPaginationVisibility() {
+  if (!trayPrev || !trayNext) return;
+  const overflow = paletteItems.scrollWidth > paletteItems.clientWidth + 1;
+  trayPrev.hidden = !overflow;
+  trayNext.hidden = !overflow;
+  if (!overflow) return;
+  trayPrev.disabled = paletteItems.scrollLeft <= 0;
+  trayNext.disabled =
+    paletteItems.scrollLeft + paletteItems.clientWidth >= paletteItems.scrollWidth - 1;
+}
+
+trayPrev?.addEventListener("click", () => {
+  paletteItems.scrollBy({ left: -paletteItems.clientWidth * 0.85, behavior: "smooth" });
+});
+trayNext?.addEventListener("click", () => {
+  paletteItems.scrollBy({ left: paletteItems.clientWidth * 0.85, behavior: "smooth" });
+});
+paletteItems.addEventListener("scroll", updateTrayPaginationVisibility, { passive: true });
+
+// Mouse wheel → horizontal scroll. Translate vertical wheel deltas (the common case
+// for both wheel mice and trackpad two-finger scroll) into horizontal scroll.
+paletteItems.addEventListener(
+  "wheel",
+  (e) => {
+    // Bypass when the user is already scrolling horizontally (shift+wheel, or trackpad
+    // horizontal swipe). Browser handles those natively.
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    paletteItems.scrollBy({ left: e.deltaY, behavior: "auto" });
+  },
+  { passive: false },
+);
+
+// Re-evaluate pagination visibility whenever the inventory mutates.
+new MutationObserver(updateTrayPaginationVisibility).observe(paletteItems, { childList: true });
+new ResizeObserver(updateTrayPaginationVisibility).observe(paletteItems);
+// Initial paint
+requestAnimationFrame(updateTrayPaginationVisibility);
+
+// Card Catalog modal — stub in Phase 1; full grid + search in Phase 4.
+const cardCatalogOverlay = document.getElementById("card-catalog-overlay")!;
+const openCardCatalog = () => {
+  cardCatalogOverlay.classList.add("visible");
+  posthog.capture("card_catalog_opened");
+};
+const closeCardCatalog = () => cardCatalogOverlay.classList.remove("visible");
+document.getElementById("card-catalog-btn")?.addEventListener("click", openCardCatalog);
+document.getElementById("card-catalog-close")?.addEventListener("click", closeCardCatalog);
+cardCatalogOverlay.addEventListener("click", (e) => {
+  if (e.target === cardCatalogOverlay) closeCardCatalog();
+});
+
 // Returns the natural (unzoomed) scroll height of the palette.
 function getPaletteNaturalH(): number {
   palette.style.zoom = "1";
@@ -883,6 +1022,8 @@ const handleKeyDown = (e: KeyboardEvent) => {
     closeHeatmap();
   } else if (e.key === "Escape" && scoreboardOverlay.classList.contains("visible")) {
     scoreboardOverlay.classList.remove("visible");
+  } else if (e.key === "Escape" && cardCatalogOverlay.classList.contains("visible")) {
+    closeCardCatalog();
   }
 };
 document.addEventListener("keydown", handleKeyDown);
@@ -2585,39 +2726,82 @@ function addToPalette(entry: ElementData, isSeed = false) {
       <div class="tooltip-narrative">${esc(entry.narrative)}</div>
     </div>
   `;
-  // Spawn a workspace item at cursor and start dragging immediately
+  // Spawn-and-drag from palette. Mouse: starts immediately. Touch: deferred until
+  // the pointer has moved past a small threshold, so a horizontal swipe over the
+  // idea tray can scroll (instead of starting a stray drag).
+  const TOUCH_DRAG_THRESHOLD_PX = 10;
   div.addEventListener("pointerdown", (e) => {
     if (busy) return;
-    e.preventDefault();
-    const rect = workspace.getBoundingClientRect();
-    const x = e.clientX - rect.left - 36;
-    const y = e.clientY - rect.top - 36;
-    const item = spawnItem(entry, x, y);
-    eraSpawnCounts[entry.name] = (eraSpawnCounts[entry.name] ?? 0) + 1;
-    eraSpawnByTier[entry.tier] = (eraSpawnByTier[entry.tier] ?? 0) + 1;
-    posthog.capture('tile_spawned', { item: entry.name, tier: entry.tier, era_name: eraNameForAnalytics() });
-    dragItem = item;
-    dragSourceSlotIndex = null;
-    dragOffsetX = 36;
-    dragOffsetY = 36;
-    // Switch to fixed immediately so the tile is visible over the palette/selection panel
-    item.el.style.position = 'fixed';
-    item.el.style.left = `${e.clientX - 36}px`;
-    item.el.style.top = `${e.clientY - 36}px`;
-    item.el.style.zIndex = "100";
+
+    const beginDrag = (clientX: number, clientY: number) => {
+      const rect = workspace.getBoundingClientRect();
+      const x = clientX - rect.left - 36;
+      const y = clientY - rect.top - 36;
+      const item = spawnItem(entry, x, y);
+      eraSpawnCounts[entry.name] = (eraSpawnCounts[entry.name] ?? 0) + 1;
+      eraSpawnByTier[entry.tier] = (eraSpawnByTier[entry.tier] ?? 0) + 1;
+      posthog.capture('tile_spawned', { item: entry.name, tier: entry.tier, era_name: eraNameForAnalytics() });
+      dragItem = item;
+      dragSourceSlotIndex = null;
+      dragOffsetX = 36;
+      dragOffsetY = 36;
+      item.el.style.position = 'fixed';
+      item.el.style.left = `${clientX - 36}px`;
+      item.el.style.top = `${clientY - 36}px`;
+      item.el.style.zIndex = "100";
+    };
+
+    if (e.pointerType === "mouse") {
+      e.preventDefault();
+      beginDrag(e.clientX, e.clientY);
+      return;
+    }
+
+    // Touch / pen: only commit to a drag if the user pulls UP or DOWN out of the tray.
+    // Horizontal motion is reserved for scrolling. Standard iOS list-with-draggable-items
+    // pattern: swipe sideways to scroll, pull off vertically to grab.
+    const startX = e.clientX;
+    const startY = e.clientY;
+    let armed = true;
+    const onMove = (moveEvent: PointerEvent) => {
+      if (!armed) return;
+      const dx = moveEvent.clientX - startX;
+      const dy = moveEvent.clientY - startY;
+      const adx = Math.abs(dx);
+      const ady = Math.abs(dy);
+      // Horizontal-dominant motion ⇒ scroll intent. Disarm; let the browser handle it.
+      if (adx > ady && adx >= TOUCH_DRAG_THRESHOLD_PX) {
+        armed = false;
+        cleanup();
+        return;
+      }
+      // Vertical-dominant motion past threshold ⇒ drag intent.
+      if (ady > adx && ady >= TOUCH_DRAG_THRESHOLD_PX) {
+        armed = false;
+        cleanup();
+        moveEvent.preventDefault();
+        beginDrag(moveEvent.clientX, moveEvent.clientY);
+      }
+    };
+    const onCancel = () => {
+      armed = false;
+      cleanup();
+    };
+    const cleanup = () => {
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onCancel);
+      document.removeEventListener("pointercancel", onCancel);
+    };
+    document.addEventListener("pointermove", onMove, { passive: false });
+    document.addEventListener("pointerup", onCancel);
+    document.addEventListener("pointercancel", onCancel);
   });
   paletteItems.appendChild(div);
 }
 
-const MAX_DISCOVERED_SLOTS = 3;
-
 function addToPaletteIfNew(entry: ElementData) {
   const exists = paletteItems.querySelector(`[data-name="${entry.name}"]`);
   if (exists) return;
-  const discovered = paletteItems.querySelectorAll(".palette-item:not([data-seed])");
-  if (discovered.length >= MAX_DISCOVERED_SLOTS) {
-    discovered[0].remove();
-  }
   addToPalette(entry, false);
 }
 

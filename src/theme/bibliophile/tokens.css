@@ -1,0 +1,30 @@
+/* Bibliophile theme — color tokens.
+   Mirrors src/theme/bibliophile/manifest.ts. Keep in sync.
+   See docs/design/bibliophile-spec.md §1 "Palette" and "Theme architecture". */
+
+[data-theme="bibliophile"] {
+  /* Spec palette */
+  --ink-black: #2a1f15;
+  --oxblood: #7a3e2a;
+  --gilt: #c9a85f;
+  --vellum: #f4ead5;
+  --leather-deep: #5a4528;
+  --paper-dark: #1a1208;
+  --marble-warm: #a8794a;
+  --marble-cool: #3a2818;
+
+  /* Convenience aliases used by transitional Phase 0 selectors. Phase 1 may
+     remove these as src/style.css is rewritten to use the spec tokens directly. */
+  --bg-body: var(--paper-dark);
+  --bg-panel: var(--leather-deep);
+  --bg-modal: var(--paper-dark);
+  --accent: var(--oxblood);
+  --accent-bright: var(--gilt);
+  --text-primary: var(--vellum);
+  --text-muted: var(--marble-warm);
+  --border-subtle: var(--leather-deep);
+
+  /* Typography (font-face <link> declarations live in app/globals.css) */
+  --font-serif: "Cardo", Georgia, serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+}

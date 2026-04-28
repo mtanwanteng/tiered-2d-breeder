@@ -1,0 +1,938 @@
+/* Bibliophile theme — layout + chrome.
+ * This stylesheet OVERRIDES the legacy src/style.css for bibliophile-specific
+ * surfaces. Loaded after src/style.css in app/globals.css so cascade wins.
+ *
+ * See docs/design/bibliophile-spec.md §3.2 (play screen), §4 (strip), §5 (Bari).
+ */
+
+/* ─────────────────────────────────────────────────────────────────────
+   BODY / PAGE CHROME
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] body {
+  font-family: var(--font-serif);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(168, 121, 74, 0.12), transparent 60%),
+    var(--paper-dark);
+  color: var(--vellum);
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+[data-theme="bibliophile"] #app {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "header"
+    "workspace"
+    "strip"
+    "tray";
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Dissolve the legacy #palette wrapper — children become grid items of #app. */
+[data-theme="bibliophile"] #palette {
+  display: contents;
+  background: transparent;
+  width: auto;
+  padding: 0;
+  border: none;
+}
+
+/* Bari floats; keep him out of the grid flow */
+[data-theme="bibliophile"] #bari {
+  position: fixed;
+  left: 16px;
+  bottom: 140px;
+  z-index: 12;
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  [data-theme="bibliophile"] #bari {
+    left: 8px;
+    bottom: 168px;
+  }
+}
+
+/* Hide the legacy restart button on the play screen — settings drawer comes in Phase 7. */
+[data-theme="bibliophile"] #restart-btn {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 9;
+  background: transparent;
+  color: var(--marble-warm);
+  border: 1px solid var(--leather-deep);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 2px;
+  opacity: 0.6;
+}
+[data-theme="bibliophile"] #restart-btn:hover { opacity: 1; }
+
+/* ─────────────────────────────────────────────────────────────────────
+   HEADER STACK: chapter title bar + objectives card
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] #era-display {
+  grid-area: header;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Chapter title bar: gilt italic Cardo on paper-dark, framed by gilt rule. */
+[data-theme="bibliophile"] #era-name-row {
+  background: var(--paper-dark);
+  border-bottom: 1px solid var(--leather-deep);
+  padding: 14px 18px 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  position: relative;
+}
+[data-theme="bibliophile"] #era-name-row::after {
+  /* thin gilt rule under the bar */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gilt) 30%, var(--gilt) 70%, transparent);
+  opacity: 0.4;
+}
+
+[data-theme="bibliophile"] #era-name-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+[data-theme="bibliophile"] #era-roman {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--marble-warm);
+  letter-spacing: 1px;
+}
+[data-theme="bibliophile"] #era-roman:empty { display: none; }
+[data-theme="bibliophile"] #era-name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 19px;
+  color: var(--gilt);
+  line-height: 1.1;
+  letter-spacing: 0.3px;
+}
+[data-theme="bibliophile"] #era-theme-tag {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--marble-warm);
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+}
+[data-theme="bibliophile"] #era-theme-tag:empty { display: none; }
+
+[data-theme="bibliophile"] #era-name-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+[data-theme="bibliophile"] #era-tier-badge {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--gilt);
+  border: 1px solid var(--gilt);
+  padding: 2px 8px;
+  border-radius: 999px;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+[data-theme="bibliophile"] #era-tier-badge.met {
+  color: var(--vellum);
+  background: var(--gilt);
+  border-color: var(--gilt);
+  opacity: 1;
+}
+[data-theme="bibliophile"] #era-tier-badge[hidden] { display: none; }
+
+[data-theme="bibliophile"] #era-goal-counter {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--marble-warm);
+}
+
+[data-theme="bibliophile"] #era-name-toggle {
+  background: transparent;
+  border: 1px solid var(--leather-deep);
+  border-radius: 2px;
+  padding: 2px 7px;
+  color: var(--marble-warm);
+}
+[data-theme="bibliophile"] #era-name-toggle:hover {
+  border-color: var(--gilt);
+  color: var(--gilt);
+}
+[data-theme="bibliophile"] #era-name-toggle:hover #era-toggle-icon { color: var(--gilt); }
+[data-theme="bibliophile"] #era-toggle-icon { color: var(--marble-warm); }
+
+/* Objectives card — vellum on leather frame */
+[data-theme="bibliophile"] #era-goals {
+  background: url(/themes/bibliophile/patterns/parchment.svg) repeat, var(--vellum);
+  color: var(--ink-black);
+  border: 1px solid var(--leather-deep);
+  border-top: none;
+  margin: 0 18px 0;
+  padding: 12px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  line-height: 1.35;
+}
+[data-theme="bibliophile"] #era-goals.era-goals--collapsed {
+  display: none;
+}
+[data-theme="bibliophile"] .era-goal-header {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--oxblood);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+[data-theme="bibliophile"] .era-goal {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-black);
+  padding-left: 18px;
+  position: relative;
+  line-height: 1.4;
+}
+[data-theme="bibliophile"] .era-goal::before {
+  content: "○";
+  position: absolute;
+  left: 4px;
+  color: var(--marble-warm);
+  font-size: 10px;
+}
+[data-theme="bibliophile"] .era-goal.met {
+  text-decoration: line-through;
+  text-decoration-color: var(--gilt);
+  color: var(--leather-deep);
+}
+[data-theme="bibliophile"] .era-goal.met::before {
+  content: "✓";
+  color: var(--gilt);
+}
+[data-theme="bibliophile"] .era-goal.skipped {
+  opacity: 0.55;
+  text-decoration: line-through;
+  text-decoration-color: var(--marble-warm);
+}
+
+/* Idea-slot inside the goals frame */
+[data-theme="bibliophile"] #era-idea-slot-wrapper {
+  margin: 12px 18px 0;
+  padding: 10px 14px;
+  background: url(/themes/bibliophile/patterns/parchment.svg) repeat, var(--vellum);
+  border: 1px solid var(--leather-deep);
+}
+[data-theme="bibliophile"] .era-idea-prompt {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--oxblood);
+  font-size: 12px;
+}
+[data-theme="bibliophile"] .era-idea-slot {
+  background: transparent;
+  border: 2px dashed var(--marble-warm);
+  border-radius: 4px;
+  min-height: 56px;
+}
+[data-theme="bibliophile"] .era-idea-slot.slot-occupied {
+  border-color: var(--gilt);
+  background: rgba(201, 168, 95, 0.1);
+}
+[data-theme="bibliophile"] .era-idea-slot .slot-empty-hint {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--marble-warm);
+  font-size: 11px;
+}
+[data-theme="bibliophile"] .era-idea-slot .slot-name {
+  font-family: var(--font-serif);
+  color: var(--ink-black);
+  font-size: 13px;
+}
+[data-theme="bibliophile"] .era-idea-slot .slot-tier {
+  color: var(--gilt);
+}
+
+[data-theme="bibliophile"] #chart-era-btn {
+  margin: 12px 18px 14px;
+  padding: 10px 18px;
+  background: var(--oxblood);
+  color: var(--vellum);
+  border: 1px solid var(--gilt);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.15s;
+  align-self: stretch;
+}
+[data-theme="bibliophile"] #chart-era-btn:hover:not([disabled]) {
+  background: var(--gilt);
+  color: var(--ink-black);
+}
+[data-theme="bibliophile"] #chart-era-btn[disabled] {
+  background: var(--leather-deep);
+  color: var(--marble-warm);
+  border-color: var(--leather-deep);
+  cursor: not-allowed;
+}
+
+/* Hide visible chart-era-btn until era-idea-slot-wrapper is shown.
+   Existing behavior was a `.visible` class added on advancement. */
+[data-theme="bibliophile"] #chart-era-btn:not(.visible) {
+  display: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   WORKSPACE — the writing desk
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] #workspace {
+  grid-area: workspace;
+  position: relative;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 60%, rgba(244, 234, 213, 0.04), transparent 70%),
+    var(--paper-dark);
+  border: 1px solid var(--leather-deep);
+  margin: 12px 18px 6px;
+  overflow: hidden;
+  min-height: 280px;
+}
+
+[data-theme="bibliophile"] #workspace-caption {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--marble-warm);
+  pointer-events: none;
+  margin: 0;
+  z-index: 0;
+}
+
+[data-theme="bibliophile"] #workspace-hint {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  text-align: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--marble-warm);
+  margin: 0;
+  pointer-events: none;
+  opacity: 0.7;
+  z-index: 0;
+}
+/* Hide the hint once the workspace has any tile */
+[data-theme="bibliophile"] #workspace:has(.combine-item) #workspace-hint,
+[data-theme="bibliophile"] #workspace:has(.combine-placeholder) #workspace-hint {
+  display: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   COMBINE ITEMS (workspace tiles) — bookplate motif
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] .combine-item {
+  background:
+    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--vellum) !important;
+  color: var(--ink-black);
+  border: 2px solid var(--leather-deep);
+  border-radius: 2px;
+  padding: 6px 4px 4px;
+  width: 78px;
+  height: 86px;
+  text-shadow: none;
+  font-family: var(--font-serif);
+}
+[data-theme="bibliophile"] .combine-item::before {
+  /* sepia inner border (bookplate frame) */
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--marble-warm);
+  pointer-events: none;
+  opacity: 0.55;
+}
+[data-theme="bibliophile"] .combine-item .item-emoji {
+  font-size: 26px;
+  filter: none;
+}
+[data-theme="bibliophile"] .combine-item .item-name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 10px;
+  color: var(--ink-black);
+  margin-top: 4px;
+  line-height: 1.1;
+  z-index: 1;
+}
+[data-theme="bibliophile"] .combine-item .tier-stars {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  top: auto;
+  font-size: 7px;
+  color: var(--gilt);
+  text-shadow: none;
+  letter-spacing: -1px;
+}
+[data-theme="bibliophile"] .combine-item.glow-green {
+  box-shadow: 0 0 0 2px var(--gilt), 0 0 16px 4px rgba(201, 168, 95, 0.4);
+  border-color: var(--gilt);
+}
+[data-theme="bibliophile"] .combine-item.glow-red {
+  box-shadow: 0 0 0 2px var(--oxblood), 0 0 16px 4px rgba(122, 62, 42, 0.4);
+  border-color: var(--oxblood);
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   STRIP (kept tiles row) — 4 states with binding stripes + Roman numerals
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] #era-progress {
+  grid-area: strip;
+  position: static;
+  background: transparent;
+  padding: 6px 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  pointer-events: auto;
+  z-index: 5;
+}
+[data-theme="bibliophile"] #era-progress::-webkit-scrollbar { display: none; }
+
+[data-theme="bibliophile"] .era-cube {
+  flex-shrink: 0;
+  width: 56px;
+  height: 30px;
+  border-radius: 2px;
+  background: var(--paper-dark);
+  border: 1px solid var(--leather-deep);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 6px;
+  font-family: var(--font-serif);
+  /* subtle leather chrome */
+  box-shadow: inset 0 0 0 1px rgba(201, 168, 95, 0.08);
+}
+[data-theme="bibliophile"] .era-cube::after { display: none; }
+
+[data-theme="bibliophile"] .era-cube-roman {
+  font-family: var(--font-serif);
+  font-size: 10px;
+  color: var(--marble-warm);
+  letter-spacing: 0.5px;
+}
+
+[data-theme="bibliophile"] .era-cube--locked {
+  opacity: 0.55;
+}
+[data-theme="bibliophile"] .era-cube--locked .era-cube-roman {
+  color: var(--leather-deep);
+}
+
+[data-theme="bibliophile"] .era-cube--active {
+  background: var(--leather-deep);
+  border-color: var(--gilt);
+  box-shadow: 0 0 0 1px var(--gilt), 0 0 12px 2px rgba(201, 168, 95, 0.25);
+}
+[data-theme="bibliophile"] .era-cube--active .era-cube-roman {
+  color: var(--gilt);
+  font-style: italic;
+  font-size: 11px;
+}
+
+[data-theme="bibliophile"] .era-cube--awaiting {
+  background: var(--leather-deep);
+  border: 2px solid var(--gilt);
+  box-shadow: 0 0 0 1px rgba(201, 168, 95, 0.2), 0 0 18px 4px rgba(201, 168, 95, 0.35);
+  animation: era-cube-awaiting 1.6s ease-in-out infinite;
+}
+[data-theme="bibliophile"] .era-cube--awaiting::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px dashed var(--gilt);
+  border-radius: 1px;
+  opacity: 0.7;
+}
+[data-theme="bibliophile"] .era-cube--awaiting .era-cube-roman {
+  color: var(--gilt);
+  font-style: italic;
+  font-size: 11px;
+}
+@keyframes era-cube-awaiting {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(201, 168, 95, 0.2), 0 0 18px 4px rgba(201, 168, 95, 0.35); }
+  50%      { box-shadow: 0 0 0 1px rgba(201, 168, 95, 0.4), 0 0 22px 6px rgba(201, 168, 95, 0.5); }
+}
+
+[data-theme="bibliophile"] .era-cube--bound {
+  background:
+    linear-gradient(to right, var(--stripe, var(--leather-deep)) 6px, transparent 6px) no-repeat,
+    linear-gradient(to bottom, var(--stripe, var(--leather-deep)) 4px, transparent 4px) no-repeat,
+    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--vellum);
+  border: 1px solid var(--leather-deep);
+  opacity: 1;
+}
+[data-theme="bibliophile"] .era-cube--bound .era-cube-roman {
+  color: var(--ink-black);
+  font-size: 9px;
+}
+
+[data-theme="bibliophile"] .era-cube-idea {
+  position: absolute;
+  inset: 4px 22px 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  pointer-events: auto;
+  cursor: grab;
+  z-index: 2;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+[data-theme="bibliophile"] .era-cube-idea:hover {
+  transform: scale(1.18);
+  z-index: 3;
+}
+[data-theme="bibliophile"] .era-cube--bound:has(.era-cube-idea) {
+  opacity: 1;
+}
+
+/* Hide legacy era-dots / era-dash in favor of just-cubes */
+[data-theme="bibliophile"] .era-dots,
+[data-theme="bibliophile"] .era-dot,
+[data-theme="bibliophile"] .era-dash {
+  display: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   IDEA TRAY — horizontal scroll of bookplate cards
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] #inventory-header {
+  grid-area: tray;
+  align-self: end;
+  background: var(--paper-dark);
+  border-top: 1px solid var(--leather-deep);
+  padding: 4px 14px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+[data-theme="bibliophile"] #inventory-header h2 { display: none; }
+[data-theme="bibliophile"] #inventory-caption {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--marble-warm);
+}
+
+[data-theme="bibliophile"] #card-catalog-btn {
+  background: transparent;
+  border: 1px solid var(--gilt);
+  color: var(--gilt);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+[data-theme="bibliophile"] #card-catalog-btn:hover {
+  background: var(--gilt);
+  color: var(--ink-black);
+}
+
+[data-theme="bibliophile"] #palette-zoom-controls {
+  margin-left: auto;
+}
+
+/* Wrapper for the tray + pagination buttons. Sits in the grid; #palette-items
+   inside it is the actual scroll surface. */
+[data-theme="bibliophile"] #idea-tray-row {
+  grid-area: tray;
+  background: var(--paper-dark);
+  border-top: 1px solid var(--leather-deep);
+  padding: 2px 0 6px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
+  position: relative;
+}
+
+/* Embossed leather pagination plaques. Distinct from the tray surface (deeper
+   leather + inset highlight) and consistent with the bibliophile chrome
+   vocabulary: gilt italic glyph on a pressed-leather panel. Sized for usable
+   touch targets while taking minimum tray space. */
+[data-theme="bibliophile"] .tray-paginate {
+  background: linear-gradient(to bottom, var(--leather-deep) 0%, #3f311c 100%);
+  border: 1px solid var(--ink-black);
+  color: var(--gilt);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1;
+  width: 22px;
+  /* Full tray height — the leather plaque acts as a continuous edge so cards don't
+     visually clip past a too-short button when scrolled. */
+  height: auto;
+  align-self: stretch;
+  /* Flush to the tray edges so an edge-of-screen touch lands on the button. */
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Square the outer-edge corners; round only the corner that faces the cards. */
+[data-theme="bibliophile"] #tray-prev {
+  border-left: none;
+  border-radius: 0 2px 2px 0;
+}
+[data-theme="bibliophile"] #tray-next {
+  border-right: none;
+  border-radius: 2px 0 0 2px;
+  /* Embossed: gilt highlight along the top inner edge, ink shadow along the bottom,
+     plus a soft drop shadow to lift it off the tray's paper-dark background. */
+  box-shadow:
+    inset 0 1px 0 rgba(201, 168, 95, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(201, 168, 95, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.12s ease-out, color 0.15s, transform 0.08s;
+}
+[data-theme="bibliophile"] .tray-paginate:hover:not([disabled]) {
+  color: var(--vellum);
+  box-shadow:
+    inset 0 1px 0 rgba(201, 168, 95, 0.28),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+    0 0 0 1px var(--gilt),
+    0 2px 6px rgba(0, 0, 0, 0.55);
+}
+[data-theme="bibliophile"] .tray-paginate:active:not([disabled]) {
+  /* "pressed in" — invert the emboss */
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.55),
+    inset 0 -1px 0 rgba(201, 168, 95, 0.06),
+    0 1px 1px rgba(0, 0, 0, 0.3);
+  transform: translateY(1px);
+}
+[data-theme="bibliophile"] .tray-paginate[disabled] {
+  opacity: 0.4;
+  cursor: default;
+  color: var(--marble-warm);
+  box-shadow:
+    inset 0 1px 0 rgba(201, 168, 95, 0.06),
+    0 1px 1px rgba(0, 0, 0, 0.25);
+}
+[data-theme="bibliophile"] .tray-paginate[hidden] {
+  display: none;
+}
+
+/* The actual horizontal-scroll tile row */
+[data-theme="bibliophile"] #palette-items {
+  padding: 0 6px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--leather-deep) transparent;
+  /* Native horizontal pan on touch. The drag handler in main.ts only commits
+     when the pull is vertically dominant, so swipes always reach the browser. */
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0; /* allow grid track to shrink so this can scroll horizontally */
+}
+[data-theme="bibliophile"] #palette-items::-webkit-scrollbar { height: 6px; }
+[data-theme="bibliophile"] #palette-items::-webkit-scrollbar-thumb {
+  background: var(--leather-deep);
+  border-radius: 3px;
+}
+[data-theme="bibliophile"] #palette-items::-webkit-scrollbar-track { background: transparent; }
+
+/* Stack header + items: header pinned above tray */
+[data-theme="bibliophile"] #app {
+  grid-template-rows: auto 1fr auto auto auto;
+  grid-template-areas:
+    "header"
+    "workspace"
+    "strip"
+    "tray-header"
+    "tray";
+}
+[data-theme="bibliophile"] #inventory-header { grid-area: tray-header; }
+/* #idea-tray-row now owns the "tray" grid area; #palette-items lives inside it. */
+
+/* Bookplate-frame card */
+[data-theme="bibliophile"] .palette-item {
+  flex-shrink: 0;
+  width: 86px;
+  height: 100px;
+  background:
+    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--vellum);
+  border: 1px solid var(--leather-deep);
+  border-radius: 2px;
+  padding: 6px 4px;
+  scroll-snap-align: start;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--ink-black);
+  cursor: grab;
+  transition: transform 0.12s, box-shadow 0.12s;
+  /* Allow the parent's horizontal pan to win on touch — the JS pointerdown handler
+     uses a movement threshold before starting a drag, so swipes still scroll. */
+  touch-action: pan-x;
+}
+[data-theme="bibliophile"] .palette-item::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--marble-warm);
+  pointer-events: none;
+  opacity: 0.55;
+}
+[data-theme="bibliophile"] .palette-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--gilt);
+  background:
+    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--vellum);
+}
+[data-theme="bibliophile"] .palette-item:active { cursor: grabbing; }
+[data-theme="bibliophile"] .palette-emoji {
+  font-size: 26px;
+  width: auto;
+  z-index: 1;
+}
+[data-theme="bibliophile"] .palette-label {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-black);
+  text-align: center;
+  z-index: 1;
+  line-height: 1.1;
+  max-width: 78px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-theme="bibliophile"] .palette-stars {
+  font-size: 7px;
+  color: var(--gilt);
+  margin-left: 0;
+  letter-spacing: -1px;
+  z-index: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   TOOLTIP (tile narrative, hovered)
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] .tooltip {
+  background:
+    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--vellum);
+  border: 1px solid var(--leather-deep);
+  color: var(--ink-black);
+  font-family: var(--font-serif);
+  border-radius: 2px;
+  padding: 8px 12px;
+}
+[data-theme="bibliophile"] .tooltip-desc {
+  font-size: 11px;
+  color: var(--ink-black);
+}
+[data-theme="bibliophile"] .tooltip-narrative {
+  font-size: 10px;
+  font-style: italic;
+  color: var(--leather-deep);
+  border-top: 1px solid var(--marble-warm);
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   CARD CATALOG MODAL (stub)
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] #card-catalog-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 18, 8, 0.78);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+[data-theme="bibliophile"] #card-catalog-overlay.visible { display: flex; }
+
+[data-theme="bibliophile"] #card-catalog-modal {
+  background:
+    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--vellum);
+  border: 2px solid var(--leather-deep);
+  border-radius: 2px;
+  width: min(720px, 96vw);
+  max-height: 86vh;
+  max-height: 86dvh;
+  display: flex;
+  flex-direction: column;
+  color: var(--ink-black);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="bibliophile"] #card-catalog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--leather-deep);
+}
+[data-theme="bibliophile"] #card-catalog-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--oxblood);
+}
+[data-theme="bibliophile"] #card-catalog-close {
+  background: transparent;
+  border: none;
+  color: var(--ink-black);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0 6px;
+  line-height: 1;
+}
+[data-theme="bibliophile"] #card-catalog-close:hover { color: var(--oxblood); }
+
+[data-theme="bibliophile"] #card-catalog-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+[data-theme="bibliophile"] .card-catalog-empty {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--marble-warm);
+  text-align: center;
+  padding: 48px 20px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   BARI placeholder — until painted poses arrive
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] #bari {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+[data-theme="bibliophile"] #bari-char,
+[data-theme="bibliophile"] #bari-tool {
+  font-size: 26px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   ERA SUMMARY OVERLAY — minimal reskin (full refit lands in Phase 2)
+   ───────────────────────────────────────────────────────────────────── */
+
+[data-theme="bibliophile"] #era-summary-panel {
+  background:
+    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--vellum);
+  border: 2px solid var(--leather-deep);
+  color: var(--ink-black);
+}
+[data-theme="bibliophile"] #era-summary-panel * { color: var(--ink-black); }
+[data-theme="bibliophile"] #era-summary-panel h2,
+[data-theme="bibliophile"] #era-summary-panel h3 {
+  font-family: var(--font-serif);
+  color: var(--oxblood);
+}
+[data-theme="bibliophile"] #era-summary-continue-btn {
+  background: var(--oxblood);
+  color: var(--vellum);
+  border: 1px solid var(--gilt);
+  font-family: var(--font-serif);
+  font-style: italic;
+  border-radius: 2px;
+}
+[data-theme="bibliophile"] #era-summary-continue-btn:hover:not([disabled]) {
+  background: var(--gilt);
+  color: var(--ink-black);
+}

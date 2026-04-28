@@ -116,9 +116,19 @@ export const tapestry = pgTable(
   ]
 );
 
-// One row per era-end "idea tile" pick. The player drops an idea tile into the era-summary
-// slot before clicking Next Age; that pick is persisted here. anonId-only rows are claimed
-// onto a userId by the same record-activity flow that claims tapestries on first sign-in.
+// One row per "bound tile" — the chapter-end idea pick. The player drops an idea tile into
+// the era-summary slot before clicking Next Age (replaced by hold-to-commit in Phase 2);
+// that pick is persisted here. anonId-only rows are claimed onto a userId by the same
+// record-activity flow that claims tapestries on first sign-in.
+//
+// Bibliophile additions (Phase 0):
+//   retired_at — set when the player retires the tile (removes it from the 24-slot library
+//                and into the vault). NULL means still on the shelf.
+//   chapter_index — cached order index of the era so library queries don't depend on era
+//                   name string matching.
+//   binding_stripe_color — cached deterministic chromatic stripe color (hashed from
+//                          era_id × tile_id × run_id at write-time) so library rendering
+//                          doesn't recompute the hash.
 export const eraIdeaTile = pgTable(
   "era_idea_tile",
   {
@@ -127,12 +137,15 @@ export const eraIdeaTile = pgTable(
     anonId: text("anon_id"),
     runId: text("run_id"),
     eraName: text("era_name").notNull(),
+    chapterIndex: integer("chapter_index"),
     tileName: text("tile_name").notNull(),
     tileTier: integer("tile_tier").notNull(),
     tileEmoji: text("tile_emoji").notNull(),
     tileColor: text("tile_color").notNull(),
     tileDescription: text("tile_description"),
     tileNarrative: text("tile_narrative"),
+    bindingStripeColor: text("binding_stripe_color"),
+    retiredAt: timestamp("retired_at"),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),
@@ -142,6 +155,7 @@ export const eraIdeaTile = pgTable(
     index("era_idea_tile_anon_id_idx").on(t.anonId),
     index("era_idea_tile_run_id_idx").on(t.runId),
     index("era_idea_tile_created_at_idx").on(t.createdAt),
+    index("era_idea_tile_retired_at_idx").on(t.retiredAt),
   ]
 );
 

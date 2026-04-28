@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <filter id="parchment-noise" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="7"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.66
+                                            0 0 0 0 0.55
+                                            0 0 0 0 0.34
+                                            0 0 0 0.18 0"/>
+    </filter>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="65%">
+      <stop offset="60%" stop-color="#f4ead5" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#a8794a" stop-opacity="0.22"/>
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" fill="#f4ead5"/>
+  <rect width="200" height="200" filter="url(#parchment-noise)"/>
+  <rect width="200" height="200" fill="url(#vignette)"/>
+</svg>

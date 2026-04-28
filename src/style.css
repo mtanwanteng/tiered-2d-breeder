@@ -7,7 +7,7 @@
 
 body {
   font-family: system-ui, -apple-system, sans-serif;
-  background: #1a1a2e;
+  background: var(--paper-dark);
   color: #eee;
   height: 100vh;
   height: 100dvh;
@@ -23,13 +23,13 @@ body {
 /* --- Palette sidebar --- */
 #palette {
   width: 220px;
-  background: #16213e;
+  background: var(--leather-deep);
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   overflow: hidden;
-  border-right: 2px solid #0f3460;
+  border-right: 2px solid var(--leather-deep);
 }
 
 #inventory-header {
@@ -42,7 +42,7 @@ body {
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #e94560;
+  color: var(--oxblood);
   margin-bottom: 4px;
 }
 
@@ -63,7 +63,7 @@ body {
 
 #palette-zoom-controls button {
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid #1e3a5f;
+  border: 1px solid var(--leather-deep);
   border-radius: 4px;
   color: #aaa;
   font-size: 14px;
@@ -78,7 +78,7 @@ body {
 }
 #palette-zoom-controls button:hover {
   background: rgba(255, 255, 255, 0.14);
-  border-color: #3a5070;
+  border-color: var(--leather-deep);
   color: #eee;
 }
 
@@ -97,7 +97,7 @@ body {
 /* --- Era display --- */
 #era-display {
   padding-bottom: 8px;
-  border-bottom: 1px solid #0f3460;
+  border-bottom: 1px solid var(--leather-deep);
   margin-bottom: 4px;
 }
 
@@ -120,7 +120,7 @@ body {
   display: flex;
   align-items: center;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid #1e3a5f;
+  border: 1px solid var(--leather-deep);
   border-radius: 6px;
   padding: 2px 6px;
   cursor: pointer;
@@ -128,10 +128,10 @@ body {
 }
 #era-name-toggle:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: #3a5070;
+  border-color: var(--leather-deep);
 }
 #era-name-toggle:hover #era-toggle-icon {
-  color: #ffd700;
+  color: var(--gilt);
 }
 
 #era-goal-counter {
@@ -143,7 +143,7 @@ body {
 #era-name {
   font-size: 16px;
   font-weight: 700;
-  color: #ffd700;
+  color: var(--gilt);
 }
 
 #era-toggle-icon {
@@ -246,7 +246,7 @@ body {
   gap: 4px;
   margin-bottom: 4px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #0f3460;
+  border-bottom: 1px solid var(--leather-deep);
 }
 
 #model-selector label {
@@ -257,9 +257,9 @@ body {
 }
 
 #model-select {
-  background: #0f3460;
+  background: var(--leather-deep);
   color: #eee;
-  border: 1px solid #1a4a8a;
+  border: 1px solid var(--leather-deep);
   border-radius: 6px;
   padding: 6px 8px;
   font-size: 12px;
@@ -268,12 +268,12 @@ body {
 }
 
 #model-select:hover {
-  border-color: #e94560;
+  border-color: var(--oxblood);
 }
 
 #model-select:focus {
-  border-color: #e94560;
-  box-shadow: 0 0 6px rgba(233, 69, 96, 0.3);
+  border-color: var(--oxblood);
+  box-shadow: 0 0 6px rgba(122, 62, 42, 0.3);
 }
 
 /* --- Palette items --- */
@@ -283,7 +283,7 @@ body {
   gap: 10px;
   touch-action: none;
   padding: 8px 10px;
-  background: #0f3460;
+  background: var(--leather-deep);
   border-radius: 8px;
   cursor: grab;
   user-select: none;
@@ -296,7 +296,7 @@ body {
 }
 
 .palette-item:hover {
-  background: #1a4a8a;
+  background: var(--leather-deep);
 }
 
 .palette-emoji {
@@ -324,8 +324,8 @@ body {
   bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
-  background: #0a0a1a;
-  border: 1px solid #0f3460;
+  background: var(--paper-dark);
+  border: 1px solid var(--leather-deep);
   border-radius: 8px;
   padding: 8px 12px;
   width: 200px;
@@ -350,7 +350,7 @@ body {
   font-style: italic;
   line-height: 1.4;
   margin-top: 4px;
-  border-top: 1px solid #1a1a3e;
+  border-top: 1px solid var(--leather-deep);
   padding-top: 4px;
 }
 
@@ -363,7 +363,7 @@ body {
 }
 
 #workspace.drag-over {
-  background: rgba(233, 69, 96, 0.05);
+  background: rgba(122, 62, 42, 0.05);
 }
 
 /* --- Combine items (workspace) --- */
@@ -426,7 +426,7 @@ body {
 }
 
 .combine-item:hover {
-  box-shadow: 0 0 16px rgba(233, 69, 96, 0.4);
+  box-shadow: 0 0 16px rgba(122, 62, 42, 0.4);
 }
 
 .combine-item.merging {
@@ -489,8 +489,8 @@ body {
 }
 
 @keyframes combine-glow {
-  0% { opacity: 0.5; text-shadow: 0 0 4px rgba(255, 215, 0, 0.3); }
-  100% { opacity: 1; text-shadow: 0 0 12px rgba(255, 215, 0, 0.8); }
+  0% { opacity: 0.5; text-shadow: 0 0 4px rgba(201, 168, 95, 0.3); }
+  100% { opacity: 1; text-shadow: 0 0 12px rgba(201, 168, 95, 0.8); }
 }
 
 /* --- Bari avatar --- */
@@ -543,20 +543,20 @@ body {
 }
 
 #restart-btn:hover {
-  border-color: #e94560;
-  color: #e94560;
+  border-color: var(--oxblood);
+  color: var(--oxblood);
 }
 
 .restart-btn-inline:hover {
-  background: #ffed4a;
+  background: var(--gilt);
 }
 
 .restart-btn-inline {
   display: block;
   margin: 8px auto 0;
-  background: #ffd700;
+  background: var(--gilt);
   border: none;
-  color: #1a1a2e;
+  color: var(--paper-dark);
   padding: 6px 14px;
   border-radius: 6px;
   font-size: 11px;
@@ -644,7 +644,7 @@ body {
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: #e94560;
+  background: var(--oxblood);
   color: white;
   padding: 10px 24px;
   border-radius: 8px;
@@ -738,8 +738,8 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: #16213e;
-  border: 2px solid #ffd700;
+  background: var(--leather-deep);
+  border: 2px solid var(--gilt);
   color: white;
   padding: 24px 32px;
   border-radius: 16px;
@@ -759,7 +759,7 @@ body {
 }
 
 #era-toast h3 {
-  color: #ffd700;
+  color: var(--gilt);
   font-size: 18px;
   margin-bottom: 8px;
 }
@@ -772,8 +772,8 @@ body {
 
 #era-toast button {
   margin-top: 16px;
-  background: #ffd700;
-  color: #1a1a2e;
+  background: var(--gilt);
+  color: var(--paper-dark);
   border: none;
   padding: 8px 24px;
   border-radius: 8px;
@@ -783,7 +783,7 @@ body {
 }
 
 #era-toast button:hover {
-  background: #ffed4a;
+  background: var(--gilt);
 }
 
 /* --- Victory overlay --- */
@@ -806,8 +806,8 @@ body {
 }
 
 #victory-panel {
-  background: #16213e;
-  border: 2px solid #ffd700;
+  background: var(--leather-deep);
+  border: 2px solid var(--gilt);
   border-radius: 20px;
   padding: 32px 40px;
   width: min(900px, 95vw);
@@ -818,7 +818,7 @@ body {
 }
 
 #victory-panel h2 {
-  color: #ffd700;
+  color: var(--gilt);
   font-size: 28px;
   margin-bottom: 4px;
 }
@@ -846,14 +846,14 @@ body {
 }
 
 .victory-era {
-  background: #0f3460;
+  background: var(--leather-deep);
   border-radius: 10px;
   padding: 14px 18px;
-  border-left: 4px solid #ffd700;
+  border-left: 4px solid var(--gilt);
 }
 
 .victory-era h4 {
-  color: #ffd700;
+  color: var(--gilt);
   font-size: 15px;
   margin-bottom: 6px;
 }
@@ -914,7 +914,7 @@ body {
   min-width: 480px;
   height: 180px;
   border-radius: 8px;
-  border: 1px solid #1a4a8a;
+  border: 1px solid var(--leather-deep);
 }
 
 .victory-actions {
@@ -924,8 +924,8 @@ body {
 }
 
 .victory-actions button {
-  background: #ffd700;
-  color: #1a1a2e;
+  background: var(--gilt);
+  color: var(--paper-dark);
   border: none;
   padding: 10px 28px;
   border-radius: 8px;
@@ -935,7 +935,7 @@ body {
 }
 
 .victory-actions button:hover {
-  background: #ffed4a;
+  background: var(--gilt);
 }
 
 #victory-share-btn {
@@ -968,14 +968,14 @@ body {
 }
 
 #victory-continue-btn {
-  background: #ffd700;
-  color: #1a1a2e;
+  background: var(--gilt);
+  color: var(--paper-dark);
   border: none;
   font-weight: 700;
 }
 
 #victory-continue-btn:hover {
-  background: #ffed4a;
+  background: var(--gilt);
 }
 
 /* --- Era toast completed-era stats --- */
@@ -984,10 +984,10 @@ body {
 }
 
 .era-toast-completed {
-  background: #0f3460;
+  background: var(--leather-deep);
   border-radius: 8px;
   padding: 10px 14px;
-  border-left: 3px solid #ffd700;
+  border-left: 3px solid var(--gilt);
   text-align: left;
   margin-bottom: 4px;
 }
@@ -995,7 +995,7 @@ body {
 .era-toast-completed-name {
   font-size: 11px;
   font-weight: 700;
-  color: #ffd700;
+  color: var(--gilt);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -1024,8 +1024,8 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #0f3460;
-  border: 1px solid #1a4a8a;
+  background: var(--leather-deep);
+  border: 1px solid var(--leather-deep);
   color: white;
   font-size: 18px;
   cursor: pointer;
@@ -1037,7 +1037,7 @@ body {
 }
 
 #scoreboard-btn:hover {
-  background: #1a4a8a;
+  background: var(--leather-deep);
 }
 
 /* --- Scoreboard overlay (matches victory style) --- */
@@ -1061,8 +1061,8 @@ body {
 
 #scoreboard-panel {
   position: relative;
-  background: #16213e;
-  border: 2px solid #ffd700;
+  background: var(--leather-deep);
+  border: 2px solid var(--gilt);
   border-radius: 20px;
   padding: 32px 40px;
   width: min(800px, 92vw);
@@ -1077,7 +1077,7 @@ body {
 }
 
 .scoreboard-header h2 {
-  color: #ffd700;
+  color: var(--gilt);
   font-size: 28px;
   margin-bottom: 4px;
 }
@@ -1091,16 +1091,16 @@ body {
   margin-top: 12px;
   padding: 6px 16px;
   background: none;
-  border: 1px solid #ffd700;
+  border: 1px solid var(--gilt);
   border-radius: 6px;
-  color: #ffd700;
+  color: var(--gilt);
   font-size: 13px;
   cursor: pointer;
   letter-spacing: 0.03em;
 }
 
 #scoreboard-tapestries-btn:hover {
-  background: rgba(255, 215, 0, 0.12);
+  background: rgba(201, 168, 95, 0.12);
 }
 
 #scoreboard-close-btn {
@@ -1121,7 +1121,7 @@ body {
 }
 
 #scoreboard-close-btn:hover {
-  background: #0f3460;
+  background: var(--leather-deep);
   color: #fff;
 }
 
@@ -1143,7 +1143,7 @@ body {
 .scoreboard-totals-section {
   display: flex;
   gap: 0;
-  border-top: 1px solid #0f3460;
+  border-top: 1px solid var(--leather-deep);
   padding-top: 16px;
   margin-top: 8px;
 }
@@ -1152,7 +1152,7 @@ body {
   flex: 1;
   padding: 8px 0;
   text-align: center;
-  border-right: 1px solid #0f3460;
+  border-right: 1px solid var(--leather-deep);
 }
 
 .scoreboard-total-stat:last-child {
@@ -1162,7 +1162,7 @@ body {
 .scoreboard-total-value {
   font-size: 18px;
   font-weight: 700;
-  color: #ffd700;
+  color: var(--gilt);
 }
 
 .scoreboard-total-label {
@@ -1202,7 +1202,7 @@ body {
 }
 
 .era-tier-table thead th {
-  color: #ffd700;
+  color: var(--gilt);
   font-weight: 600;
   text-align: center;
   padding: 4px 10px;
@@ -1216,12 +1216,12 @@ body {
   text-align: left;
   position: sticky;
   left: 0;
-  background: #16213e;
+  background: var(--leather-deep);
   z-index: 2;
 }
 
 .era-tier-table tbody tr:nth-child(odd) {
-  background: #16213e;
+  background: var(--leather-deep);
 }
 
 .era-tier-table tbody td {
@@ -1241,15 +1241,15 @@ body {
   padding-right: 14px !important;
   position: sticky;
   left: 0;
-  background: #16213e;
+  background: var(--leather-deep);
   z-index: 1;
 }
 
-/* Inside victory era cards (.victory-era bg is #0f3460), even rows are
+/* Inside victory era cards (.victory-era bg is var(--leather-deep)), even rows are
    transparent so the card background shows through — match it on sticky cells */
 .victory-era .era-tier-table thead th:first-child,
 .victory-era .era-tier-table tbody tr:nth-child(even) .era-tier-label {
-  background: #0f3460;
+  background: var(--leather-deep);
 }
 
 .era-tier-total-col {
@@ -1260,7 +1260,7 @@ body {
 
 .era-stat-favorite {
   font-size: 13px;
-  color: #ffd700;
+  color: var(--gilt);
   margin-top: 6px;
   margin-bottom: 2px;
 }
@@ -1296,8 +1296,8 @@ body {
 }
 
 #era-summary-panel {
-  background: #16213e;
-  border: 2px solid #ffd700;
+  background: var(--leather-deep);
+  border: 2px solid var(--gilt);
   border-radius: 16px;
   padding: 28px 36px;
   width: min(760px, 92vw);
@@ -1310,7 +1310,7 @@ body {
 }
 
 .era-summary-completed {
-  background: #0f3460;
+  background: var(--leather-deep);
   border-radius: 10px;
   padding: 14px 18px;
   border-left: 4px solid #5bc4e5;
@@ -1333,7 +1333,7 @@ body {
 }
 
 #era-summary-era-name {
-  color: #ffd700;
+  color: var(--gilt);
   font-size: 17px;
   margin: 0;
 }
@@ -1352,15 +1352,15 @@ body {
 }
 
 .era-summary-next {
-  background: #0f3460;
+  background: var(--leather-deep);
   border-radius: 10px;
   padding: 14px 18px;
-  border-left: 4px solid #ffd700;
+  border-left: 4px solid var(--gilt);
 }
 
 .era-summary-next-label {
   font-size: 10px;
-  color: #ffd700;
+  color: var(--gilt);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 4px;
@@ -1393,7 +1393,7 @@ body {
 
 .era-idea-prompt {
   font-size: 11px;
-  color: #ffd700;
+  color: var(--gilt);
   text-align: center;
   letter-spacing: 0.3px;
   line-height: 1.3;
@@ -1401,7 +1401,7 @@ body {
 
 .era-idea-slot {
   min-height: 64px;
-  border: 2px dashed #3a5070;
+  border: 2px dashed var(--leather-deep);
   border-radius: 12px;
   background: rgba(15, 52, 96, 0.25);
   display: flex;
@@ -1414,14 +1414,14 @@ body {
 }
 
 .era-idea-slot.slot-hover {
-  border-color: rgba(255, 215, 0, 0.7);
-  background: rgba(255, 215, 0, 0.08);
+  border-color: rgba(201, 168, 95, 0.7);
+  background: rgba(201, 168, 95, 0.08);
 }
 
 .era-idea-slot.slot-occupied {
   border-style: solid;
-  border-color: rgba(255, 215, 0, 0.6);
-  background: rgba(255, 215, 0, 0.08);
+  border-color: rgba(201, 168, 95, 0.6);
+  background: rgba(201, 168, 95, 0.08);
 }
 
 .era-idea-slot .slot-empty-hint {
@@ -1443,13 +1443,13 @@ body {
 
 .era-idea-slot .slot-tier {
   font-size: 10px;
-  color: #ffd700;
+  color: var(--gilt);
   letter-spacing: 1px;
 }
 
 #era-summary-continue-btn {
-  background: #ffd700;
-  color: #1a1a2e;
+  background: var(--gilt);
+  color: var(--paper-dark);
   border: none;
   padding: 12px 32px;
   border-radius: 10px;
@@ -1462,7 +1462,7 @@ body {
 }
 
 #era-summary-continue-btn:hover:not([disabled]) {
-  background: #ffed4a;
+  background: var(--gilt);
 }
 
 #era-summary-continue-btn[disabled] {
@@ -1508,8 +1508,8 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #0f3460;
-  border: 1px solid #1a4a8a;
+  background: var(--leather-deep);
+  border: 1px solid var(--leather-deep);
   color: white;
   font-size: 18px;
   cursor: pointer;
@@ -1520,7 +1520,7 @@ body {
 }
 
 #debug-toggle:hover {
-  background: #1a4a8a;
+  background: var(--leather-deep);
 }
 
 #debug-panel {
@@ -1530,8 +1530,8 @@ body {
   width: 520px;
   max-width: calc(100vw - 24px);
   height: 320px;
-  background: #0a0a1a;
-  border: 1px solid #1a4a8a;
+  background: var(--paper-dark);
+  border: 1px solid var(--leather-deep);
   border-radius: 10px;
   display: none;
   flex-direction: column;
@@ -1549,9 +1549,9 @@ body {
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  background: #0f3460;
+  background: var(--leather-deep);
   border-radius: 10px 10px 0 0;
-  border-bottom: 1px solid #1a4a8a;
+  border-bottom: 1px solid var(--leather-deep);
   flex-wrap: wrap;
 }
 
@@ -1569,9 +1569,9 @@ body {
 }
 
 #debug-level-filter {
-  background: #1a1a2e;
+  background: var(--paper-dark);
   color: #eee;
-  border: 1px solid #1a4a8a;
+  border: 1px solid var(--leather-deep);
   border-radius: 4px;
   padding: 2px 4px;
   font-size: 10px;
@@ -1630,7 +1630,7 @@ body {
   bottom: 56px;
   right: 10px;
   background: rgba(10, 10, 20, 0.88);
-  border: 1px solid #1a4a8a;
+  border: 1px solid var(--leather-deep);
   border-radius: 6px;
   padding: 6px 8px;
   font-family: monospace;
@@ -1728,8 +1728,8 @@ body {
   top: calc(100% + 10px);
   right: 0;
   min-width: 160px;
-  background: #16213e;
-  border: 1px solid #3a5070;
+  background: var(--leather-deep);
+  border: 1px solid var(--leather-deep);
   border-radius: 10px;
   padding: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -1745,9 +1745,9 @@ body {
   right: 16px;
   width: 12px;
   height: 12px;
-  background: #16213e;
-  border-left: 1px solid #3a5070;
-  border-top: 1px solid #3a5070;
+  background: var(--leather-deep);
+  border-left: 1px solid var(--leather-deep);
+  border-top: 1px solid var(--leather-deep);
   transform: rotate(45deg);
 }
 
@@ -1886,8 +1886,8 @@ body {
   max-width: calc(100vw - 24px);
   max-height: calc(100dvh - 80px);
   overflow-y: auto;
-  background: #16213e;
-  border: 1px solid #3a5070;
+  background: var(--leather-deep);
+  border: 1px solid var(--leather-deep);
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -1901,9 +1901,9 @@ body {
   right: 9px;
   width: 12px;
   height: 12px;
-  background: #16213e;
-  border-left: 1px solid #3a5070;
-  border-top: 1px solid #3a5070;
+  background: var(--leather-deep);
+  border-left: 1px solid var(--leather-deep);
+  border-top: 1px solid var(--leather-deep);
   transform: rotate(45deg);
 }
 
@@ -1918,7 +1918,7 @@ body {
   width: 100%;
   border-radius: 8px;
   margin-bottom: 12px;
-  border: 1px solid #3a5070;
+  border: 1px solid var(--leather-deep);
 }
 
 .htp-steps {
@@ -2200,8 +2200,8 @@ body {
 }
 
 .victory-signin-btn {
-  background: #ffd700;
-  color: #1a1a2e;
+  background: var(--gilt);
+  color: var(--paper-dark);
   border: none;
   padding: 8px 20px;
   border-radius: 6px;
@@ -2211,7 +2211,7 @@ body {
 }
 
 .victory-signin-btn:hover {
-  background: #ffe44d;
+  background: var(--gilt);
 }
 
 .victory-auth-saved {
@@ -2291,22 +2291,22 @@ body {
   height: 8px;
   border-radius: 50%;
   background: #2a3a50;
-  border: 1px solid #3a5070;
+  border: 1px solid var(--leather-deep);
   transition: background 0.3s, box-shadow 0.3s;
 }
 
 .era-dot--lit {
-  background: #ffd700;
-  border-color: #ffaa00;
-  box-shadow: 0 0 6px 2px rgba(255, 200, 0, 0.7);
+  background: var(--gilt);
+  border-color: var(--gilt);
+  box-shadow: 0 0 6px 2px rgba(201, 168, 95, 0.7);
 }
 
 .era-dash {
   width: 20px;
   height: 3px;
   border-radius: 2px;
-  background: #ffd700;
-  box-shadow: 0 0 8px 3px rgba(255, 200, 0, 0.65);
+  background: var(--gilt);
+  box-shadow: 0 0 8px 3px rgba(201, 168, 95, 0.65);
 }
 
 /* --- Heatmap modal --- */
@@ -2330,7 +2330,7 @@ body {
   max-height: 90vh;
   max-height: 90dvh;
   background: #0d1b2e;
-  border: 2px solid #3a5070;
+  border: 2px solid var(--leather-deep);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 0 60px rgba(0, 100, 200, 0.3);
@@ -2341,7 +2341,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  border-bottom: 1px solid #1e3a5f;
+  border-bottom: 1px solid var(--leather-deep);
   flex-shrink: 0;
 }
 
@@ -2354,7 +2354,7 @@ body {
 
 #heatmap-close {
   background: rgba(0, 0, 0, 0.5);
-  border: 1px solid #3a5070;
+  border: 1px solid var(--leather-deep);
   color: #eee;
   font-size: 18px;
   width: 28px;
@@ -2375,7 +2375,7 @@ body {
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  border-bottom: 1px solid #1e3a5f;
+  border-bottom: 1px solid var(--leather-deep);
   flex-shrink: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -2384,8 +2384,8 @@ body {
 
 #heatmap-filter-all {
   flex-shrink: 0;
-  background: #1e3a5f;
-  border: 1px solid #3a5070;
+  background: var(--leather-deep);
+  border: 1px solid var(--leather-deep);
   color: #8cf;
   font-size: 11px;
   padding: 2px 8px;
@@ -2455,7 +2455,7 @@ body {
   max-height: 90vh;
   max-height: 90dvh;
   background: #0d1b2e;
-  border: 2px solid #3a5070;
+  border: 2px solid var(--leather-deep);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 0 60px rgba(0, 100, 200, 0.3);
@@ -2469,7 +2469,7 @@ body {
   right: 12px;
   visibility: hidden;
   background: rgba(0, 0, 0, 0.6);
-  border: 1px solid #3a5070;
+  border: 1px solid var(--leather-deep);
   color: #eee;
   font-size: 20px;
   width: 32px;
@@ -2539,8 +2539,8 @@ body {
 }
 
 #tapestry-share-btn {
-  background: #ffd700;
-  color: #1a1a2e;
+  background: var(--gilt);
+  color: var(--paper-dark);
   border: none;
   width: 36px;
   height: 36px;
@@ -2553,7 +2553,7 @@ body {
 }
 
 #tapestry-share-btn:hover {
-  background: #ffed4a;
+  background: var(--gilt);
 }
 
 
@@ -2567,12 +2567,12 @@ body {
 /* --- Chart Era Button --- */
 @keyframes chart-btn-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.35);
-    border-color: rgba(255, 215, 0, 0.3);
+    box-shadow: 0 0 0 0 rgba(201, 168, 95, 0.35);
+    border-color: rgba(201, 168, 95, 0.3);
   }
   50% {
-    box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.2);
-    border-color: rgba(255, 215, 0, 0.65);
+    box-shadow: 0 0 10px 3px rgba(201, 168, 95, 0.2);
+    border-color: rgba(201, 168, 95, 0.65);
   }
 }
 
@@ -2581,10 +2581,10 @@ body {
   width: 100%;
   margin-top: 8px;
   padding: 8px 12px;
-  background: rgba(255, 215, 0, 0.06);
-  border: 1px solid rgba(255, 215, 0, 0.3);
+  background: rgba(201, 168, 95, 0.06);
+  border: 1px solid rgba(201, 168, 95, 0.3);
   border-radius: 8px;
-  color: #ffd700;
+  color: var(--gilt);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -2601,8 +2601,8 @@ body {
 
 #chart-era-btn:hover:not([disabled]) {
   animation: none;
-  background: rgba(255, 215, 0, 0.14);
-  border-color: rgba(255, 215, 0, 0.8);
+  background: rgba(201, 168, 95, 0.14);
+  border-color: rgba(201, 168, 95, 0.8);
 }
 
 #chart-era-btn[disabled] {
@@ -2664,8 +2664,8 @@ body {
    the scrollable child. */
 #selection-panel {
   width: 260px;
-  background: #16213e;
-  border-left: 2px solid #0f3460;
+  background: var(--leather-deep);
+  border-left: 2px solid var(--leather-deep);
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -2676,7 +2676,7 @@ body {
 .s5-title {
   margin: 0;
   font-size: 16px;
-  color: #e94560;
+  color: var(--oxblood);
   letter-spacing: 0.02em;
   flex-shrink: 0;
 }
@@ -2693,7 +2693,7 @@ body {
 .s5-goal {
   margin: 0;
   font-size: 13px;
-  color: #ffd700;
+  color: var(--gilt);
   font-weight: 600;
   line-height: 1.4;
 }
@@ -2728,7 +2728,7 @@ body {
 .selection-slot {
   position: relative;
   min-height: 48px;
-  border: 2px dashed #3a5070;
+  border: 2px dashed var(--leather-deep);
   border-radius: 10px;
   background: rgba(15, 52, 96, 0.2);
   display: flex;
@@ -2750,13 +2750,13 @@ body {
 
 .selection-slot.slot-occupied {
   border-style: solid;
-  border-color: rgba(255, 215, 0, 0.55);
-  background: rgba(255, 215, 0, 0.06);
+  border-color: rgba(201, 168, 95, 0.55);
+  background: rgba(201, 168, 95, 0.06);
 }
 
 .selection-slot.slot-hover {
-  border-color: #ffd700;
-  background: rgba(255, 215, 0, 0.16);
+  border-color: var(--gilt);
+  background: rgba(201, 168, 95, 0.16);
 }
 
 .slot-emoji {
@@ -2778,7 +2778,7 @@ body {
 
 .slot-tier {
   font-size: 10px;
-  color: #ffd700;
+  color: var(--gilt);
   flex-shrink: 0;
 }
 
@@ -2804,8 +2804,8 @@ body {
 }
 
 .slot-remove-btn:hover {
-  background: rgba(233, 69, 96, 0.55);
-  border-color: rgba(233, 69, 96, 0.85);
+  background: rgba(122, 62, 42, 0.55);
+  border-color: rgba(122, 62, 42, 0.85);
   color: #fff;
 }
 
@@ -2818,7 +2818,7 @@ body {
 
 /* Duplicate-drop rejection flash */
 .selection-slot.slot-reject {
-  border-color: #ff4d5e !important;
+  border-color: var(--oxblood) !important;
   background: rgba(255, 77, 94, 0.25) !important;
   animation: s5-slot-shake 0.35s ease-in-out;
 }
@@ -2832,10 +2832,10 @@ body {
 #selection-finalize-btn {
   flex-shrink: 0;
   padding: 10px;
-  background: rgba(255, 215, 0, 0.08);
-  border: 1px solid rgba(255, 215, 0, 0.35);
+  background: rgba(201, 168, 95, 0.08);
+  border: 1px solid rgba(201, 168, 95, 0.35);
   border-radius: 8px;
-  color: #ffd700;
+  color: var(--gilt);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -2851,8 +2851,8 @@ body {
 
 #selection-finalize-btn:not([disabled]):hover {
   animation: none;
-  background: rgba(255, 215, 0, 0.18);
-  border-color: rgba(255, 215, 0, 0.85);
+  background: rgba(201, 168, 95, 0.18);
+  border-color: rgba(201, 168, 95, 0.85);
 }
 
 #selection-finalize-btn[disabled] {
@@ -2876,12 +2876,12 @@ body {
 
 .s5-modal-panel {
   background: #0d1b2e;
-  border: 2px solid rgba(255, 215, 0, 0.45);
+  border: 2px solid rgba(201, 168, 95, 0.45);
   border-radius: 14px;
   padding: 32px;
   max-width: 440px;
   width: 90%;
-  box-shadow: 0 0 60px rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 60px rgba(201, 168, 95, 0.2);
   text-align: center;
 }
 
@@ -2906,19 +2906,19 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
-  border: 1px solid #3a5070;
+  border: 1px solid var(--leather-deep);
   background: #1a2e50;
   color: #eee;
 }
 
 .s5-btn-keep {
-  background: rgba(255, 215, 0, 0.12) !important;
-  border-color: rgba(255, 215, 0, 0.5) !important;
-  color: #ffd700 !important;
+  background: rgba(201, 168, 95, 0.12) !important;
+  border-color: rgba(201, 168, 95, 0.5) !important;
+  color: var(--gilt) !important;
 }
 
 .s5-btn-keep:hover {
-  background: rgba(255, 215, 0, 0.22) !important;
+  background: rgba(201, 168, 95, 0.22) !important;
 }
 
 .s5-btn-gift {
@@ -2953,12 +2953,12 @@ body {
 
 .s5-share-panel {
   background: #0d1b2e;
-  border: 2px solid rgba(255, 215, 0, 0.45);
+  border: 2px solid rgba(201, 168, 95, 0.45);
   border-radius: 14px;
   padding: 32px;
   max-width: 900px;
   width: 100%;
-  box-shadow: 0 0 60px rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 60px rgba(201, 168, 95, 0.2);
   text-align: center;
   max-height: 90vh;
   max-height: 90dvh;
@@ -2972,13 +2972,13 @@ body {
   padding: 32px 28px;
   border-radius: 12px;
   margin: 0 auto 20px;
-  border: 1px solid rgba(255, 215, 0, 0.25);
+  border: 1px solid rgba(201, 168, 95, 0.25);
 }
 
 .s5-card-header {
   margin: 0 0 24px;
   font-size: 28px;
-  color: #ffd700;
+  color: var(--gilt);
   letter-spacing: 0.03em;
   text-align: center;
 }
@@ -2991,8 +2991,8 @@ body {
 }
 
 .s5-card-tile {
-  background: #16213e;
-  border: 1px solid rgba(255, 215, 0, 0.35);
+  background: var(--leather-deep);
+  border: 1px solid rgba(201, 168, 95, 0.35);
   border-radius: 10px;
   padding: 12px 16px;
   display: flex;
@@ -3026,7 +3026,7 @@ body {
 
 .s5-card-tier {
   font-size: 13px;
-  color: #ffd700;
+  color: var(--gilt);
   flex-shrink: 0;
 }
 
@@ -3052,20 +3052,20 @@ body {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid #3a5070;
+  border: 1px solid var(--leather-deep);
   background: #1a2e50;
   color: #eee;
   transition: background 0.15s;
 }
 
 .s5-share-download {
-  background: rgba(255, 215, 0, 0.12) !important;
-  border-color: rgba(255, 215, 0, 0.5) !important;
-  color: #ffd700 !important;
+  background: rgba(201, 168, 95, 0.12) !important;
+  border-color: rgba(201, 168, 95, 0.5) !important;
+  color: var(--gilt) !important;
 }
 
 .s5-share-download:hover {
-  background: rgba(255, 215, 0, 0.22) !important;
+  background: rgba(201, 168, 95, 0.22) !important;
 }
 
 .s5-share-continue:hover {
@@ -3079,7 +3079,7 @@ body {
   #inventory-header {
     position: sticky;
     top: 0;
-    background: #16213e;
+    background: var(--leather-deep);
     z-index: 3;
     padding-top: 4px;
     padding-bottom: 4px;
@@ -3095,7 +3095,7 @@ body {
   #palette > #selection-panel {
     width: 100%;
     border-left: none;
-    border-bottom: 1px solid #0f3460;
+    border-bottom: 1px solid var(--leather-deep);
     padding: 8px 0 12px;
     margin: 0 0 10px;
     gap: 6px;
