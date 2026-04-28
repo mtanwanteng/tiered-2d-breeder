@@ -838,8 +838,11 @@
   opacity: 0.55;
 }
 [data-theme="bibliophile"] .palette-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--gilt);
+  /* No translateY here — moving the element away from the cursor causes a
+     hover-flicker loop (hover ends as soon as the tile lifts off the pointer).
+     Box-shadow + gilt outline gives the visual lift without changing the
+     element's bounding box. */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--gilt);
   background:
     url(/themes/bibliophile/patterns/marble.svg) repeat,
     var(--vellum);
@@ -972,10 +975,36 @@
 
 [data-theme="bibliophile"] #bari {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  transform-origin: 50% 100%;
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-[data-theme="bibliophile"] #bari-char,
-[data-theme="bibliophile"] #bari-tool {
-  font-size: 26px;
+/* Pose transforms apply to the #bari parent ONLY — children (#bari-char,
+ * #bari-tool) keep their existing keyframe animations (bari-idle bobbing,
+ * tool-swing hammer rotation). The parent transform layers on top. */
+
+/* Wonder / leaning in — fires at AI-thinking +10s. Spec §5: body leans toward
+ * workspace, eyes widen. Sized larger than the spec's 4px so it actually reads. */
+[data-theme="bibliophile"] #bari.bari--leaning {
+  transform: translateX(10px) translateY(-2px) rotate(-6deg);
+}
+
+/* Patient / waiting — fires at AI-thinking +20s. Slight tilt, slight desaturate. */
+[data-theme="bibliophile"] #bari.bari--patient {
+  transform: translateX(2px) rotate(3deg);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)) saturate(0.85);
+}
+
+/* Very patient — fires at AI-thinking +30s. Bari has settled into a wait. */
+[data-theme="bibliophile"] #bari.bari--very-patient {
+  transform: translateX(0) translateY(2px) rotate(5deg);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)) saturate(0.7) brightness(0.95);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="bibliophile"] #bari {
+    transition: none;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────

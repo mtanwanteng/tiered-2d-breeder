@@ -28,6 +28,8 @@ import {
   playWaxStamp,
 } from "./motion";
 import { audio, type CelloSustainHandle } from "./audio";
+import { crossfade } from "./motion";
+import { startAiThinking, aiThinkingCopy } from "./ai-thinking-state";
 
 // --- Types ---
 interface CombineItem {
@@ -409,7 +411,7 @@ app.innerHTML = `
       <div id="palette-items"></div>
       <button id="tray-next" class="tray-paginate" aria-label="Next page" type="button">&#8250;</button>
     </div>
-    <div id="bari"><span id="bari-char">\uD83D\uDC66</span><span id="bari-tool">\uD83D\uDD28</span></div>
+    <div id="bari"><span id="bari-char">👦</span><span id="bari-tool">🔨</span></div>
     <button id="restart-btn">Restart Game</button>
   </div>
   <div id="demo-reset-overlay">
@@ -2261,8 +2263,27 @@ async function combine(a: CombineItem, b: CombineItem) {
     const childTier = Math.min(Math.max(a.tier, b.tier) + 1, 5) as Tier;
 
     log.info("player", `Combining: ${a.name} + ${b.name} → tier ${childTier}`);
-    showToast(`${a.name} + ${b.name} = ...thinking...`);
     bari.classList.add("active");
+
+    // AI-thinking phase machine — toast crossfades between phase copies (theme
+    // manifest), Bari pose shifts at the same thresholds. Spec §3.2.
+    // Thresholds: 0s / 8s / 16s / 24s.
+    const thinking = startAiThinking({
+      onPhase: (phase) => {
+        if (phase === "resolved") return; // result toast will overwrite
+        const text = aiThinkingCopy(phase);
+        if (phase === "start") {
+          toast.textContent = text;
+          toast.classList.add("visible");
+        } else {
+          void crossfade(toast, text);
+        }
+        bari.classList.toggle("bari--leaning", phase === "longer");
+        bari.classList.toggle("bari--patient", phase === "long");
+        bari.classList.toggle("bari--very-patient", phase === "veryLong");
+      },
+    });
+
     try {
       const template = await promptProvider.getPrompt(childTier, eraManager.current.name);
       const prompt = template.replace("{{a}}", a.name).replace("{{b}}", b.name);
@@ -2271,9 +2292,11 @@ async function combine(a: CombineItem, b: CombineItem) {
       elementData = { ...result, tier: childTier };
       await recipeStore.set(key, elementData);
       log.info("api", `Result: ${result.emoji} ${result.name} (${result.color})`);
+      thinking.resolve();
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       log.error("api", `[CMB] Combine failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${msg}` : ""}`);
+      thinking.fail();
       if (msg.includes("gcloud auth") || msg.includes("invalid_grant") || msg.includes("RAPT")) {
         showEraToast("\u26A0\uFE0F Auth Expired", "GCP credentials have expired. Run this in your terminal:\n\ngcloud auth application-default login\n\nThen try combining again.");
       }
@@ -2286,7 +2309,7 @@ async function combine(a: CombineItem, b: CombineItem) {
         narrative: "The elements resisted combination. Perhaps the cosmos wasn't ready.",
       };
     }
-    bari.classList.remove("active");
+    bari.classList.remove("active", "bari--leaning", "bari--patient", "bari--very-patient");
   }
 
   // Remove placeholder and spawn child

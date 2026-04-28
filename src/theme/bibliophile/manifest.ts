@@ -85,6 +85,7 @@ export const bibliophile: Theme = {
       start: "Reading the margins…",
       longer: "Pinning this down takes a history.",
       long: "The ink is slow today.",
+      veryLong: "The quill pauses to reread.",
       failed: "The ink resisted. Try again.",
     },
     workspaceCaption: "— the writing desk —",

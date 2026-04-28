@@ -96,6 +96,7 @@ export interface ThemeCopy {
     start: string;
     longer: string;
     long: string;
+    veryLong: string;
     failed: string;
   };
   /** Italic caption inside the workspace frame */

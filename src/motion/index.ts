@@ -10,3 +10,4 @@ export { playPageTurn } from "./page-turn";
 export { startPlateBreathing, type PlateBreathingHandle } from "./plate-breathing";
 export { playInkPointDispersal, type InkPointDispersalOptions } from "./ink-point-dispersal";
 export { playWaxStamp, type WaxStampOptions } from "./wax-stamp";
+export { crossfade, type CrossfadeOptions } from "./crossfade";
