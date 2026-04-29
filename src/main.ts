@@ -3638,8 +3638,14 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
       onContinue();
     };
     // Peel the era-summary spread away into the next chapter (spec §6 page-turn).
+    // Dispatch on the active theme's variant: peel-2d (Bibliophile),
+    // pan-horizontal (Curator), or fold-3d (Cartographer, +100ms).
     if (panel) {
-      void playPageTurn(panel).then(finish);
+      const themeMotion = getTheme().motion;
+      void playPageTurn(panel, {
+        type: themeMotion.pageTransitionType,
+        durationMs: themeMotion.pageTransitionDurationMs,
+      }).then(finish);
     } else {
       finish();
     }
@@ -3718,7 +3724,12 @@ async function revealEraSummaryContents(
           if (spinnerEl) spinnerEl.style.display = "none";
           frontEl.hidden = false;
           const brush = audio.startBrushCanvas();
-          await playBrushWipe(frontEl, { durationMs: 1400 });
+          // Dispatch on the active theme's reveal variant. Bibliophile uses
+          // brush-wipe; Curator uses spotlight-wipe; Cartographer uses ink-wash.
+          await playBrushWipe(frontEl, {
+            durationMs: 1400,
+            type: getTheme().motion.frontispieceRevealType,
+          });
           brush.stop();
           imageReady = true;
         }
