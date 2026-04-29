@@ -207,7 +207,7 @@ Child items pulse (scale 1 to 1.2 to 1) over 400ms on spawn.
 | `EraGoal` | A goal with description and fallback tier-5 count |
 
 ### Infrastructure (Terraform + GCP)
-- **Project**: `sc-ai-innovation-lab-2-dev`
+- **Project**: `sc-ai-i-l-2-dev`
 - **Region**: `us-central1`
 - Terraform manages: Vertex AI API enablement, service account, IAM role binding
 - Local auth: `gcloud auth application-default login`

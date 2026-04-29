@@ -39,7 +39,15 @@
       "WebFetch(domain:docs.discord.com)",
       "WebFetch(domain:robojs.dev)",
       "WebFetch(domain:docs.cloud.google.com)",
-      "WebFetch(domain:ai.google.dev)"
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(git stash *)",
+      "Bash(grep -E \"^\\\\[|^d|\\\\.tsx$|\\\\.ts$\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/select-five)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/)",
+      "Bash(git merge *)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(node *)"
     ]
   },
   "hooks": {
