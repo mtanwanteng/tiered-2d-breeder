@@ -1,0 +1,808 @@
+[
+  {
+    "name": "Finland",
+    "order": 0,
+    "required": true,
+    "seeds": [],
+    "seedPool": [
+      {
+        "name": "Snow",
+        "color": "#f0f0f5",
+        "tier": 1,
+        "emoji": "❄️",
+        "description": "The country's winter ground.",
+        "narrative": "It buries roads, silences forests, and lasts six months of the year."
+      },
+      {
+        "name": "Ice",
+        "color": "#a3c2d6",
+        "tier": 1,
+        "emoji": "🧊",
+        "description": "Frozen lake, thick enough to walk on.",
+        "narrative": "Every winter the lakes harden into a second floor of the country."
+      },
+      {
+        "name": "Birch",
+        "color": "#e0e0d6",
+        "tier": 1,
+        "emoji": "🌳",
+        "description": "Pale-barked tree of the northern forest.",
+        "narrative": "The first leaf in spring, the last log in the sauna stove."
+      },
+      {
+        "name": "Pine",
+        "color": "#1d3a1d",
+        "tier": 1,
+        "emoji": "🌲",
+        "description": "Tall evergreen of the boreal woods.",
+        "narrative": "The tree that owns the country's silhouette."
+      },
+      {
+        "name": "Lake",
+        "color": "#1e6091",
+        "tier": 1,
+        "emoji": "🏞️",
+        "description": "One of nearly two hundred thousand.",
+        "narrative": "If the country were folded along its shores, every Finn would have a beach."
+      },
+      {
+        "name": "Berry",
+        "color": "#8b0000",
+        "tier": 1,
+        "emoji": "🍓",
+        "description": "Wild fruit of the forest floor.",
+        "narrative": "Lingonberry, bilberry, cloudberry — picked by anyone, eaten by everyone."
+      },
+      {
+        "name": "Fish",
+        "color": "#7ac5e0",
+        "tier": 1,
+        "emoji": "🐟",
+        "description": "Pike or perch from a cold lake.",
+        "narrative": "Caught through ice in winter, from a wooden boat in summer."
+      },
+      {
+        "name": "Reindeer",
+        "color": "#7a5a3a",
+        "tier": 1,
+        "emoji": "🦌",
+        "description": "Antlered companion of the north.",
+        "narrative": "Half-wild, half-herded. The Sámi follow them, and the seasons follow both."
+      },
+      {
+        "name": "Moss",
+        "color": "#5a8a5a",
+        "tier": 1,
+        "emoji": "🌿",
+        "description": "Soft green carpet of the boreal floor.",
+        "narrative": "Older than the trees that grow over it."
+      },
+      {
+        "name": "Stone",
+        "color": "#6c757d",
+        "tier": 1,
+        "emoji": "🪨",
+        "description": "Granite of the Finnish shield.",
+        "narrative": "Two billion years old, scraped flat by the last ice age."
+      },
+      {
+        "name": "Bog",
+        "color": "#7a7a3a",
+        "tier": 1,
+        "emoji": "🟫",
+        "description": "Spongy peatland that swallows footprints.",
+        "narrative": "A third of the country was once bog. Cloudberries grow only here."
+      },
+      {
+        "name": "Steam",
+        "color": "#d6e8f0",
+        "tier": 1,
+        "emoji": "💨",
+        "description": "Hot vapor from water on stones.",
+        "narrative": "The original Finnish weather report."
+      },
+      {
+        "name": "Wool",
+        "color": "#f4ead5",
+        "tier": 1,
+        "emoji": "🧶",
+        "description": "Sheep's coat, spun and ready.",
+        "narrative": "What stands between the body and minus-twenty."
+      },
+      {
+        "name": "Wood",
+        "color": "#8b6914",
+        "tier": 1,
+        "emoji": "🪵",
+        "description": "Cut log, dried for the winter stove.",
+        "narrative": "The heat of the country, stacked under every eave."
+      },
+      {
+        "name": "Sun",
+        "color": "#ffd700",
+        "tier": 1,
+        "emoji": "☀️",
+        "description": "Summer light that does not set.",
+        "narrative": "For weeks in June, no shadow has time to settle."
+      }
+    ],
+    "seedCount": 6,
+    "goals": [
+      {
+        "requiredCount": 1,
+        "minTier": 3,
+        "conditions": [{ "description": "Make a ⭐⭐⭐ Discovery", "met": false }]
+      },
+      {
+        "requiredCount": 3,
+        "conditions": [
+          {
+            "description": "Experience a sauna ritual or its winter-plunge counterpart",
+            "met": false
+          },
+          {
+            "description": "Forage a wild food from forest, bog, or shore",
+            "met": false
+          },
+          {
+            "description": "Witness the polar light, the long dusk, or the white night",
+            "met": false
+          },
+          {
+            "description": "Encounter a piece of Finnish design, craft, or storytelling",
+            "met": false
+          },
+          {
+            "description": "Learn a Finnish word for something English doesn't have",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 3
+      }
+    ]
+  },
+  {
+    "name": "Japan",
+    "order": 1,
+    "seeds": [],
+    "seedPool": [
+      {
+        "name": "Rice",
+        "color": "#daa520",
+        "tier": 1,
+        "emoji": "🌾",
+        "description": "The grain that shapes every island meal.",
+        "narrative": "Wet-paddy cultivation arrived two thousand years ago and never left."
+      },
+      {
+        "name": "Fish",
+        "color": "#7ac5e0",
+        "tier": 1,
+        "emoji": "🐟",
+        "description": "Caught from the morning sea.",
+        "narrative": "Before rice, the sea was the larder. After rice, it still was."
+      },
+      {
+        "name": "Bamboo",
+        "color": "#3d8e3d",
+        "tier": 1,
+        "emoji": "🎋",
+        "description": "Hollow green stalk that bends without breaking.",
+        "narrative": "Floor, fence, flute, scaffold, brush. The country's most adaptable material."
+      },
+      {
+        "name": "Tea",
+        "color": "#5a8a5a",
+        "tier": 1,
+        "emoji": "🍵",
+        "description": "Leaf, dried and ready for water.",
+        "narrative": "Brought from the mainland, refined into a ceremony with corners."
+      },
+      {
+        "name": "Salt",
+        "color": "#f0f0f5",
+        "tier": 1,
+        "emoji": "🧂",
+        "description": "Drawn from seawater and sun.",
+        "narrative": "Used to purify, season, and sometimes scatter at a doorway."
+      },
+      {
+        "name": "Stone",
+        "color": "#6c757d",
+        "tier": 1,
+        "emoji": "🪨",
+        "description": "Volcanic rock from the islands' bones.",
+        "narrative": "The country was built by tectonics. Its gardens still admit it."
+      },
+      {
+        "name": "Wood",
+        "color": "#8b6914",
+        "tier": 1,
+        "emoji": "🪵",
+        "description": "Cedar, pine, or hinoki — fragrant and slow to rot.",
+        "narrative": "Temples and houses share the same skeleton."
+      },
+      {
+        "name": "Silk",
+        "color": "#f4ead5",
+        "tier": 1,
+        "emoji": "🧵",
+        "description": "Thread spun by the cocooned moth.",
+        "narrative": "A whole town in the mountains used to listen for the worms eating mulberry leaves."
+      },
+      {
+        "name": "Mountain",
+        "color": "#9aa3ad",
+        "tier": 1,
+        "emoji": "⛰️",
+        "description": "Steep, layered, often smoking.",
+        "narrative": "Three quarters of the country slopes. The flat parts are where the rice goes."
+      },
+      {
+        "name": "Sea",
+        "color": "#1e6091",
+        "tier": 1,
+        "emoji": "🌊",
+        "description": "Salt water surrounding the islands on all sides.",
+        "narrative": "The country is never more than a few hours from a coast."
+      },
+      {
+        "name": "Iron",
+        "color": "#434343",
+        "tier": 1,
+        "emoji": "⚒️",
+        "description": "Ore from the mountain, ready for the forge.",
+        "narrative": "The blade-smiths of Bizen and Soshu folded it into legend."
+      },
+      {
+        "name": "Clay",
+        "color": "#c67a4b",
+        "tier": 1,
+        "emoji": "🏺",
+        "description": "Earth waiting to be wheeled and fired.",
+        "narrative": "The country invented its own pottery before it had a name."
+      },
+      {
+        "name": "Paper",
+        "color": "#f4ead5",
+        "tier": 1,
+        "emoji": "📄",
+        "description": "Mulberry-fiber sheets, hand-pressed and translucent.",
+        "narrative": "Strong enough to be a window, soft enough to be a sliding wall."
+      },
+      {
+        "name": "Mist",
+        "color": "#d6e8f0",
+        "tier": 1,
+        "emoji": "🌫️",
+        "description": "Morning fog rolling between mountain shoulders.",
+        "narrative": "Painters left blank paper for it. Photographers wait for it."
+      },
+      {
+        "name": "Blossom",
+        "color": "#ffc0cb",
+        "tier": 1,
+        "emoji": "🌸",
+        "description": "Five pink petals on a bare branch.",
+        "narrative": "A reminder that the most beautiful thing only lasts five days."
+      }
+    ],
+    "seedCount": 6,
+    "goals": [
+      {
+        "requiredCount": 1,
+        "minTier": 3,
+        "conditions": [{ "description": "Make a ⭐⭐⭐ Discovery", "met": false }]
+      },
+      {
+        "requiredCount": 3,
+        "conditions": [
+          {
+            "description": "Visit a temple, shrine, or sacred threshold",
+            "met": false
+          },
+          {
+            "description": "Sit through a meal that is itself a craft",
+            "met": false
+          },
+          {
+            "description": "Witness a contrast between centuries-old and right-now",
+            "met": false
+          },
+          {
+            "description": "Travel by rail at a speed that flatters the country",
+            "met": false
+          },
+          {
+            "description": "Notice a small kindness encoded into ordinary infrastructure",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 3
+      }
+    ]
+  },
+  {
+    "name": "France",
+    "order": 2,
+    "seeds": [],
+    "seedPool": [
+      {
+        "name": "Wheat",
+        "color": "#daa520",
+        "tier": 1,
+        "emoji": "🌾",
+        "description": "Golden grain of the Beauce plain.",
+        "narrative": "France was the wheat basket of Rome. The fields haven't moved much since."
+      },
+      {
+        "name": "Grape",
+        "color": "#5a3a4a",
+        "tier": 1,
+        "emoji": "🍇",
+        "description": "Cluster from a hillside vine.",
+        "narrative": "Burgundy, Bordeaux, Loire, Rhône — the country mapped by what its slopes will grow."
+      },
+      {
+        "name": "Milk",
+        "color": "#f4ead5",
+        "tier": 1,
+        "emoji": "🥛",
+        "description": "From cow, goat, or sheep.",
+        "narrative": "Two hundred and forty-six varieties of cheese begin here."
+      },
+      {
+        "name": "Salt",
+        "color": "#f0f0f5",
+        "tier": 1,
+        "emoji": "🧂",
+        "description": "Hand-raked from Atlantic flats.",
+        "narrative": "Guérande and Île de Ré: the two coasts that season everyone else's table."
+      },
+      {
+        "name": "Honey",
+        "color": "#daa520",
+        "tier": 1,
+        "emoji": "🍯",
+        "description": "From bees that worked the lavender or the chestnut.",
+        "narrative": "The flavor changes with the field. The bees know the route."
+      },
+      {
+        "name": "Egg",
+        "color": "#f4ead5",
+        "tier": 1,
+        "emoji": "🥚",
+        "description": "From the henhouse behind the farm.",
+        "narrative": "The mother sauce begins here. So does the soufflé, the omelette, the crème."
+      },
+      {
+        "name": "Stone",
+        "color": "#9aa3ad",
+        "tier": 1,
+        "emoji": "🪨",
+        "description": "Limestone from the Loire or basalt from the Massif.",
+        "narrative": "The country is built from its own quarries. The cathedrals were the first long-term project."
+      },
+      {
+        "name": "Iron",
+        "color": "#434343",
+        "tier": 1,
+        "emoji": "⚒️",
+        "description": "Ore for forges, cathedrals, and one famous tower.",
+        "narrative": "Lorraine produced the steel; Eiffel turned it lacework."
+      },
+      {
+        "name": "Wood",
+        "color": "#8b6914",
+        "tier": 1,
+        "emoji": "🪵",
+        "description": "Oak from a forest planted for ships and aged into barrels.",
+        "narrative": "Colbert ordered oaks planted in 1670 so the navy would have masts in 1870. The forests still stand."
+      },
+      {
+        "name": "River",
+        "color": "#1e6091",
+        "tier": 1,
+        "emoji": "🌊",
+        "description": "Seine, Loire, Rhône, Garonne.",
+        "narrative": "Each one carved a region with its own dialect, food, and patron saint."
+      },
+      {
+        "name": "Lavender",
+        "color": "#a78bd6",
+        "tier": 1,
+        "emoji": "💜",
+        "description": "Purple flower row in summer Provence.",
+        "narrative": "Planted along the Plateau de Valensole. The bees show up by July."
+      },
+      {
+        "name": "Olive",
+        "color": "#5a8a5a",
+        "tier": 1,
+        "emoji": "🫒",
+        "description": "Pressed for oil or cured in brine.",
+        "narrative": "South of a line drawn through Lyon, the Mediterranean takes over the kitchen."
+      },
+      {
+        "name": "Garlic",
+        "color": "#f4ead5",
+        "tier": 1,
+        "emoji": "🧄",
+        "description": "Bulb that flavors everything south of the Loire.",
+        "narrative": "Pink in Lautrec, white in Provence. Always on the cutting board."
+      },
+      {
+        "name": "Butter",
+        "color": "#daa520",
+        "tier": 1,
+        "emoji": "🧈",
+        "description": "Salted from Brittany, sweet from Normandy.",
+        "narrative": "The map of France's cuisine is the map of where butter is used and where olive oil takes over."
+      },
+      {
+        "name": "Cliff",
+        "color": "#e0e0d6",
+        "tier": 1,
+        "emoji": "🏔️",
+        "description": "White chalk dropping into the Channel.",
+        "narrative": "Étretat, Calais, the Normandy coast. Painters camped here for the light."
+      }
+    ],
+    "seedCount": 6,
+    "goals": [
+      {
+        "requiredCount": 1,
+        "minTier": 3,
+        "conditions": [{ "description": "Make a ⭐⭐⭐ Discovery", "met": false }]
+      },
+      {
+        "requiredCount": 3,
+        "conditions": [
+          {
+            "description": "Sit at a café long enough to be ignored by the waiter",
+            "met": false
+          },
+          {
+            "description": "Taste a regional pairing of bread, cheese, or wine",
+            "met": false
+          },
+          {
+            "description": "Stand before a work of art that has outlasted its maker by centuries",
+            "met": false
+          },
+          {
+            "description": "Walk a street that was paved before electricity",
+            "met": false
+          },
+          {
+            "description": "Cross from city into countryside and feel the language soften",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 3
+      }
+    ]
+  },
+  {
+    "name": "United States",
+    "order": 3,
+    "seeds": [],
+    "seedPool": [
+      {
+        "name": "Corn",
+        "color": "#daa520",
+        "tier": 1,
+        "emoji": "🌽",
+        "description": "Tall summer crop of the Midwest.",
+        "narrative": "Three sisters, then the staple, then the feed, then the fuel."
+      },
+      {
+        "name": "Wheat",
+        "color": "#c9a85f",
+        "tier": 1,
+        "emoji": "🌾",
+        "description": "Golden grain of the Plains.",
+        "narrative": "Kansas to the Dakotas — the breadbasket runs north all the way to Canada."
+      },
+      {
+        "name": "Cattle",
+        "color": "#7a5a3a",
+        "tier": 1,
+        "emoji": "🐄",
+        "description": "Range-fed herd of the open West.",
+        "narrative": "Driven up the Chisholm Trail to the railhead. The cowboy was a temp job that became a costume."
+      },
+      {
+        "name": "Cotton",
+        "color": "#f4ead5",
+        "tier": 1,
+        "emoji": "🤍",
+        "description": "White boll plucked by the bushel.",
+        "narrative": "The first global American crop. The history is heavy and the fiber is light."
+      },
+      {
+        "name": "Iron",
+        "color": "#434343",
+        "tier": 1,
+        "emoji": "⚒️",
+        "description": "Ore from the Mesabi Range.",
+        "narrative": "It became the rails, the bridges, the skyscrapers, the cars."
+      },
+      {
+        "name": "Oil",
+        "color": "#1a1a1a",
+        "tier": 1,
+        "emoji": "🛢️",
+        "description": "Crude from a Texas pumpjack.",
+        "narrative": "Spindletop, 1901, ten days of black geyser. The century took the hint."
+      },
+      {
+        "name": "Coal",
+        "color": "#3a3a3a",
+        "tier": 1,
+        "emoji": "⛏️",
+        "description": "Black rock dug from Appalachian veins.",
+        "narrative": "Steel was the verb. Coal was the verb's verb."
+      },
+      {
+        "name": "Wood",
+        "color": "#8b6914",
+        "tier": 1,
+        "emoji": "🪵",
+        "description": "Lumber from Pacific Northwest stands.",
+        "narrative": "Douglas fir, Sitka spruce. The frontier shipped its trees east before it shipped its cattle."
+      },
+      {
+        "name": "Stone",
+        "color": "#9aa3ad",
+        "tier": 1,
+        "emoji": "🪨",
+        "description": "Granite from New Hampshire, marble from Vermont.",
+        "narrative": "The country's monuments are mostly cut from its own quarries."
+      },
+      {
+        "name": "River",
+        "color": "#1e6091",
+        "tier": 1,
+        "emoji": "🌊",
+        "description": "The Mississippi, draining most of a continent.",
+        "narrative": "Mark Twain learned to read it like a book. The country has been quoting him ever since."
+      },
+      {
+        "name": "Mountain",
+        "color": "#9aa3ad",
+        "tier": 1,
+        "emoji": "⛰️",
+        "description": "Rocky, Appalachian, Sierra, Cascade.",
+        "narrative": "Two ranges hold the coasts; one runs down the spine."
+      },
+      {
+        "name": "Coast",
+        "color": "#7ac5e0",
+        "tier": 1,
+        "emoji": "🏖️",
+        "description": "Atlantic on one side, Pacific on the other, Gulf below.",
+        "narrative": "Three coasts, three cuisines, three ways to take a vacation."
+      },
+      {
+        "name": "Tobacco",
+        "color": "#5a4528",
+        "tier": 1,
+        "emoji": "🌿",
+        "description": "Broad leaf cured in a Virginia barn.",
+        "narrative": "The first cash crop of the colonies. The first thing the world bought from America."
+      },
+      {
+        "name": "Bison",
+        "color": "#5c4033",
+        "tier": 1,
+        "emoji": "🦬",
+        "description": "Massive beast of the Plains, once thirty million strong.",
+        "narrative": "The herd shaped the prairie. The prairie shaped the country."
+      },
+      {
+        "name": "Salt",
+        "color": "#f0f0f5",
+        "tier": 1,
+        "emoji": "🧂",
+        "description": "Mined from Kansas, panned from Utah.",
+        "narrative": "Salt Lake names itself. The Erie Canal floated on a salt-tax surplus."
+      }
+    ],
+    "seedCount": 6,
+    "goals": [
+      {
+        "requiredCount": 1,
+        "minTier": 3,
+        "conditions": [{ "description": "Make a ⭐⭐⭐ Discovery", "met": false }]
+      },
+      {
+        "requiredCount": 3,
+        "conditions": [
+          {
+            "description": "Drive a route long enough that the radio stations change twice",
+            "met": false
+          },
+          {
+            "description": "Eat a regional dish that locals are loud about",
+            "met": false
+          },
+          {
+            "description": "Stand inside a landscape too big for any photograph",
+            "met": false
+          },
+          {
+            "description": "Hear a piece of music born in this country",
+            "met": false
+          },
+          {
+            "description": "Witness the contrast between a small town and a big city in the same week",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 3
+      }
+    ]
+  },
+  {
+    "name": "Azeroth",
+    "order": 4,
+    "seeds": [],
+    "seedPool": [
+      {
+        "name": "Mana",
+        "color": "#a78bd6",
+        "tier": 1,
+        "emoji": "💠",
+        "description": "Raw arcane energy, drawn from the ley lines.",
+        "narrative": "The sorcerer's first lesson: it is not free, and it is not yours."
+      },
+      {
+        "name": "Light",
+        "color": "#f0e6d2",
+        "tier": 1,
+        "emoji": "✨",
+        "description": "The holy radiance the Naaru sing into being.",
+        "narrative": "Not a metaphor here. It heals, it burns, it judges."
+      },
+      {
+        "name": "Fel",
+        "color": "#3d8e3d",
+        "tier": 1,
+        "emoji": "🟢",
+        "description": "Green corruption from beyond the veil.",
+        "narrative": "It works. That is the whole problem with it."
+      },
+      {
+        "name": "Frost",
+        "color": "#a3c2d6",
+        "tier": 1,
+        "emoji": "❄️",
+        "description": "Icy magic from the spires of Northrend.",
+        "narrative": "The cold that Lich Kings teach themselves to enjoy."
+      },
+      {
+        "name": "Fire",
+        "color": "#e94560",
+        "tier": 1,
+        "emoji": "🔥",
+        "description": "Elemental flame, summoned or struck.",
+        "narrative": "Ragnaros sleeps in the deep places. Most fires you meet are the lesser kind."
+      },
+      {
+        "name": "Iron",
+        "color": "#434343",
+        "tier": 1,
+        "emoji": "⚒️",
+        "description": "Ore for the dwarven forges of Ironforge.",
+        "narrative": "Folded by hammer-strikes into the blades the world remembers."
+      },
+      {
+        "name": "Copper",
+        "color": "#b87333",
+        "tier": 1,
+        "emoji": "🪙",
+        "description": "Soft metal of the apprentice smith.",
+        "narrative": "The first ore every blacksmith trains on. The first weight in any backpack."
+      },
+      {
+        "name": "Stone",
+        "color": "#6c757d",
+        "tier": 1,
+        "emoji": "🪨",
+        "description": "Cut block of Khaz Modan granite or Stormwind marble.",
+        "narrative": "Cathedrals, fortresses, dwarven halls. The world is built on it."
+      },
+      {
+        "name": "Wood",
+        "color": "#8b6914",
+        "tier": 1,
+        "emoji": "🪵",
+        "description": "Felled timber from Elwynn or Teldrassil.",
+        "narrative": "Some trees on this world remember when they were druids. Most do not."
+      },
+      {
+        "name": "Cloth",
+        "color": "#f4ead5",
+        "tier": 1,
+        "emoji": "🧵",
+        "description": "Linen, wool, or the first bolt a tailor weaves.",
+        "narrative": "A robe begins here. So does a banner."
+      },
+      {
+        "name": "Leather",
+        "color": "#7a5a3a",
+        "tier": 1,
+        "emoji": "🟫",
+        "description": "Hide tanned for armor or saddle.",
+        "narrative": "Skinned and worked by hand. The hunter's first profession."
+      },
+      {
+        "name": "Beast",
+        "color": "#5c4033",
+        "tier": 1,
+        "emoji": "🐺",
+        "description": "Wild creature of plains, forest, or mountain.",
+        "narrative": "Wolf, bear, raptor, kodo. Hunted, tamed, occasionally befriended."
+      },
+      {
+        "name": "Herb",
+        "color": "#5a8a5a",
+        "tier": 1,
+        "emoji": "🌿",
+        "description": "Silverleaf, peacebloom, mageroyal — basic alchemy stock.",
+        "narrative": "Every potion in the world began as a leaf someone bent down to pick."
+      },
+      {
+        "name": "Crystal",
+        "color": "#7ac5e0",
+        "tier": 1,
+        "emoji": "💎",
+        "description": "Faceted shard that holds the arcane.",
+        "narrative": "Mage towers grow them. Some sing if you listen."
+      },
+      {
+        "name": "Bone",
+        "color": "#f5f5dc",
+        "tier": 1,
+        "emoji": "🦴",
+        "description": "Trophy of the hunt, or component of the dark.",
+        "narrative": "Necromancers have one use for it. Druids have another. Soup is not out of the question."
+      }
+    ],
+    "seedCount": 6,
+    "goals": [
+      {
+        "requiredCount": 1,
+        "minTier": 3,
+        "conditions": [{ "description": "Make a ⭐⭐⭐ Discovery", "met": false }]
+      },
+      {
+        "requiredCount": 3,
+        "conditions": [
+          {
+            "description": "Pledge to a faction, an order, or a long quarrel",
+            "met": false
+          },
+          {
+            "description": "Master an arcane, holy, or fel discipline",
+            "met": false
+          },
+          {
+            "description": "Tame, ride, or befriend a creature larger than you are",
+            "met": false
+          },
+          {
+            "description": "Stand against an old evil that the kingdoms still whisper about",
+            "met": false
+          },
+          {
+            "description": "Find a city built by hands that aren't human",
+            "met": false
+          }
+        ],
+        "fallbackTier5Count": 3
+      }
+    ]
+  }
+]

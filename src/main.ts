@@ -14,6 +14,8 @@ import { isDiscordActivity } from "./discord";
 import { getOrCreateAnonId } from "./identity";
 import posthog from "posthog-js";
 import { toPng } from "html-to-image";
+import erasDefault from "./eras.json";
+import erasTravel from "./eras-travel.json";
 
 // --- Types ---
 interface CombineItem {
@@ -33,7 +35,16 @@ export function mountGame(app: HTMLElement, selectFiveMode = false) {
 // --- Providers ---
 const recipeStore = new InMemoryRecipeStore();
 const promptProvider = new FilePromptProvider();
-const eraManager = new EraManager();
+// Era arc selection — driven by ?travel=... in the URL.
+//   ?travel=true → 5 cultures (Finland, Japan, France, USA, Azeroth)
+//   default     → the original 11-civilization arc
+const travelMode = (typeof window !== "undefined"
+  ? new URLSearchParams(window.location.search).get("travel")
+  : null);
+const erasData: Era[] = travelMode && travelMode !== "false" && travelMode !== "0"
+  ? (erasTravel as Era[])
+  : (erasDefault as Era[]);
+const eraManager = new EraManager(erasData);
 
 // --- State ---
 let selectedModel: ModelId = MODELS[0].id;

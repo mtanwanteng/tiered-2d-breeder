@@ -1,8 +1,6 @@
 import type { Era, ElementData, ActionLogEntry, ModelId, EraHistory } from "./types";
 import { log } from "./logger";
-import erasData from "./eras.json";
 
-const allEras = (erasData as Era[]).sort((a, b) => a.order - b.order);
 const MIN_ERAS = 5;
 
 function shuffle<T>(arr: T[]): T[] {
@@ -15,13 +13,18 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export class EraManager {
+  private readonly allEras: Era[];
   private currentIndex = 0; // index into allEras
   private advancementCheckedAt = 0;
   readonly history: EraHistory[] = [];
   private resolvedSeeds: Map<number, ElementData[]> = new Map();
 
+  constructor(eras: Era[]) {
+    this.allEras = [...eras].sort((a, b) => a.order - b.order);
+  }
+
   get current(): Era {
-    return allEras[this.currentIndex];
+    return this.allEras[this.currentIndex];
   }
 
   get erasCompleted(): number {
@@ -39,7 +42,7 @@ export class EraManager {
    *  matching the base-edition behavior where each era is only entered once. */
   getSeedsForEra(idx: number, reroll = false): ElementData[] {
     if (!reroll && this.resolvedSeeds.has(idx)) return this.resolvedSeeds.get(idx)!;
-    const era = allEras[idx];
+    const era = this.allEras[idx];
     const seeds = era.seedPool && era.seedCount
       ? shuffle(era.seedPool).slice(0, era.seedCount)
       : era.seeds;
@@ -49,12 +52,12 @@ export class EraManager {
 
   /** Total number of eras available */
   get totalEras(): number {
-    return allEras.length;
+    return this.allEras.length;
   }
 
   /** Get an era by index (for select-five cycling) */
   getEraByIndex(idx: number): Era {
-    return allEras[idx];
+    return this.allEras[idx];
   }
 
   /** Set the current era by index (used for select-five mode where era is not advanced through normal flow) */
@@ -66,7 +69,7 @@ export class EraManager {
   /** Get eras the player can advance to, respecting the minimum eras rule */
   getEligibleNextEras(): Era[] {
     // Future eras: everything after current in chronological order
-    const futureEras = allEras.filter((e) => e.order > this.current.order);
+    const futureEras = this.allEras.filter((e) => e.order > this.current.order);
     if (futureEras.length === 0) return [];
 
     // erasCompleted includes the current era being finished now
@@ -74,7 +77,7 @@ export class EraManager {
     const lockCount = Math.max(0, MIN_ERAS - completedAfterThis);
 
     // Lock the last N eras from the FULL list
-    const maxOrder = allEras[allEras.length - 1 - lockCount]?.order ?? -1;
+    const maxOrder = this.allEras[this.allEras.length - 1 - lockCount]?.order ?? -1;
     const eligible = futureEras.filter((e) => e.order <= maxOrder);
 
     log.debug("era", `Eligible next eras (${completedAfterThis} completed, lock last ${lockCount}): ${eligible.map((e) => e.name).join(", ") || "none"}`);
@@ -90,7 +93,7 @@ export class EraManager {
 
   /** Whether the current era is Space Age (last era) */
   get isLastEra(): boolean {
-    return this.currentIndex === allEras.length - 1;
+    return this.currentIndex === this.allEras.length - 1;
   }
 
   /** Immediately mark any tier goal met if the given tier qualifies. Returns true if anything changed. */
@@ -296,7 +299,7 @@ export class EraManager {
 
   /** Advance to a specific era by name */
   advanceTo(eraName: string): Era | null {
-    const idx = allEras.findIndex((e) => e.name === eraName);
+    const idx = this.allEras.findIndex((e) => e.name === eraName);
     if (idx === -1) return null;
     this.currentIndex = idx;
     this.advancementCheckedAt = 0;
@@ -327,7 +330,7 @@ export class EraManager {
     }
     // Restore goal condition states — handle old flat format (pre-multi-goal saves)
     for (const [k, rawGoalData] of Object.entries(state.goalStates)) {
-      const era = allEras[Number(k)];
+      const era = this.allEras[Number(k)];
       if (!era) continue;
       // Old format: flat array of condition objects → treat as goals[0] only
       const goalsData: { met: boolean; narrative?: string }[][] =
