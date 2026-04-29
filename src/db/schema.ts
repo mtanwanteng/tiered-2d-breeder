@@ -38,8 +38,13 @@ export const user = pgTable("user", {
     .notNull(),
   // Phase F theme switcher. Values are theme manifest names registered in
   // src/theme/index.ts THEMES (bibliophile | curator | cartographer).
-  // Validation lives in app code; the DB stores the raw string.
+  // Validation lives in app code; the DB stores the raw string. The DB-side
+  // .default() is required so drizzle-kit push can backfill existing rows
+  // when this column is added; the $defaultFn covers the same value at
+  // insert time from the ORM (the existing settings columns follow the
+  // same pattern).
   themePreference: text("theme_preference")
+    .default("bibliophile")
     .$defaultFn(() => "bibliophile")
     .notNull(),
   createdAt: timestamp("created_at")
