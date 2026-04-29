@@ -1518,10 +1518,10 @@ The shared vocabulary of movement. Every animated moment in the game is composed
 
 | Primitive | Spec | Where used |
 |---|---|---|
-| **Ink-bloom** | scale 0 → 1, 600ms, `cubic-bezier(0.2, 0.8, 0.2, 1)`. Opacity 0 → 1 first 350ms. | Tile arrivals, narrative text, first appearances |
+| **Ink-bloom** | scale 0 → 1, 600ms, `cubic-bezier(0.2, 0.8, 0.2, 1)`. Opacity 0 → 1 first 350ms. **See decisions log D24 — tile arrivals ship a 400ms scale-pulse instead; the 600ms primitive is reserved for narrative-text / first-appearance use.** | Narrative text, first appearances. (Tile arrivals: 400ms scale-pulse, see D24.) |
 | **Page-darken** | overlay 0% → 65% black, 500ms ease-out. Desaturate filter 0 → 0.7. | Held breath, combine resolves, bind ceremony |
 | **Gilt halo** | 3 concentric circles. r: 14 / 30 / 50px. Alpha 0.18 / 0.10 / 0.05. Pulse 1.6s sine. | Drop targets, bind plate, held-breath glow |
-| **Brass clasp** | Two rects slide ±20px, 220ms `cubic-bezier(0.4, 0, 0.2, 1)`. Tile scale 1.0 → 1.12 → 1.0. | The bind. **The only "snap" in the game.** |
+| **Brass clasp** | Two rects slide ±20px **horizontally** (left-side rect from −20→+20px, right-side rect from +20→−20px), 220ms `cubic-bezier(0.4, 0, 0.2, 1)`. Tile scale 1.0 → 1.12 → 1.0. (Axis disambiguated by `theming-architecture.md` §3.4 — Bibliophile uses `"horizontal-clasp"`; Curator/Cartographer use `"vertical-pin"`.) | The bind. **The only "snap" in the game.** |
 | **Hold-arc** | ~30px wide curve, fills clockwise, 2.5s **linear**. Alpha 0.3 idle → 1.0 bright. | Hold-to-commit feedback (bind, retire) |
 | **Plate breathing** | scale 1.0 ↔ 1.02, 3s sine wave. Halo alpha 0.06 ↔ 0.12. | Post-commit hold (optional) |
 | **Brush wipe** | clip-path inset 100% → 0%, 1400ms ease-out. +4px horizontal drift. | Frontispiece reveals in era summary |

@@ -325,3 +325,37 @@ Reasoning: read-only and informational items at top → state-changing items bel
 
 - **Spec edit:** Yes — Addendum A in §end of spec.
 - **Reversible if:** Naming finalizes and we want to expose Sign In as a more prominent first-class affordance again (likely re-promotion as a top-bar action), or if we decide the Menu should also surface tapestry / library shortcuts (currently those are reached via the era-summary spread + dedicated routes).
+
+---
+
+### D24. Ink-bloom on tile arrival — replaced by 400ms scale pulse
+- **Status:** CLAUDE-DECIDED, ratified by playtest; deviates from `bibliophile-spec.md` §6
+- **Spec called for:** `scale 0 → 1, 600ms cubic-bezier(0.2, 0.8, 0.2, 1). Opacity 0 → 1 first 350ms.` Used for tile arrivals after a successful combine.
+- **What shipped:** `.combine-item.merging` runs a 400ms `scale 1 → 1.2 → 1` ease-in-out pulse keyframe (`src/style.css:438-446`, applied in `src/main.ts` after the combine resolves). The dedicated `playInkBloom` primitive in `src/motion/ink-bloom.ts` is spec-correct but unused on tile arrivals.
+- **Why we deviated:** the spec's scale-from-zero ink-bloom read as a "pop" that fought with the workspace caption's "From X and Y came Z" beat. The 400ms scale-pulse on a tile that's already at full size felt like "the new tile arrives and breathes," matching the contemplative pace of the rest of the game. The primary feedback the player needs is *that something landed* — the workspace caption already provides the *what*.
+- **Detail to keep:** the unused `ink-bloom.ts` primitive remains in the motion library — it still matches the spec, and the ink-bloom-on-narrative-text use case (spec §6 also lists "narrative text, first appearances") may yet want it. Don't delete; just don't dispatch it on tile arrival.
+- **Spec edit:** Yes — `bibliophile-spec.md` §6 should annotate ink-bloom: "Tile arrivals use the 400ms scale-pulse documented in D24; the 600ms primitive remains for first-appearance / narrative use cases."
+- **Reversible if:** A future playtest pass thinks the scale-pulse is too quiet. The `playInkBloom` primitive is already wired and waiting; one call-site swap reinstates the spec timing.
+
+---
+
+### D25. Painted Bari art — deferred indefinitely
+- **Status:** USER-DECIDED, not blocking
+- **Detail:** The first Imagen pass for painted Bari poses (idle / nod / wonder / patient) didn't meet the bar. Rather than ship a worse-than-emoji placeholder or block on iterating the AI prompt, Bari stays as the emoji composite (`<span id="bari-char">👦</span><span id="bari-tool">🔨</span>`) for the foreseeable future.
+- **What this affects:**
+  - Spec §5 "approval nod" pose has no JS dispatch and no CSS class. A nod on strong combine / kept-tile bind / era end is not currently fired. Treat as deferred, not unintended.
+  - The four PNG paths in `src/theme/bibliophile/manifest.ts:44-49` reference assets that don't exist on disk (`public/themes/bibliophile/bari/` is empty).
+  - Spec §3.1 onboarding Frame 02 calls for "Bari fades in, lower-left margin" — rendered via the existing emoji Bari rather than a painted entrance.
+  - Bari pose changes during AI-thinking phases (`bari--leaning`, `bari--patient`, `bari--very-patient` CSS classes) still fire, just on the emoji composite.
+- **Spec edit:** No — leave the painted-art ambition in §5 as the design target, but capture this decision so future passes don't read the spec as "this is shipped" or "this is missing because nobody noticed."
+- **Reversible if:** A re-pass of the Imagen prompt (or a commissioned painter) produces a Bari that meets the storybook bar. Re-enabling the painted assets is a per-pose CSS swap on the existing pose classes — the JS dispatch layer doesn't change. Adding the approval-nod is independent: a new `bari--nod` class in skin.css plus three call sites in `main.ts` (combine resolve at tier 5, tile bound, era end).
+
+---
+
+### D26. Brass clasp axis — horizontal, matching theming-architecture §3.4
+- **Status:** CLAUDE-DECIDED (spec ambiguity disambiguated by architecture spec)
+- **Detail:** The bibliophile-spec.md §6 entry for "Brass clasp" reads only *"Two rects slide ±20px"* without an axis. The original implementation used a vertical pair (top rect descending, bottom rect rising) for ~6 weeks. The architecture spec (`theming-architecture.md` §3.4) added later disambiguates: Bibliophile = `"horizontal-clasp"`, Curator and Cartographer = `"vertical-pin"`.
+- **What shipped:** `src/motion/brass-clasp.ts` now slides a left-side rect (translateX -20 → 20) and a right-side rect (translateX 20 → -20), meeting at the target's vertical mid-line. Same 220ms duration, same `cubic-bezier(0.4, 0, 0.2, 1)` easing, same 1.0 → 1.12 → 1.0 tile pulse, same fade-out-and-remove tail. The visual semantic difference: clasps clamp the *sides* of the tile rather than the *top-and-bottom*.
+- **Why now:** the audit pass surfaced the conflict, and the horizontal axis is the cheap test for "are we ready to support a real cross-theme bind-clasp dispatch?" If horizontal feels right for Bibliophile, Curator's vertical-pin variant (descending from above only) becomes the natural next addition: same primitive, new direction option.
+- **Spec edit:** No new content — `bibliophile-spec.md` §6 is intentionally ambiguous on axis. The architecture spec is now the source of truth.
+- **Reversible if:** Horizontal looks worse than vertical in playtest. Swap `translateX` back to `translateY` and the `left/right` anchor logic back to `top/bottom`. The 220ms / 1.12× / cubic-bezier numbers are settled either way.
