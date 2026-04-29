@@ -6,6 +6,8 @@ import { PostHogProvider } from "./posthog-provider";
 import PostHogPageView from "./posthog-pageview";
 import { AuthProvider } from "./components/auth-provider";
 import { DiscordActivityProvider } from "./components/discord-activity-provider";
+import { getTheme } from "../src/theme";
+import { getFontStylesheetUrl } from "../src/theme/fontStylesheet";
 
 export const metadata: Metadata = {
   title: "Idea Collector",
@@ -28,15 +30,16 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
+  // SSR first paint resolves the active theme synchronously. Phase F adds
+  // a cookie / user-preference read in front of this so non-default themes
+  // also avoid the FOUC; Phase B locks in the indirection.
+  const theme = getTheme();
   return (
-    <html lang="en" data-theme="bibliophile">
+    <html lang="en" data-theme={theme.name}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600&display=swap"
-        />
+        <link rel="stylesheet" href={getFontStylesheetUrl(theme)} />
       </head>
       <body>
         <PostHogProvider>

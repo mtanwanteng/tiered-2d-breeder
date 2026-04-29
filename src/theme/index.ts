@@ -5,7 +5,15 @@
 import type { Theme } from "./Theme";
 import { bibliophile } from "./bibliophile/manifest";
 
-export type { Theme, ThemeTokens, ThemeAudio, ThemeCopy } from "./Theme";
+export type {
+  Theme,
+  ThemeTokens,
+  ThemeFonts,
+  ThemeTextures,
+  ThemeMotion,
+  ThemeAudio,
+  ThemeCopy,
+} from "./Theme";
 
 let activeTheme: Theme = bibliophile;
 

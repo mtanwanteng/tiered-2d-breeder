@@ -14,7 +14,7 @@ export interface HoldArcOptions {
   target: HTMLElement;
   /** Hold duration. Spec default: 2500ms (matches cello phrase). */
   durationMs?: number;
-  /** Stroke color. Defaults to var(--gilt). */
+  /** Stroke color. Defaults to var(--accent-secondary) (Bibliophile = gilt). */
   color?: string;
   /** Stroke width. Defaults to 4px. */
   thickness?: number;
@@ -41,7 +41,7 @@ export function startHoldArc(options: HoldArcOptions): HoldArcHandle {
   const {
     target,
     durationMs = 2500,
-    color = "var(--gilt, #c9a85f)",
+    color = "var(--accent-secondary, #c9a85f)",
     thickness = 4,
     inset = -8,
     idleOpacity = 0.3,

@@ -1,6 +1,10 @@
-// Theme contract — see docs/design/bibliophile-spec.md §1 "Theme architecture".
-// A theme is skin + assets + copy. Layout, interactions, motion primitives, data
-// model, and accessibility are theme-agnostic.
+// Theme contract — see docs/design/bibliophile-spec.md §1 "Theme architecture"
+// and docs/design/theming-architecture.md §3 "Token categories".
+//
+// A theme is skin + assets + copy. Layout, interactions, motion timings, data
+// model, and accessibility are theme-agnostic. The six token categories below
+// (color / typography / texture / motion / chapter-color / audio) are the only
+// surfaces a theme can override; everything else is shared code.
 
 export interface Theme {
   /** Theme identifier, mirrored on <html data-theme="..."> */
@@ -15,13 +19,25 @@ export interface Theme {
   tokens: ThemeTokens;
 
   /** Web font stacks. The actual @font-face / Google Fonts <link> lives in CSS;
-   *  these strings are the family fallback chains used in inline styles. */
-  fonts: {
-    serif: string;
-    sans: string;
-  };
+   *  these strings are the family fallback chains used in inline styles.
+   *  Maps to architecture-spec §3.2 typography tokens. */
+  fonts: ThemeFonts;
 
-  /** URLs to pattern textures (served from /public/themes/<name>/patterns/) */
+  /** URLs to texture assets keyed by abstract role (see architecture-spec §3.3).
+   *  Bibliophile fills `pageBackground` with leather, `tileFaceFill` with
+   *  marble, etc.; Curator/Cartographer fill the same roles with their own
+   *  asset paths. */
+  textures: ThemeTextures;
+
+  /** Motion-variant discriminators (see architecture-spec §3.4). All motion
+   *  timings/easings remain shared across themes — only the *kind* of motion
+   *  per primitive is selectable. */
+  motion: ThemeMotion;
+
+  /** Legacy texture struct retained during the Phase A→B migration. Phase B
+   *  rewrites consumers to read from `textures` (the abstract roles) and this
+   *  field is removed. New themes should not add fields here.
+   *  @deprecated Use `textures` instead. Removed in Phase B. */
   patterns: {
     marble: string;
     leather: string;
@@ -52,8 +68,9 @@ export interface Theme {
    *  matching src/eras.json (engineering identity stays "era"; UI shows "Chapter"). */
   chapterThemes: Record<string, string>;
 
-  /** Audio cue paths. P1/P2 cues use Web Audio API for timing precision; P3
-   *  ambient (room tone) uses HTMLAudio. Loudness rules in spec §7. */
+  /** Audio cue paths split into shared (cello — never themed) and themed (per
+   *  architecture-spec §3.6). The audio bus is procedural today (kill-switched
+   *  per D14); these paths are forward-looking for sourced samples. */
   audio: ThemeAudio;
 
   /** Copy strings keyed by surface. Text never hardcoded in code paths — read
@@ -65,7 +82,17 @@ export interface Theme {
   bindingStripePalette: readonly string[];
 }
 
+/** Color tokens. The eight `*` swatches are the *raw* palette (theme's identity);
+ *  the abstract roles (`bgPage`, `textPrimary`, etc.) are the *role* layer the
+ *  rest of the codebase reads. Phase B sweeps consumers to the role layer.
+ *
+ *  Tokens.css declares both: raw swatches as `--ink-black` etc., abstract roles
+ *  as `--bg-page` etc. (architecture-spec §3.1).
+ */
 export interface ThemeTokens {
+  // Raw palette — Bibliophile's eight spec colors. A theme is free to use
+  // a different set of names internally, but the abstract roles below are
+  // mandatory.
   inkBlack: string;
   oxblood: string;
   gilt: string;
@@ -74,20 +101,80 @@ export interface ThemeTokens {
   paperDark: string;
   marbleWarm: string;
   marbleCool: string;
+
+  // Abstract role layer — architecture-spec §3.1. These are the names
+  // consumers should read.
+  bgPage: string;
+  bgSurface: string;
+  bgDeep: string;
+  textPrimary: string;
+  textSecondary: string;
+  textTertiary: string;
+  accent: string;
+  accentSecondary: string;
+  borderStrong: string;
+  borderFaint: string;
 }
 
+/** Typography tokens — architecture-spec §3.2. */
+export interface ThemeFonts {
+  /** Display face — titles, narrative, era names. */
+  display: string;
+  /** UI face — labels, metadata, button text. */
+  ui: string;
+  /** Optional monospace face (Cartographer journal-comments). */
+  mono?: string;
+  /** Whether the display face renders italic by default (Cartographer = italic). */
+  displayStyle: "italic" | "regular";
+  /** UI casing convention (Curator = all-caps-tracked). */
+  uiCaseRule: "all-caps-tracked" | "sentence-case";
+}
+
+/** Texture asset roles — architecture-spec §3.3. */
+export interface ThemeTextures {
+  /** Primary background fill (Bibliophile = leather, Curator = linen, Cartographer = vellum). */
+  pageBackground: string;
+  /** Tile-face fill pattern (Bibliophile = marble, Curator = archival, Cartographer = grid). */
+  tileFaceFill: string;
+  /** Optional decorative border (gilded, matted, ruled). */
+  borderTreatment?: string;
+}
+
+/** Motion variant discriminators — architecture-spec §3.4. The *timings* and
+ *  easings stay shared; only the kind-of-motion per primitive is themable. */
+export interface ThemeMotion {
+  /** Page-turn animation type. Default 700ms; Cartographer overrides to 800. */
+  pageTransitionType: "peel-2d" | "pan-horizontal" | "fold-3d";
+  /** Optional duration override; defaults to the primitive's shared 700ms. */
+  pageTransitionDurationMs?: number;
+  /** Bind-clasp axis/style (Bibliophile = horizontal-clasp per D26). */
+  bindClaspType: "horizontal-clasp" | "vertical-pin";
+  /** Ink-bloom variant. Bibliophile uses fill-expand at the spec level even
+   *  though tile arrivals were swapped to a scale-pulse per D24. */
+  inkBloomType: "fill-expand" | "frame-then-fill" | "outline-then-fill";
+  /** Frontispiece reveal variant for the era summary. */
+  frontispieceRevealType: "brush-wipe" | "spotlight-wipe" | "ink-wash";
+}
+
+/** Audio cue paths — architecture-spec §3.6. The cello (G2 bind, C2 retire,
+ *  bridge resolution) is shared across all themes; the other eight cues each
+ *  have a per-theme variant. */
 export interface ThemeAudio {
-  celloBind: string;
-  celloRetire: string;
-  celloBridge: string;
-  combineKnock: string;
-  combineInkwell: string;
-  singingBowl: string;
-  claspSnap: string;
-  paperRustle: string;
-  cathedralBell: string;
-  brushCanvas: string;
-  workshopRoomTone: string;
+  shared: {
+    celloBind: string;
+    celloRetire: string;
+    celloBridge: string;
+  };
+  themed: {
+    combineKnock: string;
+    combineInkwell: string;
+    singingBowl: string;
+    claspSnap: string;
+    paperRustle: string;
+    cathedralBell: string;
+    brushCanvas: string;
+    workshopRoomTone: string;
+  };
 }
 
 export interface ThemeCopy {
@@ -109,9 +196,22 @@ export interface ThemeCopy {
   cardCatalogButton: string;
   /** Bari's single line of speech, fired once at first 24/24 retirement (spec §3.6) */
   bariFirstWallFull: string;
+  /** Per-chapter idea-tile slot prompts shown above and inside the bind slot. */
+  slotPrompts: {
+    /** Default prompt above the slot when empty: "Save an idea tile for this era." */
+    saveTilePrompt: string;
+    /** Empty-slot hint inside the slot itself: "Drop a tile here." */
+    dropTileHint: string;
+    /** Prompt while a tile is in the slot, default press-and-hold mode. */
+    holdToBindPrompt: string;
+    /** Prompt while a tile is in the slot, tap-to-commit accessibility mode. */
+    tapToBindPrompt: string;
+  };
   /** Onboarding sequence copy (spec §3.1) */
   onboarding: {
     title: string;
+    /** Two-line front-cover tagline. Newlines are literal in the string. */
+    tagline: string;
     chapterLabel: string;
     tryPrompt: string;
     torchNarrative: string;

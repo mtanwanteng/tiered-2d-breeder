@@ -1,9 +1,12 @@
-/* Bibliophile theme — color tokens.
+/* Bibliophile theme — color and typography tokens.
    Mirrors src/theme/bibliophile/manifest.ts. Keep in sync.
-   See docs/design/bibliophile-spec.md §1 "Palette" and "Theme architecture". */
+   See docs/design/bibliophile-spec.md §1 "Palette" and "Theme architecture",
+   and docs/design/theming-architecture.md §3 "Token categories". */
 
 [data-theme="bibliophile"] {
-  /* Spec palette */
+  /* Raw spec palette — the swatch layer. Reference these directly only when
+     the swatch *is* the design intent (wax-seal red, gilt accents). For most
+     UI chrome, prefer the abstract role layer below. */
   --ink-black: #2a1f15;
   --oxblood: #7a3e2a;
   --gilt: #c9a85f;
@@ -13,18 +16,46 @@
   --marble-warm: #a8794a;
   --marble-cool: #3a2818;
 
-  /* Convenience aliases used by transitional Phase 0 selectors. Phase 1 may
-     remove these as src/style.css is rewritten to use the spec tokens directly. */
-  --bg-body: var(--paper-dark);
-  --bg-panel: var(--leather-deep);
-  --bg-modal: var(--paper-dark);
-  --accent: var(--oxblood);
-  --accent-bright: var(--gilt);
+  /* Abstract role layer — architecture-spec §3.1. The rest of the codebase
+     should read these names; Phase B sweeps consumers from raw swatches to
+     these roles. Curator/Cartographer will fill the same roles with their
+     own swatches. */
+  --bg-page: var(--paper-dark);
+  --bg-surface: var(--leather-deep);
+  --bg-deep: var(--ink-black);
   --text-primary: var(--vellum);
-  --text-muted: var(--marble-warm);
-  --border-subtle: var(--leather-deep);
+  --text-secondary: var(--marble-warm);
+  --text-tertiary: var(--marble-cool);
+  --accent: var(--oxblood);
+  --accent-secondary: var(--gilt);
+  --border-strong: var(--leather-deep);
+  --border-faint: var(--marble-cool);
 
-  /* Typography (font-face <link> declarations live in app/globals.css) */
-  --font-serif: "Cardo", Georgia, serif;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  /* Phase A→B transitional aliases. Some skin.css and style.css selectors
+     still reference these older names. Phase B rewrites consumers to the
+     abstract roles above and removes these. */
+  --bg-body: var(--bg-page);
+  --bg-panel: var(--bg-surface);
+  --bg-modal: var(--bg-page);
+  --accent-bright: var(--accent-secondary);
+  --text-muted: var(--text-secondary);
+  --border-subtle: var(--border-strong);
+
+  /* Typography — architecture-spec §3.2. The font-face <link> declarations
+     live in app/layout.tsx; these vars feed CSS / inline styles. */
+  --font-display: "Cardo", Georgia, serif;
+  --font-ui: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display-style: normal; /* Bibliophile = regular; Cartographer = italic */
+  --ui-case-rule: none;          /* Bibliophile = sentence-case; Curator = uppercase */
+
+  /* Phase A→B transitional aliases for the older font-* names. */
+  --font-serif: var(--font-display);
+  --font-sans: var(--font-ui);
+
+  /* Texture URLs — architecture-spec §3.3. Mirrors manifest.textures.*.
+     Curator/Cartographer override these with their own asset paths so skin.css
+     consumers (e.g. background-image: var(--texture-tile-face)) re-skin live. */
+  --texture-page-bg: url(/themes/bibliophile/patterns/leather.svg);
+  --texture-tile-face: url(/themes/bibliophile/patterns/marble.svg);
+  --texture-border: url(/themes/bibliophile/patterns/parchment.svg);
 }

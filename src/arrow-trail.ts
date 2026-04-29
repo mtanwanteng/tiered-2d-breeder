@@ -139,8 +139,8 @@ function ensureStyles() {
 .arrow-trail-target-fill {
   fill: var(--arrow-color, #c9a85f);
   filter:
-    drop-shadow(0 0 1px var(--ink-black, #1a1208))
-    drop-shadow(0 0 1px var(--ink-black, #1a1208))
+    drop-shadow(0 0 1px var(--bg-page, #1a1208))
+    drop-shadow(0 0 1px var(--bg-page, #1a1208))
     drop-shadow(0 0 6px var(--arrow-color, #c9a85f));
 }
 .arrow-trail-target-ring {
@@ -149,8 +149,8 @@ function ensureStyles() {
   stroke-width: 1.6;
   opacity: 0.95;
   filter:
-    drop-shadow(0 0 1px var(--ink-black, #1a1208))
-    drop-shadow(0 0 1px var(--ink-black, #1a1208))
+    drop-shadow(0 0 1px var(--bg-page, #1a1208))
+    drop-shadow(0 0 1px var(--bg-page, #1a1208))
     drop-shadow(0 0 4px var(--arrow-color, #c9a85f));
 }
 @media (prefers-reduced-motion: reduce) {
@@ -212,7 +212,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 
 export function createArrowTrail(options: ArrowTrailOptions): ArrowTrailHandle {
   ensureStyles();
-  const color = options.color ?? "var(--gilt, #c9a85f)";
+  const color = options.color ?? "var(--accent-secondary, #c9a85f)";
   const curveAmount = options.curveAmount ?? 0.22;
   const curveBias = options.curveBias ?? "auto";
 

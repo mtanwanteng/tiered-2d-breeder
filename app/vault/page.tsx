@@ -89,7 +89,7 @@ export default function VaultPage() {
       {tiles && tiles.length > 0 && (
         <ul className="vault-list">
           {tiles.map((entry) => {
-            const stripe = entry.bindingStripeColor ?? "var(--leather-deep, #5a4528)";
+            const stripe = entry.bindingStripeColor ?? "var(--border-strong, #5a4528)";
             const roman = entry.chapterIndex !== null
               ? ROMANS[entry.chapterIndex + 1] ?? String(entry.chapterIndex + 1)
               : "—";

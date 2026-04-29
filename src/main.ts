@@ -16,7 +16,7 @@ import posthog from "posthog-js";
 import { toPng } from "html-to-image";
 import { createArrowTrail, type ArrowTrailHandle } from "./arrow-trail";
 import type { EraIdeaTilePick } from "./types";
-import { chapterTag } from "./theme";
+import { chapterTag, getTheme } from "./theme";
 import { chapterStripeColor } from "./theme/chapterColor";
 import {
   startHoldArc,
@@ -138,7 +138,7 @@ function renderEraProgress() {
       // BOUND state — completed chapter
       const h = eraManager.history[i];
       const pick = h?.ideaTilePick;
-      const stripe = pick ? chapterStripeColor(h.eraName, pick.name, runId) : "#5a4528";
+      const stripe = pick ? chapterStripeColor(h.eraName, pick.name, runId) : getTheme().tokens.borderStrong;
       const ideaTile = pick
         ? `<div class="era-cube-idea" data-era-idea-idx="${i}" title="${esc(h.eraName)} — kept ${esc(pick.name)} (drag to spawn)">${esc(pick.emoji || "❓")}</div>`
         : "";
@@ -324,7 +324,7 @@ function wireEraCubeIdeaTiles() {
         name: pick.name,
         tier: pick.tier,
         emoji: pick.emoji || "❓",
-        color: pick.color || "#777",
+        color: pick.color || getTheme().tokens.borderFaint,
         description: pick.description ?? "",
         narrative: pick.narrative ?? "",
       };
@@ -441,14 +441,14 @@ app.innerHTML = `
       </div>
       <div id="era-goals"></div>
       <div id="era-idea-slot-wrapper" hidden>
-        <div class="era-idea-prompt">Save an idea tile for this era</div>
+        <div class="era-idea-prompt">${getTheme().copy.slotPrompts.saveTilePrompt}</div>
         <div id="era-idea-slot" class="era-idea-slot"></div>
       </div>
       <button id="chart-era-btn" disabled>Next Age →</button>
     </div>
     <div id="inventory-header">
-      <span id="inventory-caption">Your Ideas</span>
-      <button id="card-catalog-btn">Catalog →</button>
+      <span id="inventory-caption">${getTheme().copy.inventoryCaption}</span>
+      <button id="card-catalog-btn">${getTheme().copy.cardCatalogButton}</button>
       <div id="palette-zoom-controls">
         <span id="palette-zoom-icon">\uD83D\uDD0D</span>
         <button id="palette-zoom-out">&#8722;</button>
@@ -485,8 +485,8 @@ app.innerHTML = `
     </div>
   </div>
   <div id="workspace">
-    <p id="workspace-caption">— the writing desk —</p>
-    <p id="workspace-hint">Place two ideas here to combine.</p>
+    <p id="workspace-caption">${getTheme().copy.workspaceCaption}</p>
+    <p id="workspace-hint">${getTheme().copy.writingDeskHint}</p>
     <div id="era-progress"></div>
   </div>
   <div id="card-catalog-overlay">
@@ -1467,7 +1467,7 @@ function showOnboardingArrow(): void {
   onboardingArrowTrail = createArrowTrail({
     from,
     to,
-    color: "var(--gilt, #c9a85f)",
+    color: "var(--accent-secondary, #c9a85f)",
   });
   document.body.appendChild(onboardingArrowTrail.el);
   onboardingArrowTrail.attach();
@@ -1559,7 +1559,7 @@ const tileInfoSheet = document.getElementById("tile-info-sheet")!;
 function openTileInfo(entry: ElementData) {
   const stars = entry.tier > 0 ? "★".repeat(Math.min(entry.tier, 5)) : "";
   tileInfoSheet.innerHTML = `
-    <div class="bookplate-stripe" style="background: var(--leather-deep);"></div>
+    <div class="bookplate-stripe" style="background: var(--border-strong);"></div>
     <div class="bookplate-content">
       <div class="bookplate-emoji" aria-hidden="true">${esc(entry.emoji)}</div>
       <div class="bookplate-name">${esc(entry.name)}</div>
@@ -2183,7 +2183,7 @@ if (selectFiveMode) {
 async function primeOnboardingCache(): Promise<void> {
   await recipeStore.set(recipeKey("Fire", "Wood"), {
     name: "Torch",
-    color: "#daa520",
+    color: getTheme().tokens.accentSecondary,
     tier: 2,
     emoji: "🪔",
     description: "A flame that travels.",
@@ -2209,7 +2209,7 @@ function s5FindElementData(name: string, tier: Tier): ElementData | null {
   const cache = recipeStore.exportCache();
   for (const v of Object.values(cache)) if (v.name === name) return v;
   // Fallback minimal shape
-  return { name, tier, emoji: "❓", color: "#777", description: "", narrative: "" };
+  return { name, tier, emoji: "❓", color: getTheme().tokens.borderFaint, description: "", narrative: "" };
 }
 
 function s5RenderSlot(slot: SelectionSlot) {
@@ -2363,7 +2363,7 @@ function tryDropIntoSlot(item: CombineItem, slot: SelectionSlot) {
     const ejectedData: ElementData = {
       name: ejected.name, tier: ejected.tier,
       emoji: ejected.emoji || lookup?.emoji || "❓",
-      color: ejected.color || lookup?.color || "#777",
+      color: ejected.color || lookup?.color || getTheme().tokens.borderFaint,
       description: lookup?.description ?? "",
       narrative: lookup?.narrative ?? "",
     };
@@ -2477,7 +2477,7 @@ function s5ShowShareScreen(choice: "keep" | "gift") {
     dl.onclick = async () => {
       if (!card) return;
       try {
-        const dataUrl = await toPng(card, { pixelRatio: 2, backgroundColor: "#0d1b2e" });
+        const dataUrl = await toPng(card, { pixelRatio: 2, backgroundColor: getTheme().tokens.bgPage });
         const filename = choice === "keep" ? "my-collection.png" : "gift-for-a-friend.png";
         await saveImage(dataUrl, filename);
       } catch (err) {
@@ -2642,7 +2642,7 @@ if (selectFiveMode) {
         selectionSlots[i].item = {
           name: raw.name, tier: raw.tier,
           emoji: data?.emoji ?? "❓",
-          color: data?.color ?? "#777",
+          color: data?.color ?? getTheme().tokens.borderFaint,
         };
       }
     }
@@ -2670,7 +2670,7 @@ if (selectFiveMode) {
       name: slot.item.name,
       tier: slot.item.tier,
       emoji: slot.item.emoji || lookup?.emoji || "❓",
-      color: slot.item.color || lookup?.color || "#777",
+      color: slot.item.color || lookup?.color || getTheme().tokens.borderFaint,
       description: lookup?.description ?? "",
       narrative: lookup?.narrative ?? "",
     };
@@ -2704,10 +2704,13 @@ const handlePointerMove = (e: PointerEvent) => {
 };
 
 // Workspace caption helper — the italic line under the writing desk frame.
-// Default state is "— the writing desk —". During a combine the caption
-// switches to "— thinking —", and on completion to "From X and Y came Z"
-// for a few seconds before reverting. Replaces the previous result toast.
-const WORKSPACE_CAPTION_DEFAULT = "— the writing desk —";
+// Default state pulled from the active theme (Bibliophile = "— the writing
+// desk —"). During a combine the caption switches to "— thinking —", and on
+// completion to "From X and Y came Z" for a few seconds before reverting.
+// Replaces the previous result toast. The "— thinking —" indicator is shared
+// across themes (it's about progress feedback, not voice), so it stays a
+// constant here.
+const WORKSPACE_CAPTION_DEFAULT = (): string => getTheme().copy.workspaceCaption;
 const WORKSPACE_CAPTION_THINKING = "— thinking —";
 let workspaceCaptionRevertTimer: number | null = null;
 function setWorkspaceCaption(text: string, revertAfterMs: number | null = null): void {
@@ -2721,7 +2724,7 @@ function setWorkspaceCaption(text: string, revertAfterMs: number | null = null):
   if (revertAfterMs !== null) {
     workspaceCaptionRevertTimer = window.setTimeout(() => {
       const cur = document.getElementById("workspace-caption");
-      if (cur) cur.textContent = WORKSPACE_CAPTION_DEFAULT;
+      if (cur) cur.textContent = WORKSPACE_CAPTION_DEFAULT();
     }, revertAfterMs);
   }
 }
@@ -3073,7 +3076,7 @@ async function combine(a: CombineItem, b: CombineItem) {
       }
       elementData = {
         name: `${a.name}+${b.name}`,
-        color: "#daa520",
+        color: getTheme().tokens.accentSecondary,
         tier: childTier,
         emoji: "\u2753",
         description: "Something went wrong in the fusion.",
@@ -3702,14 +3705,15 @@ function renderEraIdeaSlot() {
       // Keep the prompt visible during the hold so the slot wrapper's
       // height doesn't reflow mid-ceremony (an empty string here was
       // causing a vertical shift of the chart-era-btn underneath).
-      promptEl.textContent = tapMode ? "Tap to bind" : "Press and hold to bind";
+      const slotPrompts = getTheme().copy.slotPrompts;
+      promptEl.textContent = tapMode ? slotPrompts.tapToBindPrompt : slotPrompts.holdToBindPrompt;
       promptEl.classList.add("is-active");
     }
   } else {
     slotEl.classList.remove("slot-occupied", "slot-holding");
-    slotEl.innerHTML = `<span class="slot-empty-hint">Drop a tile here</span>`;
+    slotEl.innerHTML = `<span class="slot-empty-hint">${getTheme().copy.slotPrompts.dropTileHint}</span>`;
     if (promptEl) {
-      promptEl.textContent = "Save an idea tile for this era";
+      promptEl.textContent = getTheme().copy.slotPrompts.saveTilePrompt;
       promptEl.classList.remove("is-active");
     }
     if (wrapperVisible) startBindArrowIdleLoop();
@@ -3740,7 +3744,7 @@ function ensureEraIdeaArrowTrail() {
       const r = slotEl.getBoundingClientRect();
       return { x: r.left + r.width * (2 / 3), y: r.top + r.height / 2 };
     },
-    color: "var(--gilt, #c9a85f)",
+    color: "var(--accent-secondary, #c9a85f)",
     curveBias: "right",
     curveAmount: 0.29,
   });
@@ -4172,7 +4176,7 @@ function openRetirementOverlay(boundPreview: BoundTilePreview): Promise<"retired
         }
         grid.innerHTML = tiles
           .map((t) => {
-            const stripe = t.bindingStripeColor ?? "var(--leather-deep)";
+            const stripe = t.bindingStripeColor ?? "var(--border-strong)";
             return `<button
                 class="retire-tile"
                 data-tile-id="${esc(t.id)}"

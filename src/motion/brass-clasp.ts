@@ -1,14 +1,21 @@
 // Brass clasp — the only "snap" in the game. See spec §6.
 //
-// Two pseudo-clasp rects slide ±20px toward the target's edges over 220ms with
-// cubic-bezier(0.4, 0, 0.2, 1). Tile pulses 1.0 → 1.12 → 1.0.
+// Two pseudo-clasp rects slide ±20px toward the target's vertical mid-line
+// from the LEFT and RIGHT sides over 220ms with cubic-bezier(0.4, 0, 0.2, 1).
+// Tile pulses 1.0 → 1.12 → 1.0.
+//
+// Horizontal axis is the Bibliophile variant per
+// theming-architecture.md §3.4 (`--bind-clasp-type: "horizontal-clasp"`).
+// Curator and Cartographer use `"vertical-pin"` — when those themes ship,
+// add a direction option here and dispatch from main.ts on the active
+// theme's manifest.
 //
 // We render the clasps as inline-SVG sprites overlaid on the target's bounding
 // rect, then remove them on completion.
 
 import { isReducedMotion } from "./util";
 
-export function playBrassClasp(target: HTMLElement, color = "var(--gilt, #c9a85f)"): Promise<void> {
+export function playBrassClasp(target: HTMLElement, color = "var(--accent-secondary, #c9a85f)"): Promise<void> {
   if (isReducedMotion()) {
     // Reduced: subtle opacity flash on the target, no slide.
     return new Promise<void>((resolve) => {
@@ -21,22 +28,23 @@ export function playBrassClasp(target: HTMLElement, color = "var(--gilt, #c9a85f
   }
 
   const rect = target.getBoundingClientRect();
-  const claspW = 18;
-  const claspH = 10;
+  // Horizontal clasps — short tall rects that slide in from each side.
+  const claspW = 10;
+  const claspH = 18;
 
-  function makeClasp(side: "top" | "bottom"): HTMLElement {
+  function makeClasp(side: "left" | "right"): HTMLElement {
     const el = document.createElement("div");
     Object.assign(el.style, {
       position: "fixed",
       width: `${claspW}px`,
       height: `${claspH}px`,
-      left: `${rect.left + rect.width / 2 - claspW / 2}px`,
-      top: side === "top"
-        ? `${rect.top - claspH - 12}px`
-        : `${rect.bottom + 2}px`,
+      top: `${rect.top + rect.height / 2 - claspH / 2}px`,
+      left: side === "left"
+        ? `${rect.left - claspW - 12}px`
+        : `${rect.right + 2}px`,
       background: color,
       border: "1px solid rgba(0,0,0,0.5)",
-      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), 0 1px 2px rgba(0,0,0,0.4)",
+      boxShadow: "inset 1px 0 0 rgba(255,255,255,0.25), 1px 0 2px rgba(0,0,0,0.4)",
       borderRadius: "1px",
       zIndex: "70",
       pointerEvents: "none",
@@ -45,18 +53,18 @@ export function playBrassClasp(target: HTMLElement, color = "var(--gilt, #c9a85f
     return el;
   }
 
-  const top = makeClasp("top");
-  const bottom = makeClasp("bottom");
+  const left = makeClasp("left");
+  const right = makeClasp("right");
 
   const easing = "cubic-bezier(0.4, 0, 0.2, 1)";
   const duration = 220;
 
-  const aTop = top.animate(
-    [{ transform: "translateY(-20px)" }, { transform: "translateY(20px)" }],
+  const aLeft = left.animate(
+    [{ transform: "translateX(-20px)" }, { transform: "translateX(20px)" }],
     { duration, easing, fill: "forwards" },
   );
-  const aBottom = bottom.animate(
-    [{ transform: "translateY(20px)" }, { transform: "translateY(-20px)" }],
+  const aRight = right.animate(
+    [{ transform: "translateX(20px)" }, { transform: "translateX(-20px)" }],
     { duration, easing, fill: "forwards" },
   );
 
@@ -70,20 +78,20 @@ export function playBrassClasp(target: HTMLElement, color = "var(--gilt, #c9a85f
   );
 
   return Promise.all([
-    new Promise<void>((r) => { aTop.onfinish = () => r(); }),
-    new Promise<void>((r) => { aBottom.onfinish = () => r(); }),
+    new Promise<void>((r) => { aLeft.onfinish = () => r(); }),
+    new Promise<void>((r) => { aRight.onfinish = () => r(); }),
     new Promise<void>((r) => { tilePulse.onfinish = () => r(); }),
   ]).then(() => {
     // Hold the clasp visible for a beat, then dissolve.
     const fadeDuration = 240;
-    const fadeTop = top.animate([{ opacity: 1 }, { opacity: 0 }], { duration: fadeDuration, fill: "forwards" });
-    const fadeBottom = bottom.animate([{ opacity: 1 }, { opacity: 0 }], { duration: fadeDuration, fill: "forwards" });
+    const fadeLeft = left.animate([{ opacity: 1 }, { opacity: 0 }], { duration: fadeDuration, fill: "forwards" });
+    const fadeRight = right.animate([{ opacity: 1 }, { opacity: 0 }], { duration: fadeDuration, fill: "forwards" });
     return Promise.all([
-      new Promise<void>((r) => { fadeTop.onfinish = () => r(); }),
-      new Promise<void>((r) => { fadeBottom.onfinish = () => r(); }),
+      new Promise<void>((r) => { fadeLeft.onfinish = () => r(); }),
+      new Promise<void>((r) => { fadeRight.onfinish = () => r(); }),
     ]).then(() => {
-      if (top.parentElement) top.parentElement.removeChild(top);
-      if (bottom.parentElement) bottom.parentElement.removeChild(bottom);
+      if (left.parentElement) left.parentElement.removeChild(left);
+      if (right.parentElement) right.parentElement.removeChild(right);
     });
   });
 }

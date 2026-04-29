@@ -15,7 +15,7 @@
   font-size: 14px;
   background:
     radial-gradient(circle at 50% 0%, rgba(168, 121, 74, 0.12), transparent 60%),
-    var(--paper-dark);
+    var(--bg-page);
   color: var(--vellum);
   font-feature-settings: "kern" 1, "liga" 1;
 }
@@ -95,7 +95,7 @@
   right: 56px;
   z-index: 9;
   background: transparent;
-  color: var(--gilt);
+  color: var(--accent-secondary);
   border: 1px solid var(--leather-deep);
   font-family: var(--font-serif);
   font-style: italic;
@@ -110,7 +110,7 @@
 [data-theme="bibliophile"] #menu-btn:hover,
 [data-theme="bibliophile"] #menu-btn[aria-expanded="true"] {
   opacity: 1;
-  border-color: var(--gilt);
+  border-color: var(--accent-secondary);
   background: rgba(201, 168, 95, 0.08);
 }
 
@@ -129,7 +129,7 @@
   right: 56px;
   width: 200px;
   background:
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum);
   border: 1px solid var(--leather-deep);
   border-left: 4px solid var(--leather-deep);
@@ -165,11 +165,11 @@
   color: var(--leather-deep);
 }
 [data-theme="bibliophile"] .menu-item--destructive {
-  color: var(--oxblood);
+  color: var(--accent);
 }
 [data-theme="bibliophile"] .menu-item--destructive:hover {
   background: rgba(122, 62, 42, 0.12);
-  color: var(--oxblood);
+  color: var(--accent);
 }
 [data-theme="bibliophile"] .menu-item--debug {
   color: var(--marble-warm);
@@ -206,7 +206,7 @@
 
 /* Chapter title bar: gilt italic Cardo on paper-dark, framed by gilt rule. */
 [data-theme="bibliophile"] #era-name-row {
-  background: var(--paper-dark);
+  background: var(--bg-page);
   border-bottom: 1px solid var(--leather-deep);
   padding: 14px 18px 12px;
   display: flex;
@@ -224,7 +224,7 @@
   right: 0;
   bottom: -1px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gilt) 30%, var(--gilt) 70%, transparent);
+  background: linear-gradient(90deg, transparent, var(--accent-secondary) 30%, var(--accent-secondary) 70%, transparent);
   opacity: 0.4;
 }
 
@@ -249,7 +249,7 @@
   font-style: italic;
   font-weight: 400;
   font-size: 19px;
-  color: var(--gilt);
+  color: var(--accent-secondary);
   line-height: 1.1;
   letter-spacing: 0.3px;
 }
@@ -275,8 +275,8 @@
   font-weight: 500;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--gilt);
-  border: 1px solid var(--gilt);
+  color: var(--accent-secondary);
+  border: 1px solid var(--accent-secondary);
   padding: 2px 8px;
   border-radius: 999px;
   opacity: 0.85;
@@ -284,8 +284,8 @@
 }
 [data-theme="bibliophile"] #era-tier-badge.met {
   color: var(--vellum);
-  background: var(--gilt);
-  border-color: var(--gilt);
+  background: var(--accent-secondary);
+  border-color: var(--accent-secondary);
   opacity: 1;
 }
 [data-theme="bibliophile"] #era-tier-badge[hidden] { display: none; }
@@ -304,15 +304,15 @@
   color: var(--marble-warm);
 }
 [data-theme="bibliophile"] #era-name-toggle:hover {
-  border-color: var(--gilt);
-  color: var(--gilt);
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
 }
-[data-theme="bibliophile"] #era-name-toggle:hover #era-toggle-icon { color: var(--gilt); }
+[data-theme="bibliophile"] #era-name-toggle:hover #era-toggle-icon { color: var(--accent-secondary); }
 [data-theme="bibliophile"] #era-toggle-icon { color: var(--marble-warm); }
 
 /* Objectives card — vellum on leather frame */
 [data-theme="bibliophile"] #era-goals {
-  background: url(/themes/bibliophile/patterns/parchment.svg) repeat, var(--vellum);
+  background: var(--texture-border) repeat, var(--vellum);
   color: var(--ink-black);
   border: 1px solid var(--leather-deep);
   border-top: none;
@@ -332,7 +332,7 @@
   font-family: var(--font-sans);
   font-size: 11px;
   letter-spacing: 1.5px;
-  color: var(--oxblood);
+  color: var(--accent);
   text-transform: uppercase;
   margin-bottom: 6px;
 }
@@ -354,12 +354,12 @@
 }
 [data-theme="bibliophile"] .era-goal.met {
   text-decoration: line-through;
-  text-decoration-color: var(--gilt);
+  text-decoration-color: var(--accent-secondary);
   color: var(--leather-deep);
 }
 [data-theme="bibliophile"] .era-goal.met::before {
   content: "✓";
-  color: var(--gilt);
+  color: var(--accent-secondary);
 }
 [data-theme="bibliophile"] .era-goal.skipped {
   opacity: 0.55;
@@ -379,7 +379,7 @@
   position: fixed;
   transform: translate(-50%, -100%);
   background:
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum);
   border: 1px solid var(--leather-deep);
   color: var(--ink-black);
@@ -400,7 +400,7 @@
 }
 [data-theme="bibliophile"] .goal-popup.visible { opacity: 1; }
 [data-theme="bibliophile"] .goal-popup--pinned {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--gilt);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--accent-secondary);
 }
 
 @keyframes era-goal-char-glow {
@@ -409,7 +409,7 @@
      is oxblood — both should pulse to gilt and back without flashing through
      ink-black on the way in). */
   0%   { color: inherit; text-shadow: none; }
-  45%  { color: var(--gilt); text-shadow: 0 0 6px rgba(201, 168, 95, 0.6); }
+  45%  { color: var(--accent-secondary); text-shadow: 0 0 6px rgba(201, 168, 95, 0.6); }
   100% { color: inherit; text-shadow: none; }
 }
 [data-theme="bibliophile"] .era-goal-glow {
@@ -420,8 +420,8 @@
 
 @keyframes era-goal-info-pop {
   0%   { transform: scale(1); color: #7a7; text-shadow: none; }
-  35%  { transform: scale(1.55); color: var(--gilt); text-shadow: 0 0 10px rgba(201, 168, 95, 0.85); }
-  60%  { transform: scale(1.15); color: var(--gilt); text-shadow: 0 0 6px rgba(201, 168, 95, 0.5); }
+  35%  { transform: scale(1.55); color: var(--accent-secondary); text-shadow: 0 0 10px rgba(201, 168, 95, 0.85); }
+  60%  { transform: scale(1.15); color: var(--accent-secondary); text-shadow: 0 0 6px rgba(201, 168, 95, 0.5); }
   100% { transform: scale(1); color: #7a7; text-shadow: none; }
 }
 [data-theme="bibliophile"] .era-goal-info--pop {
@@ -442,7 +442,7 @@
 [data-theme="bibliophile"] #era-idea-slot-wrapper {
   margin: 12px 18px 0;
   padding: 10px 14px;
-  background: url(/themes/bibliophile/patterns/parchment.svg) repeat, var(--vellum);
+  background: var(--texture-border) repeat, var(--vellum);
   border: 1px solid var(--leather-deep);
 }
 /* The prompt's outer box is FIXED in both states (same font-size, padding,
@@ -452,7 +452,7 @@
 [data-theme="bibliophile"] .era-idea-prompt {
   font-family: var(--font-serif);
   font-style: italic;
-  color: var(--oxblood);
+  color: var(--accent);
   font-size: 14px;
   letter-spacing: 0.3px;
   text-align: center;
@@ -467,7 +467,7 @@
   font-weight: 700;
   letter-spacing: 0.4px;
   text-shadow:
-    1px 1px 0 var(--vellum, #f4e8d3),
+    1px 1px 0 var(--vellum, #f4ead5),
     1px 1px 0 rgba(26, 18, 8, 0.35);
   background: rgba(201, 168, 95, 0.10);
 }
@@ -482,29 +482,29 @@
   touch-action: none;
 }
 [data-theme="bibliophile"] .era-idea-slot.slot-occupied {
-  border-color: var(--gilt);
+  border-color: var(--accent-secondary);
   background: rgba(201, 168, 95, 0.1);
 }
 /* Drop-target feedback: when a workspace tile is dragged over the slot, the
    slot lights up gilt to advertise that releasing here will commit. */
 [data-theme="bibliophile"] .era-idea-slot.slot-hover {
   border-style: solid;
-  border-color: var(--gilt);
+  border-color: var(--accent-secondary);
   background: rgba(201, 168, 95, 0.18);
-  box-shadow: 0 0 0 1px var(--gilt), 0 0 18px 3px rgba(201, 168, 95, 0.35);
+  box-shadow: 0 0 0 1px var(--accent-secondary), 0 0 18px 3px rgba(201, 168, 95, 0.35);
   transition: background 0.15s ease-out, box-shadow 0.15s ease-out;
 }
 [data-theme="bibliophile"] .era-idea-slot .slot-empty-hint {
   font-family: var(--font-serif);
   font-style: italic;
-  color: var(--oxblood);
+  color: var(--accent);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.4px;
   /* Sharp 1px drop shadow — vellum highlight + ink-black body — so the
      prompt reads as a crisp callout against the dashed slot border. */
   text-shadow:
-    1px 1px 0 var(--vellum, #f4e8d3),
+    1px 1px 0 var(--vellum, #f4ead5),
     1px 1px 0 rgba(26, 18, 8, 0.35);
 }
 [data-theme="bibliophile"] .era-idea-slot .slot-name {
@@ -513,7 +513,7 @@
   font-size: 13px;
 }
 [data-theme="bibliophile"] .era-idea-slot .slot-tier {
-  color: var(--gilt);
+  color: var(--accent-secondary);
 }
 
 /* The legacy chart-era-btn ("Next Age →" / "Release") is no longer used in the
@@ -539,7 +539,7 @@
   position: relative;
   background:
     radial-gradient(ellipse 80% 60% at 50% 60%, rgba(244, 234, 213, 0.04), transparent 70%),
-    var(--paper-dark);
+    var(--bg-page);
   border: 1px solid var(--leather-deep);
   margin: 12px 18px 6px;
   overflow: hidden;
@@ -638,7 +638,7 @@
 
 [data-theme="bibliophile"] .combine-item {
   background:
-    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--texture-tile-face) repeat,
     var(--vellum) !important;
   color: var(--ink-black);
   border: 2px solid var(--leather-deep);
@@ -677,17 +677,17 @@
   right: 4px;
   top: auto;
   font-size: 7px;
-  color: var(--gilt);
+  color: var(--accent-secondary);
   text-shadow: none;
   letter-spacing: -1px;
 }
 [data-theme="bibliophile"] .combine-item.glow-green {
-  box-shadow: 0 0 0 2px var(--gilt), 0 0 16px 4px rgba(201, 168, 95, 0.4);
-  border-color: var(--gilt);
+  box-shadow: 0 0 0 2px var(--accent-secondary), 0 0 16px 4px rgba(201, 168, 95, 0.4);
+  border-color: var(--accent-secondary);
 }
 [data-theme="bibliophile"] .combine-item.glow-red {
-  box-shadow: 0 0 0 2px var(--oxblood), 0 0 16px 4px rgba(122, 62, 42, 0.4);
-  border-color: var(--oxblood);
+  box-shadow: 0 0 0 2px var(--accent), 0 0 16px 4px rgba(122, 62, 42, 0.4);
+  border-color: var(--accent);
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -715,7 +715,7 @@
   width: 56px;
   height: 30px;
   border-radius: 2px;
-  background: var(--paper-dark);
+  background: var(--bg-page);
   border: 1px solid var(--leather-deep);
   position: relative;
   display: flex;
@@ -744,18 +744,18 @@
 
 [data-theme="bibliophile"] .era-cube--active {
   background: var(--leather-deep);
-  border-color: var(--gilt);
-  box-shadow: 0 0 0 1px var(--gilt), 0 0 12px 2px rgba(201, 168, 95, 0.25);
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 0 1px var(--accent-secondary), 0 0 12px 2px rgba(201, 168, 95, 0.25);
 }
 [data-theme="bibliophile"] .era-cube--active .era-cube-roman {
-  color: var(--gilt);
+  color: var(--accent-secondary);
   font-style: italic;
   font-size: 11px;
 }
 
 [data-theme="bibliophile"] .era-cube--awaiting {
   background: var(--leather-deep);
-  border: 2px solid var(--gilt);
+  border: 2px solid var(--accent-secondary);
   box-shadow: 0 0 0 1px rgba(201, 168, 95, 0.2), 0 0 18px 4px rgba(201, 168, 95, 0.35);
   animation: era-cube-awaiting 1.6s ease-in-out infinite;
 }
@@ -763,12 +763,12 @@
   content: "";
   position: absolute;
   inset: 2px;
-  border: 1px dashed var(--gilt);
+  border: 1px dashed var(--accent-secondary);
   border-radius: 1px;
   opacity: 0.7;
 }
 [data-theme="bibliophile"] .era-cube--awaiting .era-cube-roman {
-  color: var(--gilt);
+  color: var(--accent-secondary);
   font-style: italic;
   font-size: 11px;
 }
@@ -781,7 +781,7 @@
   background:
     linear-gradient(to right, var(--stripe, var(--leather-deep)) 6px, transparent 6px) no-repeat,
     linear-gradient(to bottom, var(--stripe, var(--leather-deep)) 4px, transparent 4px) no-repeat,
-    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--texture-tile-face) repeat,
     var(--vellum);
   border: 1px solid var(--leather-deep);
   opacity: 1;
@@ -828,7 +828,7 @@
 [data-theme="bibliophile"] #inventory-header {
   grid-area: tray;
   align-self: end;
-  background: var(--paper-dark);
+  background: var(--bg-page);
   border-top: 1px solid var(--leather-deep);
   padding: 4px 14px 2px;
   display: flex;
@@ -855,8 +855,8 @@
 
 [data-theme="bibliophile"] #card-catalog-btn {
   background: transparent;
-  border: 1px solid var(--gilt);
-  color: var(--gilt);
+  border: 1px solid var(--accent-secondary);
+  color: var(--accent-secondary);
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 11px;
@@ -866,7 +866,7 @@
   transition: background 0.15s, color 0.15s;
 }
 [data-theme="bibliophile"] #card-catalog-btn:hover {
-  background: var(--gilt);
+  background: var(--accent-secondary);
   color: var(--ink-black);
 }
 
@@ -880,7 +880,7 @@
    pagination plaques on either side. */
 [data-theme="bibliophile"] #idea-tray-row {
   grid-area: tray;
-  background: var(--paper-dark);
+  background: var(--bg-page);
   border-top: 1px solid var(--leather-deep);
   padding: 2px 0 6px;
   display: grid;
@@ -897,7 +897,7 @@
 [data-theme="bibliophile"] .tray-paginate {
   background: linear-gradient(to bottom, var(--leather-deep) 0%, #3f311c 100%);
   border: 1px solid var(--ink-black);
-  color: var(--gilt);
+  color: var(--accent-secondary);
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 16px;
@@ -938,7 +938,7 @@
   box-shadow:
     inset 0 1px 0 rgba(201, 168, 95, 0.28),
     inset 0 -1px 0 rgba(0, 0, 0, 0.45),
-    0 0 0 1px var(--gilt),
+    0 0 0 1px var(--accent-secondary),
     0 2px 6px rgba(0, 0, 0, 0.55);
 }
 [data-theme="bibliophile"] .tray-paginate:active:not([disabled]) {
@@ -998,20 +998,20 @@
       to bottom,
       transparent 0,
       transparent 20%,
-      var(--gilt) 20%,
-      var(--gilt) 44%,
+      var(--accent-secondary) 20%,
+      var(--accent-secondary) 44%,
       transparent 44%
     ) center / 1px 100% no-repeat,
     /* Lower vertical gilt segment */
     linear-gradient(
       to bottom,
       transparent 56%,
-      var(--gilt) 56%,
-      var(--gilt) 80%,
+      var(--accent-secondary) 56%,
+      var(--accent-secondary) 80%,
       transparent 80%
     ) center / 1px 100% no-repeat,
     /* Centered gilt fleuron (small filled circle) between the two segments */
-    radial-gradient(circle at center, var(--gilt) 0 2.5px, transparent 2.5px)
+    radial-gradient(circle at center, var(--accent-secondary) 0 2.5px, transparent 2.5px)
       center / 8px 8px no-repeat;
   opacity: 0.85;
   pointer-events: none;
@@ -1043,7 +1043,7 @@
   width: 86px;
   height: 100px;
   background:
-    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--texture-tile-face) repeat,
     var(--vellum);
   border: 1px solid var(--leather-deep);
   border-radius: 2px;
@@ -1075,9 +1075,9 @@
      hover-flicker loop (hover ends as soon as the tile lifts off the pointer).
      Box-shadow + gilt outline gives the visual lift without changing the
      element's bounding box. */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--gilt);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--accent-secondary);
   background:
-    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--texture-tile-face) repeat,
     var(--vellum);
 }
 [data-theme="bibliophile"] .palette-item:active { cursor: grabbing; }
@@ -1118,7 +1118,7 @@
 }
 [data-theme="bibliophile"] .palette-stars {
   font-size: 7px;
-  color: var(--gilt);
+  color: var(--accent-secondary);
   margin-left: 0;
   letter-spacing: -1px;
   z-index: 1;
@@ -1130,7 +1130,7 @@
 
 [data-theme="bibliophile"] .tooltip {
   background:
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum);
   border: 1px solid var(--leather-deep);
   color: var(--ink-black);
@@ -1169,7 +1169,7 @@
 
 [data-theme="bibliophile"] #card-catalog-modal {
   background:
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum);
   border: 2px solid var(--leather-deep);
   border-radius: 2px;
@@ -1193,7 +1193,7 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 18px;
-  color: var(--oxblood);
+  color: var(--accent);
 }
 [data-theme="bibliophile"] #card-catalog-close {
   background: transparent;
@@ -1204,7 +1204,7 @@
   padding: 0 6px;
   line-height: 1;
 }
-[data-theme="bibliophile"] #card-catalog-close:hover { color: var(--oxblood); }
+[data-theme="bibliophile"] #card-catalog-close:hover { color: var(--accent); }
 
 [data-theme="bibliophile"] #card-catalog-body {
   padding: 24px;
@@ -1301,7 +1301,7 @@
 
 [data-theme="bibliophile"] .bookplate-sheet {
   background:
-    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--texture-tile-face) repeat,
     var(--vellum);
   border: 2px solid var(--leather-deep);
   border-radius: 2px;
@@ -1331,7 +1331,7 @@
   font-size: 11px;
   letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: var(--oxblood);
+  color: var(--accent);
   margin-bottom: 10px;
 }
 [data-theme="bibliophile"] .bookplate-emoji {
@@ -1348,7 +1348,7 @@
 }
 [data-theme="bibliophile"] .bookplate-tier {
   font-family: var(--font-serif);
-  color: var(--gilt);
+  color: var(--accent-secondary);
   letter-spacing: 4px;
   font-size: 12px;
   margin-top: 2px;
@@ -1365,7 +1365,7 @@
   font-family: var(--font-serif);
   font-size: 13px;
   line-height: 1.4;
-  color: var(--marble-cool);
+  color: var(--text-tertiary);
   margin: 6px 8px 0;
 }
 
@@ -1378,7 +1378,7 @@
   min-height: 100dvh;
   background:
     radial-gradient(circle at 50% 0%, rgba(168, 121, 74, 0.1), transparent 60%),
-    var(--paper-dark);
+    var(--bg-page);
   color: var(--vellum);
   font-family: var(--font-serif);
   padding: 24px max(16px, env(safe-area-inset-left)) 48px;
@@ -1407,13 +1407,13 @@
 [data-theme="bibliophile"] .library-vault-link { justify-self: end; }
 [data-theme="bibliophile"] .library-back:hover,
 [data-theme="bibliophile"] .library-vault-link:hover {
-  color: var(--gilt);
+  color: var(--accent-secondary);
 }
 [data-theme="bibliophile"] .library-title {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 24px;
-  color: var(--gilt);
+  color: var(--accent-secondary);
   margin: 0;
   text-align: center;
 }
@@ -1426,7 +1426,7 @@
   margin: 0 0 18px;
 }
 [data-theme="bibliophile"] .library-counter--full {
-  color: var(--gilt);
+  color: var(--accent-secondary);
 }
 [data-theme="bibliophile"] .library-empty,
 [data-theme="bibliophile"] .library-error {
@@ -1438,7 +1438,7 @@
   max-width: 360px;
 }
 [data-theme="bibliophile"] .library-error {
-  color: var(--oxblood);
+  color: var(--accent);
 }
 
 [data-theme="bibliophile"] .library-grid {
@@ -1447,7 +1447,7 @@
   grid-auto-rows: 88px;
   gap: 10px 12px;
   padding: 16px;
-  background: var(--paper-dark);
+  background: var(--bg-page);
   border: 1px solid var(--leather-deep);
   border-radius: 4px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
@@ -1475,7 +1475,7 @@
     /* binding stripe on left + top edges, then marble */
     linear-gradient(to right, var(--stripe) 4px, transparent 4px) no-repeat,
     linear-gradient(to bottom, var(--stripe) 3px, transparent 3px) no-repeat,
-    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--texture-tile-face) repeat,
     var(--vellum);
   color: var(--ink-black);
   cursor: pointer;
@@ -1489,7 +1489,7 @@
 }
 [data-theme="bibliophile"] .library-slot--filled:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--gilt);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--accent-secondary);
 }
 [data-theme="bibliophile"] .library-slot-emoji {
   font-size: 24px;
@@ -1545,9 +1545,9 @@
 }
 [data-theme="bibliophile"] #retirement-bound-tile {
   background:
-    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--texture-tile-face) repeat,
     var(--vellum);
-  border: 2px solid var(--gilt);
+  border: 2px solid var(--accent-secondary);
   border-radius: 2px;
   padding: 8px 6px 6px;
   width: 100px;
@@ -1559,7 +1559,7 @@
   gap: 2px;
   color: var(--ink-black);
   font-family: var(--font-serif);
-  box-shadow: 0 0 0 1px var(--gilt), 0 0 24px 6px rgba(201, 168, 95, 0.3),
+  box-shadow: 0 0 0 1px var(--accent-secondary), 0 0 24px 6px rgba(201, 168, 95, 0.3),
     0 12px 32px rgba(0, 0, 0, 0.55);
 }
 [data-theme="bibliophile"] .retire-bound-emoji {
@@ -1577,13 +1577,13 @@
 [data-theme="bibliophile"] .retire-bound-tier {
   font-size: 9px;
   letter-spacing: 1px;
-  color: var(--gilt);
+  color: var(--accent-secondary);
 }
 [data-theme="bibliophile"] #retirement-title {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 18px;
-  color: var(--gilt);
+  color: var(--accent-secondary);
   margin: 0;
   text-align: center;
 }
@@ -1602,7 +1602,7 @@
   grid-auto-rows: 80px;
   gap: 8px 10px;
   padding: 14px;
-  background: var(--paper-dark);
+  background: var(--bg-page);
   border: 1px solid var(--leather-deep);
   border-radius: 4px;
   overflow-y: auto;
@@ -1631,7 +1631,7 @@
   background:
     linear-gradient(to right, var(--stripe) 4px, transparent 4px) no-repeat,
     linear-gradient(to bottom, var(--stripe) 3px, transparent 3px) no-repeat,
-    url(/themes/bibliophile/patterns/marble.svg) repeat,
+    var(--texture-tile-face) repeat,
     var(--vellum);
   color: var(--ink-black);
   cursor: pointer;
@@ -1650,7 +1650,7 @@
 }
 [data-theme="bibliophile"] .retire-tile--holding {
   transform: translateY(-4px) scale(1.06);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--gilt);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--accent-secondary);
 }
 [data-theme="bibliophile"] #retirement-library-grid:has(.retire-tile--holding) .retire-tile:not(.retire-tile--holding) {
   opacity: 0.4;
@@ -1678,7 +1678,7 @@
 [data-theme="bibliophile"] .vault-page {
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--paper-dark);
+  background: var(--bg-page);
   color: var(--vellum);
   font-family: var(--font-serif);
   padding: 24px max(16px, env(safe-area-inset-left)) 48px;
@@ -1703,12 +1703,12 @@
   text-decoration: none;
   justify-self: start;
 }
-[data-theme="bibliophile"] .vault-back:hover { color: var(--gilt); }
+[data-theme="bibliophile"] .vault-back:hover { color: var(--accent-secondary); }
 [data-theme="bibliophile"] .vault-title {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 24px;
-  color: var(--gilt);
+  color: var(--accent-secondary);
   margin: 0;
   text-align: center;
 }
@@ -1730,7 +1730,7 @@
   margin: 32px 16px;
   max-width: 360px;
 }
-[data-theme="bibliophile"] .vault-error { color: var(--oxblood); }
+[data-theme="bibliophile"] .vault-error { color: var(--accent); }
 
 [data-theme="bibliophile"] .vault-list {
   list-style: none;
@@ -1771,7 +1771,7 @@
 
 [data-theme="bibliophile"] .vault-info-card {
   background:
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum);
   border: 2px solid var(--leather-deep);
   border-radius: 2px;
@@ -1788,7 +1788,7 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 18px;
-  color: var(--oxblood);
+  color: var(--accent);
   margin: 0;
 }
 [data-theme="bibliophile"] .vault-info-attribution {
@@ -1796,7 +1796,7 @@
   font-size: 11px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: var(--marble-cool);
+  color: var(--text-tertiary);
   margin: 0 0 8px;
 }
 [data-theme="bibliophile"] .vault-info-close {
@@ -1835,15 +1835,15 @@
   height: 36px;
   border-radius: 50%;
   border: 1px solid var(--leather-deep);
-  background: var(--paper-dark);
+  background: var(--bg-page);
   color: var(--marble-warm);
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
 }
 [data-theme="bibliophile"] .bookplate-close:hover {
-  color: var(--gilt);
-  border-color: var(--gilt);
+  color: var(--accent-secondary);
+  border-color: var(--accent-secondary);
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -1858,7 +1858,7 @@
   height: 32px;
   font-size: 16px;
   border-radius: 50%;
-  background: var(--paper-dark);
+  background: var(--bg-page);
   color: var(--marble-warm);
   border: 1px solid var(--leather-deep);
   cursor: pointer;
@@ -1871,8 +1871,8 @@
   transition: color 0.15s, border-color 0.15s, transform 0.12s;
 }
 [data-theme="bibliophile"] #settings-btn:hover {
-  color: var(--gilt);
-  border-color: var(--gilt);
+  color: var(--accent-secondary);
+  border-color: var(--accent-secondary);
   transform: rotate(30deg);
 }
 
@@ -1890,7 +1890,7 @@
 
 [data-theme="bibliophile"] #settings-modal {
   background:
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum);
   border: 2px solid var(--leather-deep);
   border-radius: 2px;
@@ -1913,7 +1913,7 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 18px;
-  color: var(--oxblood);
+  color: var(--accent);
   margin: 0;
 }
 [data-theme="bibliophile"] #settings-close {
@@ -1925,7 +1925,7 @@
   padding: 0 6px;
   line-height: 1;
 }
-[data-theme="bibliophile"] #settings-close:hover { color: var(--oxblood); }
+[data-theme="bibliophile"] #settings-close:hover { color: var(--accent); }
 
 [data-theme="bibliophile"] #settings-list {
   list-style: none;
@@ -1996,14 +1996,14 @@
   transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.15s;
 }
 [data-theme="bibliophile"] .settings-toggle input:checked + .settings-toggle-slider {
-  background: var(--oxblood);
+  background: var(--accent);
 }
 [data-theme="bibliophile"] .settings-toggle input:checked + .settings-toggle-slider::before {
   transform: translateX(20px);
-  background: var(--gilt);
+  background: var(--accent-secondary);
 }
 [data-theme="bibliophile"] .settings-toggle input:focus-visible + .settings-toggle-slider {
-  box-shadow: 0 0 0 2px var(--gilt);
+  box-shadow: 0 0 0 2px var(--accent-secondary);
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -2073,7 +2073,7 @@
 [data-theme="bibliophile"] .s5-share-panel,
 [data-theme="bibliophile"] #select-five-share-card {
   background:
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum);
   color: var(--ink-black);
   border-color: var(--leather-deep);
@@ -2104,7 +2104,7 @@
   z-index: 250;
   background:
     radial-gradient(ellipse 60% 40% at 50% 35%, rgba(168, 121, 74, 0.18), transparent 70%),
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum);
   display: flex;
   align-items: center;
@@ -2132,7 +2132,7 @@
   max-width: 360px;
   /* Faint gilt frame echoing a manuscript title page */
   padding: 36px 28px 32px;
-  border: 1px solid var(--gilt);
+  border: 1px solid var(--accent-secondary);
   border-radius: 2px;
   background: rgba(244, 234, 213, 0.55);
   box-shadow: 0 0 0 4px rgba(244, 234, 213, 0.4),
@@ -2142,7 +2142,7 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 22px;
-  color: var(--gilt);
+  color: var(--accent-secondary);
   margin-bottom: 4px;
   letter-spacing: 4px;
 }
@@ -2237,7 +2237,7 @@
   }
   50% {
     box-shadow:
-      0 0 0 1px var(--gilt),
+      0 0 0 1px var(--accent-secondary),
       0 0 12px 2px rgba(201, 168, 95, 0.45);
   }
 }
@@ -2249,16 +2249,16 @@
 }
 @keyframes onboarding-tile-pulse-strong {
   0% {
-    box-shadow: 0 0 0 1px var(--gilt), 0 0 12px 2px rgba(201, 168, 95, 0.45);
+    box-shadow: 0 0 0 1px var(--accent-secondary), 0 0 12px 2px rgba(201, 168, 95, 0.45);
   }
   50% {
     box-shadow:
-      0 0 0 2px var(--gilt),
+      0 0 0 2px var(--accent-secondary),
       0 0 24px 8px rgba(201, 168, 95, 0.75);
     transform: scale(1.04);
   }
   100% {
-    box-shadow: 0 0 0 1px var(--gilt), 0 0 12px 2px rgba(201, 168, 95, 0.45);
+    box-shadow: 0 0 0 1px var(--accent-secondary), 0 0 12px 2px rgba(201, 168, 95, 0.45);
   }
 }
 
@@ -2271,7 +2271,7 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-size: clamp(28px, 6vw, 38px);
-  color: var(--gilt);
+  color: var(--accent-secondary);
   letter-spacing: 1px;
   pointer-events: none;
   z-index: 235;
@@ -2313,9 +2313,9 @@
   text-align: center;
   color: var(--ink-black);
   background:
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum);
-  border: 1px solid var(--gilt);
+  border: 1px solid var(--accent-secondary);
   border-radius: 2px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   pointer-events: none;
@@ -2325,7 +2325,7 @@
 [data-theme="bibliophile"] .onboarding-reveal-caret {
   display: inline-block;
   margin-left: 1px;
-  color: var(--gilt);
+  color: var(--accent-secondary);
   animation: onboarding-caret-blink 900ms steps(2, end) infinite;
 }
 @keyframes onboarding-caret-blink {
@@ -2337,7 +2337,7 @@
    highlights so the player can still see Fire and Wood are special. */
 [data-theme="bibliophile"][data-reduced-motion="true"] .onboarding-pulse {
   animation: none !important;
-  box-shadow: 0 0 0 1px var(--gilt), 0 0 8px 2px rgba(201, 168, 95, 0.35);
+  box-shadow: 0 0 0 1px var(--accent-secondary), 0 0 8px 2px rgba(201, 168, 95, 0.35);
 }
 [data-theme="bibliophile"][data-reduced-motion="true"] .onboarding-try {
   animation: none;
@@ -2359,7 +2359,7 @@
   border-radius: 50%;
   background:
     radial-gradient(circle at 35% 30%, #a04832 0%, #7a3e2a 45%, #5a2e1f 100%);
-  color: var(--gilt);
+  color: var(--accent-secondary);
   font-family: var(--font-serif);
   font-style: italic;
   font-weight: 400;
@@ -2380,8 +2380,8 @@
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 14px;
-  color: var(--gilt);
-  border: 1px solid var(--gilt);
+  color: var(--accent-secondary);
+  border: 1px solid var(--accent-secondary);
   background: transparent;
   padding: 8px 18px;
   border-radius: 2px;
@@ -2390,7 +2390,7 @@
   transition: background 0.15s, color 0.15s;
 }
 [data-theme="bibliophile"] #victory-library-link:hover {
-  background: var(--gilt);
+  background: var(--accent-secondary);
   color: var(--ink-black);
 }
 
@@ -2404,7 +2404,7 @@
 
 [data-theme="bibliophile"] #era-summary-panel {
   background:
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum);
   border: 2px solid var(--leather-deep);
   color: var(--ink-black);
@@ -2426,7 +2426,7 @@
   font-style: italic;
   font-weight: 400;
   font-size: clamp(22px, 5vw, 28px);
-  color: var(--gilt);
+  color: var(--accent-secondary);
   letter-spacing: 0.5px;
   margin: 0 0 8px;
   line-height: 1.15;
@@ -2446,10 +2446,10 @@
 [data-theme="bibliophile"] .era-summary-completed,
 [data-theme="bibliophile"] .era-summary-next {
   background:
-    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--texture-border) repeat,
     var(--vellum) !important;
   border: 1px solid var(--leather-deep);
-  border-left: 3px solid var(--gilt);
+  border-left: 3px solid var(--accent-secondary);
   border-radius: 2px;
   padding: 14px 16px;
   color: var(--ink-black);
@@ -2462,7 +2462,7 @@
   font-size: 11px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: var(--oxblood);
+  color: var(--accent);
   margin-bottom: 6px;
 }
 
@@ -2510,7 +2510,7 @@
   font-size: 10px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--oxblood) !important;
+  color: var(--accent) !important;
   font-weight: 500;
   background: transparent !important;
 }
@@ -2544,9 +2544,9 @@
 
 /* Continue button — oxblood with gilt rule, italic Cardo, hover flips. */
 [data-theme="bibliophile"] #era-summary-continue-btn {
-  background: var(--oxblood);
+  background: var(--accent);
   color: var(--vellum);
-  border: 1px solid var(--gilt);
+  border: 1px solid var(--accent-secondary);
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 14px;
@@ -2558,7 +2558,7 @@
   transition: background 0.15s, color 0.15s;
 }
 [data-theme="bibliophile"] #era-summary-continue-btn:hover:not([disabled]) {
-  background: var(--gilt);
+  background: var(--accent-secondary);
   color: var(--ink-black);
 }
 [data-theme="bibliophile"] #era-summary-continue-btn[disabled] {
@@ -2576,7 +2576,7 @@
   border: 2px solid var(--leather-deep);
   background:
     radial-gradient(ellipse at center, rgba(168, 121, 74, 0.06), transparent 70%),
-    var(--paper-dark);
+    var(--bg-page);
   display: flex;
   align-items: center;
   justify-content: center;

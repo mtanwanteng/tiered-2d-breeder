@@ -20,14 +20,12 @@
 //   - reveal-narrative timer + dwell (reveal → done)
 
 import { useEffect, useRef, useState } from "react";
+import { getTheme } from "../../src/theme";
 
 const ONBOARDED_KEY = "idea-collector-onboarded";
 
-const REVEAL_NARRATIVE = "Light pushed back at the dark.";
 const REVEAL_CHAR_MS = 55;
 const REVEAL_DWELL_MS = 2200;
-const FRONT_TAGLINE = "Every idea is a story.\nEvery story builds a civilization.";
-const TRY_PROMPT = "Try.";
 
 type Frame = "hidden" | "front" | "guide" | "merging" | "reveal" | "done";
 
@@ -77,15 +75,16 @@ export function OnboardingOverlay() {
   useEffect(() => {
     if (frame !== "reveal") return;
     setRevealChars(0);
+    const narrative = getTheme().copy.onboarding.torchNarrative;
     let i = 0;
     const typer = window.setInterval(() => {
       i += 1;
       setRevealChars(i);
-      if (i >= REVEAL_NARRATIVE.length) window.clearInterval(typer);
+      if (i >= narrative.length) window.clearInterval(typer);
     }, REVEAL_CHAR_MS);
     const dismiss = window.setTimeout(
       () => setFrame("done"),
-      REVEAL_NARRATIVE.length * REVEAL_CHAR_MS + REVEAL_DWELL_MS,
+      narrative.length * REVEAL_CHAR_MS + REVEAL_DWELL_MS,
     );
     return () => {
       window.clearInterval(typer);
@@ -139,6 +138,8 @@ export function OnboardingOverlay() {
     }
   };
 
+  const onboardingCopy = getTheme().copy.onboarding;
+
   return (
     <>
       {frame === "front" && (
@@ -148,27 +149,27 @@ export function OnboardingOverlay() {
           onKeyDown={onFrontKey}
           role="button"
           tabIndex={0}
-          aria-label="Tap to begin"
+          aria-label={onboardingCopy.tapToBegin}
         >
           <div className="onboarding-content">
             <div className="onboarding-ornament" aria-hidden="true">❦</div>
-            <h1 className="onboarding-title">Idea Collector</h1>
+            <h1 className="onboarding-title">{onboardingCopy.title}</h1>
             <p className="onboarding-tagline">
-              {FRONT_TAGLINE.split("\n").map((line, i) => (
+              {onboardingCopy.tagline.split("\n").map((line, i) => (
                 <span key={i}>{line}<br /></span>
               ))}
             </p>
-            <p className="onboarding-cue">tap to begin</p>
+            <p className="onboarding-cue">{onboardingCopy.tapToBegin}</p>
           </div>
         </div>
       )}
 
       {(frame === "guide" || frame === "merging" || frame === "reveal") && (
         <>
-          <p className="onboarding-try" aria-hidden="true">{TRY_PROMPT}</p>
+          <p className="onboarding-try" aria-hidden="true">{onboardingCopy.tryPrompt}</p>
           {frame === "reveal" && (
             <p className="onboarding-reveal" aria-live="polite">
-              {REVEAL_NARRATIVE.slice(0, revealChars)}
+              {onboardingCopy.torchNarrative.slice(0, revealChars)}
               <span className="onboarding-reveal-caret">|</span>
             </p>
           )}

@@ -45,7 +45,7 @@ export function Bookplate({ tile, runOrdinal }: BookplateProps) {
   const chapterRoman = tile.chapterIndex !== null
     ? ROMANS[tile.chapterIndex + 1] ?? String(tile.chapterIndex + 1)
     : "";
-  const stripe = tile.bindingStripeColor ?? "var(--leather-deep, #5a4528)";
+  const stripe = tile.bindingStripeColor ?? "var(--border-strong, #5a4528)";
   const attribution = [
     runOrdinal !== undefined ? `From your ${ordinal(runOrdinal)} run` : null,
     chapterRoman ? `Chapter ${chapterRoman}` : null,

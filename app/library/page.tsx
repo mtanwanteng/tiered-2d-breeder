@@ -81,7 +81,7 @@ export default function LibraryPage() {
               if (!tile) {
                 return <div key={`empty-${i}`} className="library-slot library-slot--empty" />;
               }
-              const stripe = tile.bindingStripeColor ?? "var(--leather-deep, #5a4528)";
+              const stripe = tile.bindingStripeColor ?? "var(--border-strong, #5a4528)";
               return (
                 <button
                   key={tile.id}
