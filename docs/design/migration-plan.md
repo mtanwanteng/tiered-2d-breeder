@@ -163,7 +163,7 @@ Total: ~6–8 weeks of solo engineering depending on how much of D/E art is comm
 **Verification.**
 - `npm run build` clean.
 - `npm run dev` and play through one chapter end-to-end. Compare against pre-phase screenshots. Pixel-identical is the bar; if anything looks different, it's a regression.
-- DevTools: `document.documentElement.style.setProperty('--accent', 'red')` should turn every gilt accent red. If it doesn't, that consumer is still reading a literal.
+- DevTools: `document.documentElement.style.setProperty('--accent', 'red')` should turn every primary-accent surface (oxblood — errors, destructive buttons, glow-red) red. `setProperty('--accent-secondary', 'lime')` should turn every gilt halo / highlight lime. If either doesn't take effect, that consumer is still reading a raw swatch literal (`var(--oxblood)` / `var(--gilt)`) instead of the abstract role.
 - Grep audit: zero hex literals in `src/main.ts` and `app/components/` for *theme-coupled* visuals (page chrome, accents, borders). Allowed hex sites: `src/theme/bibliophile/manifest.ts`, `tokens.css`, `eras.json` (preserved for future experiment per Phase C), AI-generated tile-face fill (preserved likewise), debug surfaces.
 
 **Effort.** Large. The style.css cleanup alone is multiple sittings. Recommend pacing: skin.css refactor first (small commits), main.ts copy migration second, layout.tsx font loader third, style.css legacy cleanup last.

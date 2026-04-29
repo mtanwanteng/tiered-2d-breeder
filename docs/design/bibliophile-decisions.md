@@ -359,3 +359,35 @@ Reasoning: read-only and informational items at top → state-changing items bel
 - **Why now:** the audit pass surfaced the conflict, and the horizontal axis is the cheap test for "are we ready to support a real cross-theme bind-clasp dispatch?" If horizontal feels right for Bibliophile, Curator's vertical-pin variant (descending from above only) becomes the natural next addition: same primitive, new direction option.
 - **Spec edit:** No new content — `bibliophile-spec.md` §6 is intentionally ambiguous on axis. The architecture spec is now the source of truth.
 - **Reversible if:** Horizontal looks worse than vertical in playtest. Swap `translateX` back to `translateY` and the `left/right` anchor logic back to `top/bottom`. The 220ms / 1.12× / cubic-bezier numbers are settled either way.
+
+---
+
+## 2026-04-29
+
+### D27. Theme-system migration shipped — Phases A–F + motion variants + placeholder textures
+- **Status:** USER-DECIDED (the migration plan was approved out of plan mode); CLAUDE-DECIDED on per-phase implementation calls.
+- **Detail:** The seven-phase migration plan in `docs/design/migration-plan.md` was executed end-to-end on `theme-swapping-date`, ship to `master` once Phase G playtest validates. Phase G is the only outstanding phase — it's a manual playthrough, not engineering work.
+- **What shipped:**
+  - **Phase A — token contract.** `Theme` interface expanded to all six architecture-spec categories (color roles, fonts struct, textures struct, motion discriminators, audio shared/themed split, chapter-color seed bank). Bibliophile manifest fills the new shape.
+  - **Phase B — consumer migration.** main.ts copy strings + 12 hex literals migrated to `getTheme().*` reads; Bookplate / library / vault stripe fallbacks tokenized; layout.tsx font URL routes through `getFontStylesheetUrl()`; skin.css partial color sweep (oxblood/gilt/paper-dark/marble-cool → abstract roles, plus 22 texture URL tokenizations).
+  - **Phase C — render-path bypass.** Library / Bookplate / vault / retire-picker stripes now resolve from the active theme's `bindingStripePalette` via `chapterStripeColor()`; vault gets a server-computed `chapterColorSeed` so the spine-only contract holds. Storage (DB columns, types, save data, AI prompt color generation, eras.json colors) preserved per user direction "don't strip anything".
+  - **Phase D — Curator.** Manifest + tokens.css under `[data-theme="curator"]`; Cormorant Garamond + Inter as free near-equivalents of GT Sectra + Söhne (manifest's font stack lists both); brass-clasp grew vertical-pin variant; THEMES registry; setThemeByName() exposed on window for dev-flag testing.
+  - **Phase E — Cartographer.** Manifest + tokens.css under `[data-theme="cartographer"]`; italic EB Garamond + IBM Plex Mono (both free Google Fonts); 800ms page-turn (vs 700ms) per spec. `Theme.fonts.uiCaseRule` union extended with `"sentence-case-with-mono-comments"` for Cartographer.
+  - **Phase F — settings drawer + persistence.** APPEARANCE section with three radio cards in the existing settings drawer; localStorage key `bibliophile-theme-preference`; user.theme_preference text column on the user table (drizzle migration `0006_theme_preference.sql`, applied via push); `theme` cookie set on every change so SSR's first paint matches across reloads; `app/layout.tsx` reads the cookie + validates against THEMES.
+  - **Motion variants** for the remaining three primitives: `playPageTurn` gained pan-horizontal + fold-3d branches, `playBrushWipe` gained spotlight-wipe + ink-wash, `playInkBloom` gained frame-then-fill + outline-then-fill. main.ts call sites dispatch on `getTheme().motion.*`.
+  - **Run-end seal variants** in skin.css: rectangular brushed-brass plaque under `[data-theme="curator"]`, slightly-irregular red wax circle under `[data-theme="cartographer"]`. Compass-rose engraving deferred (needs a real SVG asset; the "A" stays for now).
+  - **Placeholder SVG textures** for Curator (linen, archival cream, mat-board) and Cartographer (14×14 hand-ruled grid, vellum, sepia border) — hand-coded SVG approximations of the spec's intended textures. Real commissioned assets can drop into the same paths.
+- **What's still deferred (post-migration):**
+  - **Phase G manual playthrough** — cold-start in each theme, mid-run switching, mixed-theme library re-skin, vault, accessibility cross-product, SSR first-paint check.
+  - **Surface-level Curator/Cartographer skin.css overrides** — gallery-wall library + deaccession-ledger framing for Curator, mono-comment prefixes + expedition-log + copper push-pin sprite for Cartographer. These are layout/typography deltas that need design+engineering with real assets.
+  - **Bari painted art across all three themes** (per D25, deferred indefinitely; emoji composite stays).
+  - **Sourced audio samples** — procedural Web Audio bus is still kill-switched per D14; the manifest's themed audio paths are forward-looking declarations.
+  - **Discoverability gate** (architecture spec §8: surface theme options after run 3) — shipped without the gate; revisit if it disorients first-time players.
+  - **Atlas (Cartographer linear-wall library)** — explicit v1.1 per spec §9.
+- **Spec gaps surfaced during implementation** (worth ratifying or addressing in follow-up):
+  - `theming-architecture.md §3.1` — text-color contract is single-surfaced. Real themes have both light and dark surfaces; raw swatches (`var(--vellum)` for text on dark, `var(--ink-black)` for text on light) stayed in skin.css where role layer was insufficient.
+  - `theming-architecture.md §3.2` — Cartographer's `sentence-case-with-mono-comments` value isn't in the spec's union. I extended `Theme.fonts.uiCaseRule` to accept it.
+  - `theming-architecture.md §3.3` — texture CSS variable names (`--texture-page-bg` / `--texture-tile-face` / `--texture-border`) chosen during Phase B; spec doesn't dictate names.
+  - `theming-architecture.md §3.6` — the three "shared" cello cues map to architecture-spec names `held_breath_inhale` / `post_commit_breath` / `retirement_exhale` but the manifest names them `celloBind` / `celloRetire` / `celloBridge`.
+  - `migration-plan.md §B verification` — the "DevTools `setProperty('--accent', 'red')` should turn every gilt accent red" line is wrong; gilt is `--accent-secondary`, oxblood is `--accent`. Fixed in the same commit as this entry.
+- **Reversible if:** Any individual theme manifest can be removed by deleting its `src/theme/<name>/` directory + dropping the `THEMES[<name>]` entry + removing the `@import` from `app/globals.css`. The dev-flag `setThemeByName()` exposure on `window` is a one-line revert in main.ts. The DB column rollback is a single `ALTER TABLE "user" DROP COLUMN "theme_preference"`.
