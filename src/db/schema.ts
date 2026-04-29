@@ -36,6 +36,12 @@ export const user = pgTable("user", {
   roomToneEnabled: boolean("room_tone_enabled")
     .$defaultFn(() => true)
     .notNull(),
+  // Phase F theme switcher. Values are theme manifest names registered in
+  // src/theme/index.ts THEMES (bibliophile | curator | cartographer).
+  // Validation lives in app code; the DB stores the raw string.
+  themePreference: text("theme_preference")
+    .$defaultFn(() => "bibliophile")
+    .notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),

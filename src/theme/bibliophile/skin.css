@@ -2006,6 +2006,86 @@
   box-shadow: 0 0 0 2px var(--accent-secondary);
 }
 
+/* Appearance / theme picker (Phase F). Section header is a small all-caps
+   label; the picker is three radio cards stacked. */
+[data-theme="bibliophile"] .settings-section-header {
+  list-style: none;
+  padding: 14px 20px 6px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-faint);
+  margin-top: 4px;
+}
+[data-theme="bibliophile"] .settings-row--theme {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+[data-theme="bibliophile"] .settings-theme-picker {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+[data-theme="bibliophile"] .settings-theme-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-faint);
+  border-radius: 2px;
+  cursor: pointer;
+  background: transparent;
+  transition: background 0.12s, border-color 0.12s;
+}
+[data-theme="bibliophile"] .settings-theme-option:hover {
+  background: rgba(201, 168, 95, 0.08);
+  border-color: var(--accent-secondary);
+}
+[data-theme="bibliophile"] .settings-theme-option input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  margin: 0;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+[data-theme="bibliophile"] .settings-theme-option input[type="radio"]:checked {
+  border-color: var(--accent);
+}
+[data-theme="bibliophile"] .settings-theme-option input[type="radio"]:checked::after {
+  content: "";
+  position: absolute;
+  inset: 2.5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+[data-theme="bibliophile"] .settings-theme-option:has(input:checked) {
+  border-color: var(--accent);
+  background: rgba(122, 62, 42, 0.06);
+}
+[data-theme="bibliophile"] .settings-theme-label {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: var(--text-primary);
+  flex: 1;
+}
+[data-theme="bibliophile"] .settings-theme-sub {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
 /* ─────────────────────────────────────────────────────────────────────
    HIGH-CONTRAST VARIANT — accessibility theme (spec §8). Triggered by
    [data-contrast="high"] on <html> via the settings drawer.

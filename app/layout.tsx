@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { PostHogProvider } from "./posthog-provider";
 import PostHogPageView from "./posthog-pageview";
 import { AuthProvider } from "./components/auth-provider";
 import { DiscordActivityProvider } from "./components/discord-activity-provider";
-import { getTheme } from "../src/theme";
+import { THEMES, bibliophile } from "../src/theme";
 import { getFontStylesheetUrl } from "../src/theme/fontStylesheet";
 
 export const metadata: Metadata = {
@@ -25,15 +26,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
-  // SSR first paint resolves the active theme synchronously. Phase F adds
-  // a cookie / user-preference read in front of this so non-default themes
-  // also avoid the FOUC; Phase B locks in the indirection.
-  const theme = getTheme();
+  // Phase F: SSR first paint reads the player's theme cookie set by
+  // src/settings.ts when they switch themes. Falls back to bibliophile for
+  // first visits and rejects unknown values so a stale cookie can't poison
+  // the render. Phase B's getTheme() runtime indirection still drives the
+  // client-side dispatch; this just gets the right CSS scope on first paint.
+  const cookieStore = await cookies();
+  const cookieName = cookieStore.get("theme")?.value;
+  const theme = (cookieName && THEMES[cookieName]) ? THEMES[cookieName] : bibliophile;
   return (
     <html lang="en" data-theme={theme.name}>
       <head>

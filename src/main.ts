@@ -580,6 +580,30 @@ app.innerHTML = `
             <span class="settings-toggle-slider"></span>
           </label>
         </li>
+        <li class="settings-section-header" aria-hidden="true">Appearance</li>
+        <li class="settings-row settings-row--theme">
+          <div>
+            <span class="settings-label">Theme</span>
+            <span class="settings-hint">Re-skins the chrome instantly. Library tiles re-color too.</span>
+          </div>
+          <fieldset class="settings-theme-picker" aria-label="Theme">
+            <label class="settings-theme-option">
+              <input type="radio" name="settings-theme" value="bibliophile" />
+              <span class="settings-theme-label">Bibliophile</span>
+              <span class="settings-theme-sub">leather + gilt</span>
+            </label>
+            <label class="settings-theme-option">
+              <input type="radio" name="settings-theme" value="curator" />
+              <span class="settings-theme-label">Curator</span>
+              <span class="settings-theme-sub">archival + restraint</span>
+            </label>
+            <label class="settings-theme-option">
+              <input type="radio" name="settings-theme" value="cartographer" />
+              <span class="settings-theme-label">Cartographer</span>
+              <span class="settings-theme-sub">vellum + sepia</span>
+            </label>
+          </fieldset>
+        </li>
       </ul>
     </div>
   </div>
@@ -1540,6 +1564,9 @@ const inputReducedMotion = document.getElementById("settings-reduced-motion") as
 const inputTapToCommit = document.getElementById("settings-tap-to-commit") as HTMLInputElement | null;
 const inputHighContrast = document.getElementById("settings-high-contrast") as HTMLInputElement | null;
 const inputRoomTone = document.getElementById("settings-room-tone") as HTMLInputElement | null;
+const themeRadios = Array.from(
+  document.querySelectorAll<HTMLInputElement>('input[name="settings-theme"]'),
+);
 
 function syncSettingsInputs() {
   const s = getSettings();
@@ -1547,6 +1574,7 @@ function syncSettingsInputs() {
   if (inputTapToCommit) inputTapToCommit.checked = s.prefersTapToCommit;
   if (inputHighContrast) inputHighContrast.checked = s.prefersHighContrast;
   if (inputRoomTone) inputRoomTone.checked = s.roomToneEnabled;
+  for (const r of themeRadios) r.checked = r.value === s.themePreference;
 }
 syncSettingsInputs();
 
@@ -1573,6 +1601,14 @@ inputHighContrast?.addEventListener("change", (e) => {
 inputRoomTone?.addEventListener("change", (e) => {
   setSetting("roomToneEnabled", (e.target as HTMLInputElement).checked);
 });
+for (const radio of themeRadios) {
+  radio.addEventListener("change", (e) => {
+    const value = (e.target as HTMLInputElement).value;
+    if (value === "bibliophile" || value === "curator" || value === "cartographer") {
+      setSetting("themePreference", value);
+    }
+  });
+}
 
 // --- Tile-info bookplate sheet (Phase 8) ---
 const tileInfoOverlay = document.getElementById("tile-info-overlay")!;
