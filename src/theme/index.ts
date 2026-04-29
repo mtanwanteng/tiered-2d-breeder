@@ -1,9 +1,13 @@
-// Active theme registry. Today there is only one theme (Bibliophile);
-// the indirection exists so future themes are a manifest swap, not a code rewrite.
-// See docs/design/bibliophile-spec.md §1 "Theme architecture".
+// Active theme registry. Bibliophile is the v1 default; Curator and
+// Cartographer are parallel themes registered from Phase D onward. The
+// indirection exists so future themes are a manifest swap, not a code rewrite.
+// See docs/design/bibliophile-spec.md §1 "Theme architecture" and
+// docs/design/theming-architecture.md.
 
 import type { Theme } from "./Theme";
 import { bibliophile } from "./bibliophile/manifest";
+import { curator } from "./curator/manifest";
+import { loadThemeFonts } from "./fontStylesheet";
 
 export type {
   Theme,
@@ -15,6 +19,15 @@ export type {
   ThemeCopy,
 } from "./Theme";
 
+/** All registered themes, keyed by manifest.name. Phase F's settings
+ *  switcher iterates this for the Appearance picker. */
+export const THEMES: Record<string, Theme> = {
+  bibliophile,
+  curator,
+};
+
+export { bibliophile, curator };
+
 let activeTheme: Theme = bibliophile;
 
 export function getTheme(): Theme {
@@ -22,12 +35,24 @@ export function getTheme(): Theme {
 }
 
 /** Switch the active theme. Updates the data-theme attribute on <html> so
- *  CSS variables under [data-theme="<name>"] take effect. */
+ *  CSS variables under [data-theme="<name>"] take effect, and lazy-injects
+ *  the new theme's font stylesheet so type doesn't drop to system fallbacks. */
 export function setTheme(theme: Theme): void {
   activeTheme = theme;
   if (typeof document !== "undefined") {
     document.documentElement.dataset.theme = theme.name;
+    loadThemeFonts(theme.name);
   }
+}
+
+/** Phase D dev-flag toggle. Switch by name from the DevTools console:
+ *  `setThemeByName("curator")`. Falls back silently if the name is unknown
+ *  so a typo doesn't crash. */
+export function setThemeByName(name: string): boolean {
+  const theme = THEMES[name];
+  if (!theme) return false;
+  setTheme(theme);
+  return true;
 }
 
 /** Look up a chapter's italic theme tag by era name. Returns empty string if

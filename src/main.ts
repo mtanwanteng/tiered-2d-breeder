@@ -16,7 +16,7 @@ import posthog from "posthog-js";
 import { toPng } from "html-to-image";
 import { createArrowTrail, type ArrowTrailHandle } from "./arrow-trail";
 import type { EraIdeaTilePick } from "./types";
-import { chapterTag, getTheme } from "./theme";
+import { chapterTag, getTheme, setTheme, setThemeByName, THEMES } from "./theme";
 import { chapterStripeColor } from "./theme/chapterColor";
 import {
   startHoldArc,
@@ -44,6 +44,28 @@ interface CombineItem {
   el: HTMLElement;
   x: number;
   y: number;
+}
+
+// Phase D dev hook: expose the theme switcher on window so DevTools can
+// flip themes for testing before the Phase F settings drawer ships.
+//   > setThemeByName("curator")  — switch to Curator
+//   > setThemeByName("bibliophile")  — switch back
+//   > THEMES                     — list registered themes
+// Production safe: function is harmless even when shipped (only callable
+// from a console with access to window).
+declare global {
+  interface Window {
+    setTheme: typeof setTheme;
+    setThemeByName: typeof setThemeByName;
+    getTheme: typeof getTheme;
+    THEMES: typeof THEMES;
+  }
+}
+if (typeof window !== "undefined") {
+  window.setTheme = setTheme;
+  window.setThemeByName = setThemeByName;
+  window.getTheme = getTheme;
+  window.THEMES = THEMES;
 }
 
 export function mountGame(app: HTMLElement, selectFiveMode = false) {
@@ -4399,7 +4421,12 @@ async function commitBindCeremony() {
   // Audio: 3-layer clasp (leather-press + brass tonic + cello tonic resolves) — the
   // cello side already resolved when bindHoldHandle.promise settled "complete".
   audio.playClaspSnap();
-  if (slotEl) await playBrassClasp(slotEl);
+  if (slotEl) {
+    // Phase D: dispatch on the active theme's clasp axis. Bibliophile is
+    // horizontal-clasp; Curator/Cartographer are vertical-pin.
+    const claspDirection = getTheme().motion.bindClaspType === "vertical-pin" ? "vertical" : "horizontal";
+    await playBrassClasp(slotEl, { direction: claspDirection });
+  }
 
   handle?.destroy();
 

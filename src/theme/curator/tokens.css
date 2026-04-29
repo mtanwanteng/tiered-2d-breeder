@@ -1,0 +1,59 @@
+/* Curator theme — color and typography tokens.
+   Mirrors src/theme/curator/manifest.ts. Keep in sync.
+   See docs/design/curator-spec.md §2 "Token values" and
+   docs/design/theming-architecture.md §3 "Token categories". */
+
+[data-theme="curator"] {
+  /* Raw swatch layer — re-uses Bibliophile's swatch variable names so
+     skin.css selectors that still reference (e.g.) var(--gilt) keep working
+     after a setTheme switch. Curator's values are spec-canonical. */
+  --ink-black: #1a1a1a;
+  --oxblood: #7a3e2a;
+  --gilt: #9a8a5a;
+  --vellum: #fafaf5;
+  --leather-deep: #444444;
+  --paper-dark: #1a1a1a;
+  --marble-warm: #888780;
+  --marble-cool: #c4c0b6;
+
+  /* Abstract role layer — the inverse contrast of Bibliophile.
+     Light page, dark text, near-black accents. Single warm color (oxblood)
+     reserved for the run-end seal. */
+  --bg-page: #fafaf5;
+  --bg-surface: #e8e2d4;
+  --bg-deep: #1a1a1a;
+  --text-primary: #1a1a1a;
+  --text-secondary: #444444;
+  --text-tertiary: #888780;
+  --accent: #1a1a1a;
+  --accent-secondary: #7a3e2a;
+  --border-strong: #1a1a1a;
+  --border-faint: #c4c0b6;
+
+  /* Phase A→B transitional aliases (older skin.css selectors). */
+  --bg-body: var(--bg-page);
+  --bg-panel: var(--bg-surface);
+  --bg-modal: var(--bg-page);
+  --accent-bright: var(--accent-secondary);
+  --text-muted: var(--text-secondary);
+  --border-subtle: var(--border-strong);
+
+  /* Typography — Curator-spec §2.2. Display uses Cormorant Garamond as a
+     free near-equivalent of GT Sectra; UI uses Inter as a free near-
+     equivalent of Söhne. Casing convention is all-caps tracked. */
+  --font-display: "Cormorant Garamond", "GT Sectra", Georgia, serif;
+  --font-ui: "Inter", "Söhne", system-ui, -apple-system, sans-serif;
+  --font-display-style: normal;
+  --ui-case-rule: uppercase;
+
+  /* Phase A→B transitional aliases. */
+  --font-serif: var(--font-display);
+  --font-sans: var(--font-ui);
+
+  /* Texture URLs — Curator's linen / archival-cream / mat-board. Files
+     don't exist on disk yet (Phase D-bis); the CSS still resolves these
+     vars without erroring, just paints no pattern. */
+  --texture-page-bg: url(/themes/curator/patterns/linen.svg);
+  --texture-tile-face: url(/themes/curator/patterns/archival-cream.svg);
+  --texture-border: url(/themes/curator/patterns/mat-board.svg);
+}
