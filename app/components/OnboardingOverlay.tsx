@@ -22,8 +22,6 @@
 import { useEffect, useRef, useState } from "react";
 
 const ONBOARDED_KEY = "idea-collector-onboarded";
-const HTP_VIEWED_KEY = "htp_viewed";
-const HTP_VIEWED_KEY_S5 = "htp_viewed_s5";
 
 const REVEAL_NARRATIVE = "Light pushed back at the dark.";
 const REVEAL_CHAR_MS = 55;
@@ -39,15 +37,12 @@ export function OnboardingOverlay() {
   const idleTickRef = useRef<number | null>(null);
   const lastInputRef = useRef<number>(Date.now());
 
-  // First-visit detection. Suppress the legacy HTP popup so it doesn't fire
-  // simultaneously — onboarding subsumes it.
+  // First-visit detection.
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       if (!localStorage.getItem(ONBOARDED_KEY)) {
         setFrame("front");
-        localStorage.setItem(HTP_VIEWED_KEY, "true");
-        localStorage.setItem(HTP_VIEWED_KEY_S5, "true");
       }
     } catch {
       // private mode etc. — skip onboarding silently.
@@ -119,6 +114,10 @@ export function OnboardingOverlay() {
       if (Date.now() - lastInputRef.current >= 3500) {
         root.dataset.onboardingHint = "pulse";
         window.setTimeout(() => { delete root.dataset.onboardingHint; }, 700);
+        // Tell main.ts to show its directional arrow trail (Fire→workspace,
+        // Wood→workspace, or workspace-Wood → workspace-Fire depending on
+        // current state). The arrow self-fades a few seconds later.
+        document.dispatchEvent(new CustomEvent("onboarding:idle-hint"));
       }
     }, 4000);
     return () => {

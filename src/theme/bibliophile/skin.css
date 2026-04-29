@@ -404,7 +404,11 @@
 }
 
 @keyframes era-goal-char-glow {
-  0%   { color: var(--ink-black); text-shadow: none; }
+  /* `color: inherit` at 0/100 so the same animation can be reused on any
+     text element (era-goal rows are ink-black, but the press-and-hold prompt
+     is oxblood — both should pulse to gilt and back without flashing through
+     ink-black on the way in). */
+  0%   { color: inherit; text-shadow: none; }
   45%  { color: var(--gilt); text-shadow: 0 0 6px rgba(201, 168, 95, 0.6); }
   100% { color: inherit; text-shadow: none; }
 }
@@ -441,11 +445,31 @@
   background: url(/themes/bibliophile/patterns/parchment.svg) repeat, var(--vellum);
   border: 1px solid var(--leather-deep);
 }
+/* The prompt's outer box is FIXED in both states (same font-size, padding,
+   and margin) so the slot below doesn't reflow when the player drops a
+   tile and the text swaps from "Save an idea..." to "Press and hold...".
+   Only the font-weight + background + text-shadow change between states. */
 [data-theme="bibliophile"] .era-idea-prompt {
   font-family: var(--font-serif);
   font-style: italic;
   color: var(--oxblood);
-  font-size: 12px;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  text-align: center;
+  padding: 4px 10px;
+  margin: 0 -10px 4px;
+  border-radius: 2px;
+  background: transparent;
+}
+
+/* Bold + sharp-shadow + gilt-callout fires only when a tile is parked. */
+[data-theme="bibliophile"] .era-idea-prompt.is-active {
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-shadow:
+    1px 1px 0 var(--vellum, #f4e8d3),
+    1px 1px 0 rgba(26, 18, 8, 0.35);
+  background: rgba(201, 168, 95, 0.10);
 }
 [data-theme="bibliophile"] .era-idea-slot {
   background: transparent;
@@ -473,8 +497,15 @@
 [data-theme="bibliophile"] .era-idea-slot .slot-empty-hint {
   font-family: var(--font-serif);
   font-style: italic;
-  color: var(--marble-warm);
-  font-size: 11px;
+  color: var(--oxblood);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  /* Sharp 1px drop shadow — vellum highlight + ink-black body — so the
+     prompt reads as a crisp callout against the dashed slot border. */
+  text-shadow:
+    1px 1px 0 var(--vellum, #f4e8d3),
+    1px 1px 0 rgba(26, 18, 8, 0.35);
 }
 [data-theme="bibliophile"] .era-idea-slot .slot-name {
   font-family: var(--font-serif);
@@ -2191,9 +2222,12 @@
   transition: opacity 0.5s ease-out;
 }
 
-/* Highlight Fire and Wood with a slow gilt halo while in guide. */
-[data-theme="bibliophile"][data-onboarding="guide"] .palette-item[data-name="Fire"],
-[data-theme="bibliophile"][data-onboarding="guide"] .palette-item[data-name="Wood"] {
+/* Highlight Fire and Wood with a slow gilt halo while in guide. The
+   .onboarding-pulse class is added/removed by main.ts based on whether
+   each tile is in inventory or already on the workspace — once Fire (or
+   Wood) is on the page, the pulse moves from the inventory tile to the
+   board tile instead of staying behind in the tray. */
+[data-theme="bibliophile"][data-onboarding="guide"] .onboarding-pulse {
   animation: onboarding-tile-pulse 2.4s ease-in-out infinite;
   z-index: 2;
 }
@@ -2210,8 +2244,7 @@
 
 /* Idle hint: when the player hasn't moved in ~4s, intensify the halo for
    ~700ms (driven by data-onboarding-hint set from the React side). */
-[data-theme="bibliophile"][data-onboarding-hint="pulse"] .palette-item[data-name="Fire"],
-[data-theme="bibliophile"][data-onboarding-hint="pulse"] .palette-item[data-name="Wood"] {
+[data-theme="bibliophile"][data-onboarding-hint="pulse"] .onboarding-pulse {
   animation: onboarding-tile-pulse-strong 700ms ease-out;
 }
 @keyframes onboarding-tile-pulse-strong {
@@ -2302,8 +2335,7 @@
 
 /* Reduced-motion override: disable the pulses + caret blink, keep static
    highlights so the player can still see Fire and Wood are special. */
-[data-theme="bibliophile"][data-reduced-motion="true"] .palette-item[data-name="Fire"],
-[data-theme="bibliophile"][data-reduced-motion="true"] .palette-item[data-name="Wood"] {
+[data-theme="bibliophile"][data-reduced-motion="true"] .onboarding-pulse {
   animation: none !important;
   box-shadow: 0 0 0 1px var(--gilt), 0 0 8px 2px rgba(201, 168, 95, 0.35);
 }
@@ -2363,7 +2395,11 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────
-   ERA SUMMARY OVERLAY — minimal reskin (full refit lands in Phase 2)
+   ERA SUMMARY OVERLAY — bibliophile refit. The legacy panel layered
+   ink-black text on dark-leather sub-cards, which read as illegible
+   silhouettes once the global ink-black override landed. Refit folds
+   the spread into the bibliophile vocabulary: parchment outer, vellum
+   bookplate sub-cards, gilt-italic headers, oxblood labels.
    ───────────────────────────────────────────────────────────────────── */
 
 [data-theme="bibliophile"] #era-summary-panel {
@@ -2372,24 +2408,162 @@
     var(--vellum);
   border: 2px solid var(--leather-deep);
   color: var(--ink-black);
+  border-radius: 2px;
+  /* A faint inner gilt rule echoes the chapter title bar. */
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(201, 168, 95, 0.25);
+  /* Tighter horizontal gutter so the inner frames (Next Era / Era Complete)
+     read wider on the same panel width. The legacy 36px gutter ate too much
+     horizontal real estate. */
+  padding: 24px 12px;
 }
-[data-theme="bibliophile"] #era-summary-panel * { color: var(--ink-black); }
-[data-theme="bibliophile"] #era-summary-panel h2,
+[data-theme="bibliophile"] #era-summary-panel { color: var(--ink-black); }
+
+/* Headers — gilt italic Cardo, paired with a thin oxblood lead-in. */
+[data-theme="bibliophile"] #era-summary-panel h2 {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(22px, 5vw, 28px);
+  color: var(--gilt);
+  letter-spacing: 0.5px;
+  margin: 0 0 8px;
+  line-height: 1.15;
+}
 [data-theme="bibliophile"] #era-summary-panel h3 {
   font-family: var(--font-serif);
-  color: var(--oxblood);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(16px, 3.6vw, 19px);
+  color: var(--ink-black);
+  margin: 4px 0 6px;
 }
+
+/* Sub-cards — replace legacy leather-deep backgrounds with vellum bookplates
+   so ink-black body copy reads. The accent border-left becomes a thin gilt
+   rule echoing the bind-stripe pattern. */
+[data-theme="bibliophile"] .era-summary-completed,
+[data-theme="bibliophile"] .era-summary-next {
+  background:
+    url(/themes/bibliophile/patterns/parchment.svg) repeat,
+    var(--vellum) !important;
+  border: 1px solid var(--leather-deep);
+  border-left: 3px solid var(--gilt);
+  border-radius: 2px;
+  padding: 14px 16px;
+  color: var(--ink-black);
+}
+
+/* Labels — small-caps Inter in oxblood for the section heading. */
+[data-theme="bibliophile"] .era-summary-completed-label,
+[data-theme="bibliophile"] .era-summary-next-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--oxblood);
+  margin-bottom: 6px;
+}
+
+/* Body text — italic Cardo, ink-black, reads on vellum. */
+[data-theme="bibliophile"] .era-summary-next-text,
+[data-theme="bibliophile"] .era-summary-narrative {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--ink-black);
+  line-height: 1.5;
+}
+
+/* Discovered list — quiet leather-deep on vellum so it doesn't dominate. */
+[data-theme="bibliophile"] .era-summary-discovered {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--leather-deep);
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+/* Tier table inside the completed card — vellum + leather rules. The legacy
+   stylesheet uses dark leather alternating rows + a sticky dark label
+   column, both of which clash with the new vellum theme. Override every
+   surface here so ink-black numbers read uniformly. */
+[data-theme="bibliophile"] .era-tier-table-wrap { margin-top: 8px; }
+[data-theme="bibliophile"] .era-tier-table {
+  background: transparent;
+  color: var(--ink-black);
+  font-family: var(--font-serif);
+  font-size: 12px;
+  border-collapse: collapse;
+  width: 100%;
+}
+[data-theme="bibliophile"] .era-tier-table th,
+[data-theme="bibliophile"] .era-tier-table td {
+  border: 1px solid rgba(90, 69, 40, 0.30);
+  padding: 4px 8px;
+  text-align: center;
+  color: var(--ink-black) !important;
+}
+[data-theme="bibliophile"] .era-tier-table th {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--oxblood) !important;
+  font-weight: 500;
+  background: transparent !important;
+}
+/* Override legacy alternating-row background (leather-deep) and label column
+   sticky/dark background — let row tint apply uniformly across the row. */
+[data-theme="bibliophile"] .era-tier-table tbody tr:nth-child(odd) {
+  background: rgba(168, 121, 74, 0.10) !important;
+}
+[data-theme="bibliophile"] .era-tier-table tbody tr:nth-child(even) {
+  background: transparent !important;
+}
+[data-theme="bibliophile"] .era-tier-table .era-tier-label {
+  font-style: italic;
+  color: var(--leather-deep) !important;
+  text-align: left !important;
+  font-family: var(--font-serif);
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: 0;
+  /* Drop the legacy sticky + dark-leather background so the label column
+     inherits the row tint instead of imposing its own. */
+  position: static !important;
+  background: transparent !important;
+}
+[data-theme="bibliophile"] .era-tier-table .era-tier-total-col {
+  background: rgba(201, 168, 95, 0.20);
+  font-weight: 500;
+  border-left: 1px solid var(--leather-deep);
+  color: var(--ink-black) !important;
+}
+
+/* Continue button — oxblood with gilt rule, italic Cardo, hover flips. */
 [data-theme="bibliophile"] #era-summary-continue-btn {
   background: var(--oxblood);
   color: var(--vellum);
   border: 1px solid var(--gilt);
   font-family: var(--font-serif);
   font-style: italic;
+  font-size: 14px;
   border-radius: 2px;
+  padding: 10px 18px;
+  margin-top: 14px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
 }
 [data-theme="bibliophile"] #era-summary-continue-btn:hover:not([disabled]) {
   background: var(--gilt);
   color: var(--ink-black);
+}
+[data-theme="bibliophile"] #era-summary-continue-btn[disabled] {
+  opacity: 0.55;
+  cursor: default;
 }
 
 /* Embedded frontispiece — the AI-painted chapter close. Spec §3.4 calls for a
@@ -2421,6 +2595,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  cursor: zoom-in;
+  transition: transform 0.2s ease-out;
+}
+[data-theme="bibliophile"] #era-summary-frontispiece:hover {
+  transform: scale(1.02);
 }
 [data-theme="bibliophile"] #era-summary-frontispiece[hidden] { display: none; }
 

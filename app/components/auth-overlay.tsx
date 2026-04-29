@@ -16,22 +16,16 @@ function DiscordIcon({ size = 15 }: { size?: number }) {
   );
 }
 
-const HTP_VIEWED_KEY = "htp_viewed";
-const HTP_VIEWED_KEY_S5 = "htp_viewed_s5";
-
 export function AuthOverlay() {
   const pathname = usePathname();
   const isSelectFive = pathname === "/select-five";
-  const htpKey = isSelectFive ? HTP_VIEWED_KEY_S5 : HTP_VIEWED_KEY;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fromVictory, setFromVictory] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [confirmingSignOut, setConfirmingSignOut] = useState(false);
   const [htpOpen, setHtpOpen] = useState(false);
-  const [hasViewedHtp, setHasViewedHtp] = useState(false);
   const htpRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
-  const isFirstSessionRef = useRef(false); // true when this is the player's first HTP view
   const htpWasOpenRef = useRef(false);     // tracks open→close transition for dismiss event
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const name = useAuthStore((s) => s.name);
@@ -39,37 +33,18 @@ export function AuthOverlay() {
   const provider = useAuthStore((s) => s.provider);
   const posthog = usePostHog();
 
-  // On mount: initialise viewed flag; auto-open HTP on first visit
-  useEffect(() => {
-    const viewed = localStorage.getItem(htpKey) === "true";
-    setHasViewedHtp(viewed);
-    if (!viewed) {
-      isFirstSessionRef.current = true;
-      setHtpOpen(true);
-      localStorage.setItem(htpKey, "true");
-      setHasViewedHtp(true);
-    }
-  }, [htpKey]);
-
-  // Fire htp_first_opened once posthog is ready (may lag behind mount on first visit)
-  useEffect(() => {
-    if (posthog && isFirstSessionRef.current) {
-      posthog.capture("htp_first_opened");
-      isFirstSessionRef.current = false;
-    }
-  }, [posthog]);
-
-  // Track HTP open/close transitions
+  // Track HTP open→close transitions for the dismiss analytics event. The
+  // legacy "viewed" flag (htp_viewed / htp_viewed_s5) is gone — the bibliophile
+  // theme hides the standalone HTP button via CSS and the popup is opened on
+  // demand from the Menu.
   useEffect(() => {
     if (htpOpen) {
       htpWasOpenRef.current = true;
-      localStorage.setItem(htpKey, "true");
-      setHasViewedHtp(true);
     } else if (htpWasOpenRef.current) {
       posthog?.capture("htp_dismissed");
       htpWasOpenRef.current = false;
     }
-  }, [htpOpen, posthog, htpKey]);
+  }, [htpOpen, posthog]);
 
   // Close HTP popup when clicking outside
   useEffect(() => {
@@ -210,11 +185,11 @@ export function AuthOverlay() {
         {/* How to Play */}
         <div className="htp-wrapper" ref={htpRef}>
           <button
-            className={`htp-btn${htpOpen ? " htp-btn--active" : ""}${hasViewedHtp ? " htp-btn--viewed" : ""}`}
+            className={`htp-btn${htpOpen ? " htp-btn--active" : ""}`}
             onClick={() => setHtpOpen((v) => !v)}
             aria-label="How to play"
           >
-            {hasViewedHtp ? "?" : <>How-To-Play{htpOpen && <span className="htp-btn-arrow"> ▲</span>}</>}
+            How-To-Play{htpOpen && <span className="htp-btn-arrow"> ▲</span>}
           </button>
 
           {htpOpen && (

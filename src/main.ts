@@ -28,8 +28,8 @@ import {
   playWaxStamp,
 } from "./motion";
 import { audio, type CelloSustainHandle } from "./audio";
-import { crossfade, playFailedCombineShake, playPageTurn, wait } from "./motion";
-import { startAiThinking, aiThinkingCopy } from "./ai-thinking-state";
+import { playFailedCombineShake, playPageTurn, wait } from "./motion";
+import { startAiThinking } from "./ai-thinking-state";
 import { initSettings, getSettings, setSetting } from "./settings";
 
 // --- Types ---
@@ -235,13 +235,18 @@ function attachDragToSpawn(
       const dy = moveEvent.clientY - startY;
       const adx = Math.abs(dx);
       const ady = Math.abs(dy);
-      if (adx > ady && adx >= TOUCH_SPAWN_DRAG_THRESHOLD_PX) {
-        // Horizontal-dominant motion ⇒ scroll intent; release to browser.
+      // Bias toward scroll: any clearly-horizontal motion releases the
+      // pointer to the browser ASAP (low threshold + 1.2× ratio). The drag
+      // only arms on clearly-vertical motion (higher threshold + 1.5× ratio
+      // so a slightly-diagonal swipe across the inventory bar doesn't get
+      // mis-classified as a vertical pull on iOS, which previously spawned
+      // a tile that immediately got dropped on pointerup).
+      if (adx >= 5 && adx > ady * 1.2) {
         armed = false;
         cleanup();
         return;
       }
-      if (ady > adx && ady >= TOUCH_SPAWN_DRAG_THRESHOLD_PX) {
+      if (ady >= TOUCH_SPAWN_DRAG_THRESHOLD_PX && ady > adx * 1.5) {
         armed = false;
         cleanup();
         moveEvent.preventDefault();
@@ -1216,16 +1221,16 @@ function pulseGoalAffordance(goalEl: HTMLElement): void {
     setTimeout(() => infoEl.classList.remove("era-goal-info--pop"), totalCharsMs + 700);
   }
 
-  // Restore a plain text node once the animation finishes — keeps the DOM
-  // small and immune to re-render races.
+  // Restore a plain text node once the animation finishes — but BAIL if our
+  // spans were already removed (e.g. by a renderEraIdeaSlot textContent
+  // replacement). Otherwise the delayed insertBefore would APPEND the old
+  // original text alongside whatever new content replaced it, producing
+  // glued strings like "Save an idea tile for this eraPress and hold to bind".
   setTimeout(() => {
     if (!goalEl.isConnected) return;
+    if (charSpans[0]?.parentNode !== goalEl) return;
     const restored = document.createTextNode(original);
-    if (charSpans[0]?.parentNode === goalEl) {
-      goalEl.insertBefore(restored, charSpans[0]);
-    } else {
-      goalEl.insertBefore(restored, infoEl ?? null);
-    }
+    goalEl.insertBefore(restored, charSpans[0]);
     for (const s of charSpans) s.remove();
   }, totalCharsMs + 800);
 }
@@ -1235,6 +1240,262 @@ const eraGoalsEl = document.getElementById("era-goals")!;
 const eraToggleBtn = document.getElementById("era-name-toggle")!;
 const eraToggleIcon = document.getElementById("era-toggle-icon")!;
 let eraGoalsCollapsed = false;
+
+// Onboarding directional arrow — fires on each idle-hint tick from the
+// OnboardingOverlay. Picks endpoints based on current Fire/Wood locations:
+//   - no Fire on workspace → inventory Fire → workspace center
+//   - Fire on workspace, no Wood → inventory Wood → workspace center
+//   - both on workspace → workspace Wood → workspace Fire (teach combine)
+// The arrow lives for ~2.6s then self-fades; a fresh one is created on the
+// next 4s tick if onboarding is still in guide frame.
+let onboardingArrowTrail: ArrowTrailHandle | null = null;
+let onboardingArrowFadeTimer: number | null = null;
+let onboardingArrowDetachTimer: number | null = null;
+
+// Idle-gated hint loop — invokes `play()` after `idleMs` of pointer-quiet
+// time, then waits another `idleMs` past the cycle's end before the next
+// play. With `playImmediate: true`, the FIRST play fires right away and
+// only subsequent plays are idle-gated (used by the bind arrow so the
+// arrow appears the moment the slot becomes available).
+function startIdleHintLoop(
+  play: () => void,
+  cycleMs: number,
+  options: { idleMs?: number; playImmediate?: boolean } = {},
+): () => void {
+  const idleMs = options.idleMs ?? 4000;
+  const playImmediate = options.playImmediate ?? false;
+  let lastInputAt = Date.now();
+  let isPlaying = false;
+  const onInput = () => { lastInputAt = Date.now(); };
+  document.addEventListener("pointermove", onInput, { passive: true });
+  document.addEventListener("pointerdown", onInput, { passive: true });
+  document.addEventListener("touchstart", onInput, { passive: true });
+  const fire = () => {
+    if (isPlaying) return;
+    isPlaying = true;
+    play();
+    window.setTimeout(() => {
+      isPlaying = false;
+      // Reset the idle counter so the next play needs another idleMs of
+      // pointer-quiet time after this cycle ends.
+      lastInputAt = Date.now();
+    }, cycleMs);
+  };
+  if (playImmediate) fire();
+  const tick = () => {
+    if (isPlaying) return;
+    if (Date.now() - lastInputAt < idleMs) return;
+    fire();
+  };
+  const intervalId = window.setInterval(tick, 500);
+  return () => {
+    document.removeEventListener("pointermove", onInput);
+    document.removeEventListener("pointerdown", onInput);
+    document.removeEventListener("touchstart", onInput);
+    window.clearInterval(intervalId);
+  };
+}
+
+// Press-and-hold prompt pulse loop — runs while a tile is parked in the bind
+// slot but the hold hasn't begun, to draw the player's eye to the
+// "Press and hold to bind" text. Reuses the same per-character left-to-right
+// gilt glow used for newly-met objectives.
+const PRESS_AND_HOLD_PULSE_INTERVAL_MS = 3000;
+let pressAndHoldPulseTimer: number | null = null;
+function pulsePressAndHoldPrompt(): void {
+  const promptEl = document.querySelector<HTMLElement>("#era-idea-slot-wrapper .era-idea-prompt");
+  if (!promptEl || !promptEl.textContent?.trim()) return;
+  pulseGoalAffordance(promptEl);
+}
+function startPressAndHoldPulses(): void {
+  stopPressAndHoldPulses();
+  const tick = () => {
+    if (!pendingEraIdeaTile || bindHoldHandle) {
+      stopPressAndHoldPulses();
+      return;
+    }
+    pulsePressAndHoldPrompt();
+    pressAndHoldPulseTimer = window.setTimeout(tick, PRESS_AND_HOLD_PULSE_INTERVAL_MS);
+  };
+  // Small delay so the slot-occupied transition lands before the first pulse.
+  pressAndHoldPulseTimer = window.setTimeout(tick, 350);
+}
+function stopPressAndHoldPulses(): void {
+  if (pressAndHoldPulseTimer !== null) {
+    window.clearTimeout(pressAndHoldPulseTimer);
+    pressAndHoldPulseTimer = null;
+  }
+}
+
+function getInventoryTileEl(name: string): HTMLElement | null {
+  return paletteItems.querySelector<HTMLElement>(`.palette-item[data-name="${name}"]`);
+}
+
+function getWorkspaceTileByName(name: string): HTMLElement | null {
+  for (const it of items) if (it.name === name) return it.el;
+  return null;
+}
+
+function workspaceCenter(): { x: number; y: number } {
+  const r = workspace.getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
+
+/** Find the point on the element's bounding-rect edge that lies on the line
+ *  from the element's center to `target`. Used for arrow endpoints anchored
+ *  to tiles so the arrow start/end sits on the card's edge instead of inside
+ *  it (inside is hidden behind the tile face). */
+function tileEdgePointTowards(el: HTMLElement, target: { x: number; y: number }): { x: number; y: number } {
+  const r = el.getBoundingClientRect();
+  const cx = r.left + r.width / 2;
+  const cy = r.top + r.height / 2;
+  const dx = target.x - cx;
+  const dy = target.y - cy;
+  if (Math.abs(dx) < 0.001 && Math.abs(dy) < 0.001) return { x: cx, y: cy };
+  const halfW = r.width / 2;
+  const halfH = r.height / 2;
+  const tx = dx === 0 ? Infinity : halfW / Math.abs(dx);
+  const ty = dy === 0 ? Infinity : halfH / Math.abs(dy);
+  const t = Math.min(tx, ty);
+  return { x: cx + t * dx, y: cy + t * dy };
+}
+
+/** Where the arrow lands inside a destination card: horizontal center, but
+ *  in the bottom third vertically. Reads as "bring it here" landing on the
+ *  card face rather than at its top edge or center. */
+function tileTargetPoint(el: HTMLElement): { x: number; y: number } {
+  const r = el.getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height * (2 / 3) };
+}
+
+/** Move the gilt halo pulse to the right tile based on board state.
+ *  - Fire NOT on board → pulse inventory Fire
+ *  - Fire ON board     → pulse all workspace Fires (drop the inventory glow)
+ *  - same logic for Wood
+ *  Called whenever the workspace items list changes (spawn / removeItem) and
+ *  whenever the onboarding frame transitions, so the highlight tracks the
+ *  player's progress in real time. */
+function updateOnboardingPulses(): void {
+  const onboardingFrame = document.documentElement.dataset.onboarding;
+  // Clear any existing pulses first.
+  document.querySelectorAll(".onboarding-pulse").forEach((el) => el.classList.remove("onboarding-pulse"));
+  if (onboardingFrame !== "guide") return;
+
+  const fireWs = items.filter((it) => it.name === "Fire");
+  const woodWs = items.filter((it) => it.name === "Wood");
+  const fireInv = getInventoryTileEl("Fire");
+  const woodInv = getInventoryTileEl("Wood");
+
+  if (fireWs.length > 0) {
+    for (const it of fireWs) it.el.classList.add("onboarding-pulse");
+  } else if (fireInv) {
+    fireInv.classList.add("onboarding-pulse");
+  }
+
+  if (woodWs.length > 0) {
+    for (const it of woodWs) it.el.classList.add("onboarding-pulse");
+  } else if (woodInv) {
+    woodInv.classList.add("onboarding-pulse");
+  }
+}
+
+function showOnboardingArrow(): void {
+  if (document.documentElement.dataset.onboarding !== "guide") return;
+  const fireWs = getWorkspaceTileByName("Fire");
+  const woodWs = getWorkspaceTileByName("Wood");
+  const fireInv = getInventoryTileEl("Fire");
+  const woodInv = getInventoryTileEl("Wood");
+
+  // Decide source + destination ELEMENTS / POINTS based on board state.
+  // Then build endpoint callbacks that anchor onto each element's edge
+  // (not center) so the arrow starts/ends just outside the tile face.
+  //
+  // Cases:
+  //   Fire on board, no Wood   → inv Wood → ws Fire     (combine teaching)
+  //   Wood on board, no Fire   → inv Fire → ws Wood     (combine teaching)
+  //   Both on board            → ws Wood → ws Fire      (combine teaching)
+  //   Neither (or only Fire... covered above; only Wood covered above)
+  //   Otherwise (no Fire on board, no Wood on board, but inventory has both):
+  //                              inv Fire → workspace center
+  let sourceEl: HTMLElement | null = null;
+  let destEl: HTMLElement | null = null;
+  let destPoint: { x: number; y: number } | null = null;
+  if (fireWs && !woodWs && woodInv) {
+    sourceEl = woodInv;
+    destEl = fireWs;
+  } else if (woodWs && !fireWs && fireInv) {
+    sourceEl = fireInv;
+    destEl = woodWs;
+  } else if (fireWs && woodWs) {
+    sourceEl = woodWs;
+    destEl = fireWs;
+  } else if (!fireWs && fireInv) {
+    sourceEl = fireInv;
+    destPoint = workspaceCenter();
+  } else if (!woodWs && woodInv) {
+    sourceEl = woodInv;
+    destPoint = workspaceCenter();
+  }
+  if (!sourceEl) return;
+  if (!destEl && !destPoint) return;
+
+  // Build endpoint callbacks. When the destination is a card, the arrow
+  // tip lands at the card's middle-x / bottom-third-y (per spec — reads as
+  // a landing point on the face rather than the top edge). The source
+  // anchors to its own card edge in the direction of that target point.
+  const sEl = sourceEl;
+  let from: () => { x: number; y: number };
+  let to: () => { x: number; y: number };
+  if (destEl) {
+    const dEl = destEl;
+    to = () => tileTargetPoint(dEl);
+    from = () => tileEdgePointTowards(sEl, tileTargetPoint(dEl));
+  } else {
+    const dPt = destPoint!;
+    from = () => tileEdgePointTowards(sEl, dPt);
+    to = () => dPt;
+  }
+
+  // Tear down any previous arrow before spawning a new one.
+  if (onboardingArrowTrail) {
+    onboardingArrowTrail.detach();
+    onboardingArrowTrail = null;
+  }
+  if (onboardingArrowFadeTimer !== null) clearTimeout(onboardingArrowFadeTimer);
+  if (onboardingArrowDetachTimer !== null) clearTimeout(onboardingArrowDetachTimer);
+
+  onboardingArrowTrail = createArrowTrail({
+    from,
+    to,
+    color: "var(--gilt, #c9a85f)",
+  });
+  document.body.appendChild(onboardingArrowTrail.el);
+  onboardingArrowTrail.attach();
+  onboardingArrowTrail.setActive(true);
+
+  // The trail's cycle is 3 steps × 1s + 1s hold ≈ 3.2s with fade. Cancel just
+  // after fade-out so the loop doesn't restart before the next idle-tick.
+  onboardingArrowFadeTimer = window.setTimeout(() => {
+    onboardingArrowTrail?.setActive(false);
+  }, 3300);
+  onboardingArrowDetachTimer = window.setTimeout(() => {
+    onboardingArrowTrail?.detach();
+    onboardingArrowTrail = null;
+  }, 3700);
+}
+
+document.addEventListener("onboarding:idle-hint", showOnboardingArrow);
+// Tear down on leaving guide (the OnboardingOverlay clears data-onboarding on
+// frame change; observe so a stale arrow doesn't bleed into combine/reveal).
+// Also refresh pulse highlights so they don't bleed across frame changes.
+const onboardingObserver = new MutationObserver(() => {
+  if (document.documentElement.dataset.onboarding !== "guide" && onboardingArrowTrail) {
+    onboardingArrowTrail.detach();
+    onboardingArrowTrail = null;
+  }
+  updateOnboardingPulses();
+});
+onboardingObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-onboarding"] });
 
 function applyEraGoalsState() {
   eraGoalsEl.classList.toggle("era-goals--collapsed", eraGoalsCollapsed);
@@ -1629,6 +1890,18 @@ tapestryOverlay.addEventListener("click", (e) => {
   if (e.target === tapestryOverlay && tapestryOverlay.classList.contains("tapestry-closeable")) {
     closeTapestry();
   }
+});
+
+// Era-summary frontispiece → click to fullscreen via the tapestry overlay.
+// Reuses the existing tapestry-overlay closeable behavior (click backdrop or
+// ESC dismisses) so the player can pop back to the era spread.
+document.getElementById("era-summary-frontispiece")?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  const img = e.currentTarget as HTMLImageElement;
+  if (!img.src) return;
+  tapestryContent.innerHTML = `<img id="tapestry-img" src="${img.src}" alt="Era tapestry">`;
+  tapestryActions.style.display = "none";
+  tapestryOverlay.classList.add("visible", "tapestry-closeable");
 });
 
 document.getElementById("tapestry-heart-btn")!.addEventListener("click", () => {
@@ -2430,18 +2703,48 @@ const handlePointerMove = (e: PointerEvent) => {
   if (selectFiveMode) updateSlotHover(e.clientX, e.clientY);
 };
 
-/** Highlight the era-idea slot while a workspace tile is dragged over it. */
-function updateEraIdeaSlotHover(clientX: number, clientY: number): void {
+// Workspace caption helper — the italic line under the writing desk frame.
+// Default state is "— the writing desk —". During a combine the caption
+// switches to "— thinking —", and on completion to "From X and Y came Z"
+// for a few seconds before reverting. Replaces the previous result toast.
+const WORKSPACE_CAPTION_DEFAULT = "— the writing desk —";
+const WORKSPACE_CAPTION_THINKING = "— thinking —";
+let workspaceCaptionRevertTimer: number | null = null;
+function setWorkspaceCaption(text: string, revertAfterMs: number | null = null): void {
+  const el = document.getElementById("workspace-caption");
+  if (!el) return;
+  el.textContent = text;
+  if (workspaceCaptionRevertTimer !== null) {
+    window.clearTimeout(workspaceCaptionRevertTimer);
+    workspaceCaptionRevertTimer = null;
+  }
+  if (revertAfterMs !== null) {
+    workspaceCaptionRevertTimer = window.setTimeout(() => {
+      const cur = document.getElementById("workspace-caption");
+      if (cur) cur.textContent = WORKSPACE_CAPTION_DEFAULT;
+    }, revertAfterMs);
+  }
+}
+
+/** Highlight the era-idea slot while a workspace tile is dragged over it.
+ *  Uses tile-rect-vs-slot-rect overlap (same as the actual drop hit-test in
+ *  handlePointerUp) so the gilt highlight predicts the real outcome. */
+function updateEraIdeaSlotHover(_clientX: number, _clientY: number): void {
   const wrapper = document.getElementById("era-idea-slot-wrapper");
   const slotEl = document.getElementById("era-idea-slot");
-  if (!wrapper || !slotEl) return;
+  if (!wrapper || !slotEl || !dragItem) return;
   if (wrapper.hasAttribute("hidden") || pendingEraIdeaTile) {
     slotEl.classList.remove("slot-hover");
     return;
   }
-  const r = slotEl.getBoundingClientRect();
-  const over = clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
-  slotEl.classList.toggle("slot-hover", over);
+  const slotRect = slotEl.getBoundingClientRect();
+  const tileRect = dragItem.el.getBoundingClientRect();
+  const overlaps =
+    tileRect.right >= slotRect.left &&
+    tileRect.left <= slotRect.right &&
+    tileRect.bottom >= slotRect.top &&
+    tileRect.top <= slotRect.bottom;
+  slotEl.classList.toggle("slot-hover", overlaps);
 }
 
 const handlePointerUp = (e: PointerEvent) => {
@@ -2483,8 +2786,18 @@ const handlePointerUp = (e: PointerEvent) => {
   if (ideaWrapper && !ideaWrapper.hasAttribute("hidden") && !bindHoldHandle) {
     const slotEl = document.getElementById("era-idea-slot");
     if (slotEl) {
-      const r = slotEl.getBoundingClientRect();
-      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+      // Hit-test by tile-rect-vs-slot-rect overlap rather than cursor
+      // point. With the cursor-only test, releasing slightly off the slot
+      // while the tile body still overlapped it would fall through to the
+      // outside-workspace branch below and silently remove the tile.
+      const slotRect = slotEl.getBoundingClientRect();
+      const tileRect = item.el.getBoundingClientRect();
+      const tileOverlapsSlot =
+        tileRect.right >= slotRect.left &&
+        tileRect.left <= slotRect.right &&
+        tileRect.bottom >= slotRect.top &&
+        tileRect.top <= slotRect.bottom;
+      if (tileOverlapsSlot) {
         pendingEraIdeaTile = {
           name: item.name,
           tier: item.tier,
@@ -2495,6 +2808,7 @@ const handlePointerUp = (e: PointerEvent) => {
         };
         renderEraIdeaSlot();
         removeItem(item);
+        startPressAndHoldPulses();
         return;
       }
     }
@@ -2606,6 +2920,7 @@ function spawnItem(data: ElementData, x: number, y: number): CombineItem {
     y,
   };
   items.push(item);
+  updateOnboardingPulses();
 
   // --- Start drag on pointerdown (move/up handled at document level) ---
   el.addEventListener("pointerdown", (e) => {
@@ -2685,6 +3000,10 @@ async function combine(a: CombineItem, b: CombineItem) {
     detail: { a: a.name, b: b.name },
   }));
 
+  // Switch the writing-desk caption to its "thinking" state for the
+  // duration of the combine. Replaces the previous result-toast affordance.
+  setWorkspaceCaption(WORKSPACE_CAPTION_THINKING);
+
   // Combine-press cue at the moment of combination intent (woody knock with
   // ±2st pitch variation). Pairs with playIdeaBloom() at completion when the
   // new tile materializes — press first, bloom on resolve.
@@ -2723,19 +3042,13 @@ async function combine(a: CombineItem, b: CombineItem) {
     log.info("player", `Combining: ${a.name} + ${b.name} → tier ${childTier}`);
     bari.classList.add("active");
 
-    // AI-thinking phase machine — toast crossfades between phase copies (theme
-    // manifest), Bari pose shifts at the same thresholds. Spec §3.2.
-    // Thresholds: 0s / 8s / 16s / 24s.
+    // AI-thinking phase machine — Bari's posture shifts at 8s / 16s / 24s
+    // thresholds. The workspace caption stays at "— thinking —" throughout
+    // (set at combine start above); the manifest's per-phase copy is no
+    // longer surfaced now that the result-toast affordance is gone.
     const thinking = startAiThinking({
       onPhase: (phase) => {
-        if (phase === "resolved") return; // result toast will overwrite
-        const text = aiThinkingCopy(phase);
-        if (phase === "start") {
-          toast.textContent = text;
-          toast.classList.add("visible");
-        } else {
-          void crossfade(toast, text);
-        }
+        if (phase === "resolved") return;
         bari.classList.toggle("bari--leaning", phase === "longer");
         bari.classList.toggle("bari--patient", phase === "long");
         bari.classList.toggle("bari--very-patient", phase === "veryLong");
@@ -2789,7 +3102,12 @@ async function combine(a: CombineItem, b: CombineItem) {
     },
   }));
 
-  showToast(`${a.emoji} ${a.name} + ${b.emoji} ${b.name} = ${elementData.emoji} ${elementData.name}`);
+  // Caption surfaces the result line, then reverts to the writing-desk
+  // default after 4s. Replaces the previous result-toast affordance.
+  setWorkspaceCaption(
+    `From ${a.emoji} ${a.name} and ${b.emoji} ${b.name} came ${elementData.emoji} ${elementData.name}`,
+    4000,
+  );
   const isFirstDiscovery = !paletteItems.querySelector(`[data-name="${elementData.name}"]`);
   addToPaletteIfNew(elementData);
   posthog.capture('combination_created', {
@@ -2844,6 +3162,7 @@ function removeItem(item: CombineItem) {
   item.el.remove();
   const idx = items.indexOf(item);
   if (idx !== -1) items.splice(idx, 1);
+  updateOnboardingPulses();
 }
 
 // --- Era advancement ---
@@ -3237,7 +3556,9 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
   const topItems = record.discoveredItems.slice(0, 16).join(", ");
   document.getElementById("era-summary-discovered")!.textContent = topItems + (record.discoveredItems.length > 16 ? "…" : "");
   document.getElementById("era-summary-next-name")!.textContent = nextEraName;
-  document.getElementById("era-summary-next-text")!.textContent = nextNarrative;
+  // Next-era narrative is scratched in by revealEraSummaryContents below —
+  // start empty so the typewriter has nothing to fight.
+  document.getElementById("era-summary-next-text")!.textContent = "";
   const continueBtn = document.getElementById("era-summary-continue-btn") as HTMLButtonElement;
   continueBtn.textContent = `Begin ${nextEraName} \u2192`;
   // Disable the continue button until the narrative finishes scratching in \u2014 the
@@ -3285,9 +3606,11 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
   audio.playPaperRustle();
 
   // Pace the spread: await the in-flight tapestry (frontispiece) image, brush-wipe
-  // it in, then scratch in the narrative, then enable Continue. The bind ceremony
-  // already started the tapestry generation in the background pipeline.
-  void revealEraSummaryContents(frontEl, spinnerEl, narrativeEl, record.advancementNarrative, continueBtn);
+  // it in, then scratch in the completed-era narrative, then the next-era
+  // narrative, then enable Continue. The bind ceremony already started the
+  // tapestry generation in the background pipeline.
+  const nextTextEl = document.getElementById("era-summary-next-text")!;
+  void revealEraSummaryContents(frontEl, spinnerEl, narrativeEl, record.advancementNarrative, nextTextEl, nextNarrative, continueBtn);
 }
 
 async function revealEraSummaryContents(
@@ -3295,49 +3618,67 @@ async function revealEraSummaryContents(
   spinnerEl: HTMLElement | null,
   narrativeEl: HTMLElement,
   narrative: string,
+  nextTextEl: HTMLElement,
+  nextNarrative: string,
   continueBtn: HTMLButtonElement,
 ) {
-  // Frontispiece: await the tapestry promise, then brush-wipe reveal. If the promise
-  // doesn't yield an image (network failure / no S3), fall back to text-only.
-  let imageReady = false;
-  if (frontEl && tapestryPromise) {
-    try {
-      const result = await tapestryPromise;
-      if (result?.base64) {
-        frontEl.src = `data:${result.mimeType};base64,${result.base64}`;
-        await new Promise<void>((resolve) => {
-          if (frontEl.complete && frontEl.naturalWidth > 0) return resolve();
-          frontEl.onload = () => resolve();
-          frontEl.onerror = () => resolve();
+  const skipTargetIsContinue = (e: Event) =>
+    !!(e.target as HTMLElement).closest("#era-summary-continue-btn");
+
+  // 1. Next-era typewriter — runs IMMEDIATELY on overlay open. Independent
+  // from the tapestry pipeline; the player can read the preview while the
+  // frontispiece is still rendering.
+  const nextDone: Promise<void> = nextNarrative
+    ? (() => {
+        const handle = scratchIn(nextTextEl, nextNarrative, { msPerChar: 28 });
+        const skip = (e: Event) => { if (!skipTargetIsContinue(e)) handle.skip(); };
+        eraSummaryOverlay.addEventListener("click", skip, { once: true });
+        return handle.promise.then(() => {
+          eraSummaryOverlay.removeEventListener("click", skip);
         });
-        if (spinnerEl) spinnerEl.style.display = "none";
-        frontEl.hidden = false;
-        // Brush-canvas hum loops underneath the brush-wipe (spec §7).
-        const brush = audio.startBrushCanvas();
-        await playBrushWipe(frontEl, { durationMs: 1400 });
-        brush.stop();
-        imageReady = true;
-      }
-    } catch { /* fall through to text-only */ }
-  }
-  if (!imageReady && spinnerEl) {
-    spinnerEl.style.transition = "opacity 240ms ease-out";
-    spinnerEl.style.opacity = "0";
-    setTimeout(() => { spinnerEl.style.display = "none"; }, 260);
-  }
+      })()
+    : Promise.resolve();
 
-  // Narrative: scratch-in (typewriter ~28ms/char). Skip on click anywhere inside
-  // the panel except the (still-disabled) continue button \u2014 keeps impatient players
-  // moving without breaking the ceremony for the rest.
-  const handle = scratchIn(narrativeEl, narrative, { msPerChar: 28 });
-  const skipOnce = (e: Event) => {
-    if ((e.target as HTMLElement).closest("#era-summary-continue-btn")) return;
-    handle.skip();
-  };
-  eraSummaryOverlay.addEventListener("click", skipOnce, { once: true });
-  await handle.promise;
-  eraSummaryOverlay.removeEventListener("click", skipOnce);
+  // 2. Tapestry: await + brush-wipe, then start the completed-era
+  //    typewriter. Falls back to immediate typewriter if the tapestry
+  //    pipeline produces no image.
+  const completedDone: Promise<void> = (async () => {
+    let imageReady = false;
+    if (frontEl && tapestryPromise) {
+      try {
+        const result = await tapestryPromise;
+        if (result?.base64) {
+          frontEl.src = `data:${result.mimeType};base64,${result.base64}`;
+          await new Promise<void>((resolve) => {
+            if (frontEl.complete && frontEl.naturalWidth > 0) return resolve();
+            frontEl.onload = () => resolve();
+            frontEl.onerror = () => resolve();
+          });
+          if (spinnerEl) spinnerEl.style.display = "none";
+          frontEl.hidden = false;
+          const brush = audio.startBrushCanvas();
+          await playBrushWipe(frontEl, { durationMs: 1400 });
+          brush.stop();
+          imageReady = true;
+        }
+      } catch { /* fall through to text-only */ }
+    }
+    if (!imageReady && spinnerEl) {
+      spinnerEl.style.transition = "opacity 240ms ease-out";
+      spinnerEl.style.opacity = "0";
+      setTimeout(() => { spinnerEl.style.display = "none"; }, 260);
+    }
+    // Tapestry is unfurled (or failed gracefully). Start the completed-era
+    // typewriter now — independent from the next-era one above.
+    const handle = scratchIn(narrativeEl, narrative, { msPerChar: 28 });
+    const skip = (e: Event) => { if (!skipTargetIsContinue(e)) handle.skip(); };
+    eraSummaryOverlay.addEventListener("click", skip, { once: true });
+    await handle.promise;
+    eraSummaryOverlay.removeEventListener("click", skip);
+  })();
 
+  // Continue enables when BOTH typewriters have finished.
+  await Promise.all([nextDone, completedDone]);
   continueBtn.disabled = false;
 }
 
@@ -3354,34 +3695,78 @@ function renderEraIdeaSlot() {
       <span class="slot-name">${esc(pendingEraIdeaTile.name)}</span>
       <span class="slot-tier">${tierStars(pendingEraIdeaTile.tier)}</span>
     `;
-    eraIdeaArrowTrail?.setActive(false);
+    stopBindArrowIdleLoop();
     // Hold-and-release is the bind grammar by default; tap-to-commit just taps once.
     if (promptEl) {
       const tapMode = getSettings().prefersTapToCommit;
-      promptEl.textContent = bindHoldHandle && wrapperVisible
-        ? ""
-        : tapMode ? "Tap to bind" : "Press and hold to bind";
+      // Keep the prompt visible during the hold so the slot wrapper's
+      // height doesn't reflow mid-ceremony (an empty string here was
+      // causing a vertical shift of the chart-era-btn underneath).
+      promptEl.textContent = tapMode ? "Tap to bind" : "Press and hold to bind";
+      promptEl.classList.add("is-active");
     }
   } else {
     slotEl.classList.remove("slot-occupied", "slot-holding");
     slotEl.innerHTML = `<span class="slot-empty-hint">Drop a tile here</span>`;
-    if (promptEl) promptEl.textContent = "Save an idea tile for this era";
-    if (wrapperVisible) eraIdeaArrowTrail?.setActive(true);
+    if (promptEl) {
+      promptEl.textContent = "Save an idea tile for this era";
+      promptEl.classList.remove("is-active");
+    }
+    if (wrapperVisible) startBindArrowIdleLoop();
   }
 }
+
+// Bind arrow's idle-gated playback. The arrow trail is now one-shot per
+// setActive(true), and we trigger it after 4s of pointer-quiet time, with
+// another 4s required between plays.
+const BIND_ARROW_CYCLE_MS = 3200; // STEP_TS=3 × STEP_MS=1000 + HOLD=1000 + FADE=200
+let bindArrowIdleStop: (() => void) | null = null;
 
 function ensureEraIdeaArrowTrail() {
   if (eraIdeaArrowTrail) return eraIdeaArrowTrail;
   const slotEl = document.getElementById("era-idea-slot");
   if (!slotEl) return null;
-  // Arrow points UP at the slot from below (workspace direction). The bibliophile
-  // layout stacks vertically: slot at top of the page, workspace below it. Pointing
-  // downward keeps the arrow body inside the viewport on mobile (the prior "right"
-  // direction extended 200px past the slot's right edge → off-screen on iPhone).
-  eraIdeaArrowTrail = createArrowTrail({ target: slotEl, direction: "down", color: "#ffd700", length: 120 });
+  // Road-turn arc: start lower-right of the workspace, end at 2/3 of the
+  // slot's width horizontally (just right of center). The "right" curve
+  // bias bows the path further right at the midpoint, exaggerated 33%
+  // beyond the default for a more pronounced road-turn feel.
+  // Endpoints are functions so they re-anchor on resize/scroll.
+  eraIdeaArrowTrail = createArrowTrail({
+    from: () => {
+      const r = workspace.getBoundingClientRect();
+      return { x: r.right - 80, y: r.top + r.height * 0.55 };
+    },
+    to: () => {
+      const r = slotEl.getBoundingClientRect();
+      return { x: r.left + r.width * (2 / 3), y: r.top + r.height / 2 };
+    },
+    color: "var(--gilt, #c9a85f)",
+    curveBias: "right",
+    curveAmount: 0.29,
+  });
   document.body.appendChild(eraIdeaArrowTrail.el);
   eraIdeaArrowTrail.attach();
   return eraIdeaArrowTrail;
+}
+
+function startBindArrowIdleLoop(): void {
+  if (bindArrowIdleStop) return;
+  if (!eraIdeaArrowTrail) return;
+  // Play once immediately (the moment the slot opens), then idle-gate any
+  // subsequent plays. The first arrow shouldn't make the player wait 4s
+  // before knowing where to drop the tile.
+  bindArrowIdleStop = startIdleHintLoop(
+    () => eraIdeaArrowTrail?.setActive(true),
+    BIND_ARROW_CYCLE_MS,
+    { playImmediate: true },
+  );
+}
+function stopBindArrowIdleLoop(): void {
+  if (bindArrowIdleStop) {
+    bindArrowIdleStop();
+    bindArrowIdleStop = null;
+  }
+  eraIdeaArrowTrail?.setActive(false);
 }
 
 function showEraIdeaSlot() {
@@ -3391,15 +3776,18 @@ function showEraIdeaSlot() {
   pendingEraIdeaTile = null;
   ensureEraIdeaArrowTrail();
   renderEraIdeaSlot();
-  // Defer trail activation so the wrapper has laid out first
-  requestAnimationFrame(() => eraIdeaArrowTrail?.setActive(!pendingEraIdeaTile));
+  // Defer idle-loop start so the wrapper has laid out first; if a tile is
+  // already pending the loop won't start (renderEraIdeaSlot stopped it).
+  requestAnimationFrame(() => {
+    if (!pendingEraIdeaTile) startBindArrowIdleLoop();
+  });
 }
 
 function hideEraIdeaSlot() {
   const wrapper = document.getElementById("era-idea-slot-wrapper");
   if (wrapper) wrapper.setAttribute("hidden", "");
   pendingEraIdeaTile = null;
-  eraIdeaArrowTrail?.setActive(false);
+  stopBindArrowIdleLoop();
   renderEraIdeaSlot();
 }
 
@@ -3623,6 +4011,9 @@ function beginBindHold() {
   if (busy) return;
   const slotEl = document.getElementById("era-idea-slot");
   if (!slotEl) return;
+  // Player has begun the hold gesture — the prompt has done its job; stop
+  // pulsing so the text isn't fighting the hold-arc visual.
+  stopPressAndHoldPulses();
   bindHoldHandle = startHoldArc({ target: slotEl, durationMs: 2500 });
   // Cello G2 sustains for the duration of the hold (the master clock per §7).
   // Resolves up a fifth on commit; gracefully exhales on cancel.
@@ -3940,6 +4331,7 @@ document.getElementById("era-idea-slot")?.addEventListener("pointerdown", (e) =>
 
     // Empty the slot; spawn the tile under the pointer; start a regular drag.
     pendingEraIdeaTile = null;
+    stopPressAndHoldPulses();
     document.getElementById("era-idea-slot")?.classList.remove("slot-holding");
     renderEraIdeaSlot();
 
@@ -4010,7 +4402,7 @@ async function commitBindCeremony() {
   pendingEraResult = null;
   const wrapper = document.getElementById("era-idea-slot-wrapper");
   if (wrapper) wrapper.setAttribute("hidden", "");
-  eraIdeaArrowTrail?.setActive(false);
+  stopBindArrowIdleLoop();
   busy = true;
 
   // Library full? Route into retirement ceremony before the era summary.
