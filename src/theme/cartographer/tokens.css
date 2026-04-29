@@ -1,0 +1,58 @@
+/* Cartographer theme — color and typography tokens.
+   Mirrors src/theme/cartographer/manifest.ts. Keep in sync.
+   See docs/design/cartographer-spec.md §2 "Token values" and
+   docs/design/theming-architecture.md §3 "Token categories". */
+
+[data-theme="cartographer"] {
+  /* Raw swatch layer — re-uses Bibliophile's variable names so transitional
+     skin.css references keep resolving after a setTheme switch.
+     Cartographer values per spec §2.1. */
+  --ink-black: #3a2818;
+  --oxblood: #7a3e2a;
+  --gilt: #b8732a;
+  --vellum: #f0e6cf;
+  --leather-deep: #3a2818;
+  --paper-dark: #1a1208;
+  --marble-warm: #a8794a;
+  --marble-cool: #3a2818;
+
+  /* Abstract role layer — warmest of the three palettes. Two accents
+     (compass copper + ocean teal). Sepia ink as primary text — Cartographer's
+     text is heavier than Curator's near-black, signaling 18th-century paper. */
+  --bg-page: #f0e6cf;
+  --bg-surface: #e8dcc0;
+  --bg-deep: #1a1208;
+  --text-primary: #3a2818;
+  --text-secondary: #7a3e2a;
+  --text-tertiary: #a8794a;
+  --accent: #b8732a;
+  --accent-secondary: #1d5e6e;
+  --border-strong: #3a2818;
+  --border-faint: #a8794a;
+
+  /* Phase A→B transitional aliases. */
+  --bg-body: var(--bg-page);
+  --bg-panel: var(--bg-surface);
+  --bg-modal: var(--bg-page);
+  --accent-bright: var(--accent);
+  --text-muted: var(--text-secondary);
+  --border-subtle: var(--border-strong);
+
+  /* Typography — italic Garamond display + IBM Plex Mono UI per spec §2.2.
+     The italic display style is Cartographer's most distinctive feature. */
+  --font-display: "EB Garamond", Garamond, Georgia, serif;
+  --font-ui: "IBM Plex Mono", "Courier New", monospace;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+  --font-display-style: italic;
+  --ui-case-rule: none; /* sentence-case body; mono prefixes are per-element */
+
+  /* Phase A→B transitional aliases. */
+  --font-serif: var(--font-display);
+  --font-sans: var(--font-ui);
+
+  /* Texture URLs — grid background, vellum tile face, sepia border. Files
+     don't exist yet (Phase E-bis). CSS resolves the vars without erroring. */
+  --texture-page-bg: url(/themes/cartographer/patterns/grid.svg);
+  --texture-tile-face: url(/themes/cartographer/patterns/vellum.svg);
+  --texture-border: url(/themes/cartographer/patterns/sepia-border.svg);
+}

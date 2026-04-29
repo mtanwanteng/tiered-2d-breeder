@@ -17,7 +17,8 @@ const GOOGLE_FONTS_BY_THEME: Record<string, string> = {
     "https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600&display=swap",
   curator:
     "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap",
-  // Cartographer (EB Garamond + IBM Plex Mono) registers in Phase E.
+  cartographer:
+    "https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@300;400;500&display=swap",
 };
 
 /** Returns the Google Fonts <link href> for the given theme. */

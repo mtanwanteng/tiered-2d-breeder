@@ -126,8 +126,11 @@ export interface ThemeFonts {
   mono?: string;
   /** Whether the display face renders italic by default (Cartographer = italic). */
   displayStyle: "italic" | "regular";
-  /** UI casing convention (Curator = all-caps-tracked). */
-  uiCaseRule: "all-caps-tracked" | "sentence-case";
+  /** UI casing convention (Curator = all-caps-tracked,
+   *  Cartographer = sentence-case-with-mono-comments). The third value
+   *  is Cartographer-specific: sentence-case body plus mono "// prefix"
+   *  metadata labels. Bibliophile is plain sentence-case. */
+  uiCaseRule: "all-caps-tracked" | "sentence-case" | "sentence-case-with-mono-comments";
 }
 
 /** Texture asset roles — architecture-spec §3.3. */

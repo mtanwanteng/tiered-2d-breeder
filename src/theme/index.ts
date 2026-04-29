@@ -7,6 +7,7 @@
 import type { Theme } from "./Theme";
 import { bibliophile } from "./bibliophile/manifest";
 import { curator } from "./curator/manifest";
+import { cartographer } from "./cartographer/manifest";
 import { loadThemeFonts } from "./fontStylesheet";
 
 export type {
@@ -24,9 +25,10 @@ export type {
 export const THEMES: Record<string, Theme> = {
   bibliophile,
   curator,
+  cartographer,
 };
 
-export { bibliophile, curator };
+export { bibliophile, curator, cartographer };
 
 let activeTheme: Theme = bibliophile;
 
