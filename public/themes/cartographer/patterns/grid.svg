@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14">
+  <!-- Hand-ruled 14x14 grid per cartographer-spec §2.3: faint sepia
+       (#3a2818 at 30% opacity). Most prominent texture of the three
+       themes — Cartographer pages always show their paper grid.
+       Tiled tile-by-tile across the page. -->
+  <rect width="14" height="14" fill="#f0e6cf"/>
+  <line x1="0" y1="0" x2="14" y2="0" stroke="#3a2818" stroke-width="0.4" opacity="0.3"/>
+  <line x1="0" y1="0" x2="0" y2="14" stroke="#3a2818" stroke-width="0.4" opacity="0.3"/>
+</svg>

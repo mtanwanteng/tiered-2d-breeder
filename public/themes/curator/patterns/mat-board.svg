@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- Mat-board border treatment per curator-spec §2.3:
+       a faint warmer-cream fill with subtle paper-fiber speckle. Reads as
+       the cream "mat" between a piece's outer black frame and white inner
+       mat. Tiles fine at any size. -->
+  <defs>
+    <filter id="mat-grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="9"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.1
+                                            0 0 0 0 0.08
+                                            0 0 0 0 0.06
+                                            0 0 0 0.06 0"/>
+    </filter>
+  </defs>
+  <rect width="200" height="200" fill="#e8e2d4"/>
+  <rect width="200" height="200" filter="url(#mat-grain)"/>
+</svg>
