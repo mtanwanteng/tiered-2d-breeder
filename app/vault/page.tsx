@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { chapterStripeColorFromSeed } from "../../src/theme/chapterColor";
 
 const ROMANS = [
   "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
@@ -23,6 +24,8 @@ interface VaultEntry {
   runId: string | null;
   retiredAt: string | null;
   bindingStripeColor: string | null;
+  /** Precomputed fnv1a seed (server-side) for theme-agnostic stripe rendering. */
+  chapterColorSeed: number;
   createdAt: string;
 }
 
@@ -89,7 +92,9 @@ export default function VaultPage() {
       {tiles && tiles.length > 0 && (
         <ul className="vault-list">
           {tiles.map((entry) => {
-            const stripe = entry.bindingStripeColor ?? "var(--border-strong, #5a4528)";
+            // Phase C render-path bypass: ignore stored bindingStripeColor;
+            // resolve from the active theme's palette via the server-computed seed.
+            const stripe = chapterStripeColorFromSeed(entry.chapterColorSeed);
             const roman = entry.chapterIndex !== null
               ? ROMANS[entry.chapterIndex + 1] ?? String(entry.chapterIndex + 1)
               : "—";

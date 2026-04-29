@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Bookplate, type BookplateTile } from "../components/Bookplate";
+import { chapterStripeColor } from "../../src/theme/chapterColor";
 
 const LIBRARY_CAP = 24;
 
@@ -81,7 +82,9 @@ export default function LibraryPage() {
               if (!tile) {
                 return <div key={`empty-${i}`} className="library-slot library-slot--empty" />;
               }
-              const stripe = tile.bindingStripeColor ?? "var(--border-strong, #5a4528)";
+              // Phase C render-path bypass: ignore stored bindingStripeColor;
+              // resolve from the active theme's palette so library re-skins live.
+              const stripe = chapterStripeColor(tile.eraName, tile.tileName, tile.runId ?? "");
               return (
                 <button
                   key={tile.id}

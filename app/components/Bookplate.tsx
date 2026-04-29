@@ -12,6 +12,15 @@
 //
 // The component renders just the inner sheet contents. Callers wrap it in
 // whatever overlay / backdrop chrome they need.
+//
+// Phase C render-path bypass: `bindingStripeColor` and `tileColor` arrive on
+// the prop (the API still returns them, the DB still stores them — preserved
+// for a future experiment per migration-plan.md §C) but the renderer ignores
+// the stored hex and resolves the stripe from the active theme's
+// `bindingStripePalette` via `chapterStripeColor()`. This way switching
+// themes re-skins every tile in the library / vault live.
+
+import { chapterStripeColor } from "../../src/theme/chapterColor";
 
 const ROMANS = [
   "", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
@@ -45,7 +54,10 @@ export function Bookplate({ tile, runOrdinal }: BookplateProps) {
   const chapterRoman = tile.chapterIndex !== null
     ? ROMANS[tile.chapterIndex + 1] ?? String(tile.chapterIndex + 1)
     : "";
-  const stripe = tile.bindingStripeColor ?? "var(--border-strong, #5a4528)";
+  // Render-time resolution: ignore tile.bindingStripeColor (preserved on the
+  // prop for future-experiment use) and hash from the (era × tile × run)
+  // tuple against the active theme's palette.
+  const stripe = chapterStripeColor(tile.eraName, tile.tileName, tile.runId ?? "");
   const attribution = [
     runOrdinal !== undefined ? `From your ${ordinal(runOrdinal)} run` : null,
     chapterRoman ? `Chapter ${chapterRoman}` : null,

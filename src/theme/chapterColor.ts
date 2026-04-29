@@ -6,6 +6,11 @@
 //
 // FNV-1a hash — simple, deterministic, fast, no crypto. Output is a stable
 // index into the active theme's bindingStripePalette.
+//
+// Phase C exposes a seed-only function (`chapterColorSeed`) that surfaces
+// like `app/vault/page.tsx` can call server-side without surfacing tileName
+// to the client. The renderer reads `chapterStripeColorFromSeed(seed)` to
+// pick a palette entry from the active theme.
 
 import { getTheme } from "./index";
 
@@ -18,12 +23,25 @@ function fnv1a(input: string): number {
   return hash >>> 0;
 }
 
-/** Pick a binding-stripe color for a (chapter × bound tile × run) tuple.
- *  Same inputs → same color (deterministic). Used to color the strip cube of
- *  a bound tile and any rendering of that tile in the library or vault. */
-export function chapterStripeColor(eraName: string, tileId: string, runId: string): string {
+/** Compute the chapter-color seed from the (chapter × bound tile × run)
+ *  tuple. Pure: depends on no theme state. Safe to run server-side and
+ *  surface the integer in API responses where surfacing the raw inputs
+ *  would violate spec invariants (e.g. the vault's spine-only contract). */
+export function chapterColorSeed(eraName: string, tileId: string, runId: string): number {
+  return fnv1a(`${eraName}|${tileId}|${runId}`);
+}
+
+/** Render-time resolution: pick a binding-stripe color for a precomputed
+ *  seed by indexing into the active theme's palette. Live theme switches
+ *  re-evaluate against the new theme's palette without a refetch. */
+export function chapterStripeColorFromSeed(seed: number): string {
   const palette = getTheme().bindingStripePalette;
   if (palette.length === 0) return "#5a4528"; // theme without a palette → leather-deep
-  const hash = fnv1a(`${eraName}|${tileId}|${runId}`);
-  return palette[hash % palette.length];
+  return palette[seed % palette.length];
+}
+
+/** Convenience wrapper for callers that have the raw hash inputs (the bind
+ *  ceremony, library page, Bookplate). Vault uses the seed-only path. */
+export function chapterStripeColor(eraName: string, tileId: string, runId: string): string {
+  return chapterStripeColorFromSeed(chapterColorSeed(eraName, tileId, runId));
 }

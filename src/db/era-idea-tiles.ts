@@ -1,6 +1,7 @@
 import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "./index";
 import { eraIdeaTile } from "./schema";
+import { chapterColorSeed } from "../theme/chapterColor";
 
 export async function createEraIdeaTile(input: {
   id: string;
@@ -77,8 +78,13 @@ export async function getLibraryForOwner(input: {
 
 /** Vault entries — spine fields only (id, era_name, chapter_index, run_id,
  *  retired_at, binding_stripe_color, created_at). The full tile data is in
- *  the row but the API doesn't surface it (spec §3.7: "the information loss
- *  is the meaning"). */
+ *  the row but the API doesn't surface tileName/face/narrative (spec §3.7:
+ *  "the information loss is the meaning").
+ *
+ *  Phase C adds a precomputed `chapterColorSeed` so the renderer can index
+ *  into the active theme's palette without ever seeing tile_name. The seed
+ *  is computed at read time (no schema migration) and is the same fnv1a
+ *  result the bind ceremony produced — render parity with library / Bookplate. */
 export interface VaultRow {
   id: string;
   eraName: string;
@@ -86,6 +92,7 @@ export interface VaultRow {
   runId: string | null;
   retiredAt: Date | null;
   bindingStripeColor: string | null;
+  chapterColorSeed: number;
   createdAt: Date;
 }
 
@@ -95,7 +102,9 @@ export async function getVaultForOwner(input: {
 }): Promise<VaultRow[]> {
   const filter = ownerFilter(input);
   if (!filter) return [];
-  return db
+  // Selects tile_name *only* to compute the seed; the response interface
+  // does not expose it. Spec §3.7 spine-only contract preserved on the wire.
+  const rows = await db
     .select({
       id: eraIdeaTile.id,
       eraName: eraIdeaTile.eraName,
@@ -103,11 +112,17 @@ export async function getVaultForOwner(input: {
       runId: eraIdeaTile.runId,
       retiredAt: eraIdeaTile.retiredAt,
       bindingStripeColor: eraIdeaTile.bindingStripeColor,
+      tileName: eraIdeaTile.tileName,
       createdAt: eraIdeaTile.createdAt,
     })
     .from(eraIdeaTile)
     .where(and(filter, isNotNull(eraIdeaTile.retiredAt)))
     .orderBy(desc(eraIdeaTile.retiredAt));
+
+  return rows.map(({ tileName, ...rest }) => ({
+    ...rest,
+    chapterColorSeed: chapterColorSeed(rest.eraName, tileName, rest.runId ?? ""),
+  }));
 }
 
 /** Retire a bound tile. Owner-checked: returns false if the row doesn't exist

@@ -4176,7 +4176,8 @@ function openRetirementOverlay(boundPreview: BoundTilePreview): Promise<"retired
         }
         grid.innerHTML = tiles
           .map((t) => {
-            const stripe = t.bindingStripeColor ?? "var(--border-strong)";
+            // Phase C render-path bypass: stripe resolved from active theme.
+            const stripe = chapterStripeColor(t.eraName, t.tileName, t.runId ?? "");
             return `<button
                 class="retire-tile"
                 data-tile-id="${esc(t.id)}"
