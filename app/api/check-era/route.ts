@@ -69,7 +69,11 @@ Return your evaluation for every goal listed.`;
 
     const { data: result, inputTokens, outputTokens } =
       config.publisher === "google"
-        ? await callGemini(token, config.vertexModel, prompt, ERA_CHECK_SCHEMA)
+        ? await callGemini(token, config.vertexModel, prompt, ERA_CHECK_SCHEMA, {
+            // Boolean-per-goal evaluation against an action log. Pattern-match
+            // work, not reasoning. Disable thinking for snappy era checks.
+            thinkingBudget: 0,
+          })
         : await callClaude(token, config.vertexModel, prompt, ["results"]);
 
     const resultData = result as { results?: { met: boolean }[] };

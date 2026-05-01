@@ -66,7 +66,13 @@ You MUST choose one of the listed era names exactly as written.`;
 
     const { data: result, inputTokens, outputTokens } =
       config.publisher === "google"
-        ? await callGemini(token, config.vertexModel, prompt, CHOOSE_ERA_SCHEMA)
+        ? await callGemini(token, config.vertexModel, prompt, CHOOSE_ERA_SCHEMA, {
+            // Choosing one of N eras + writing a 2-3 sentence connecting
+            // narrative benefits from a small thinking budget. Cap it so the
+            // model doesn't run away. 512 tokens is enough for a short
+            // weighing of options.
+            thinkingBudget: 512,
+          })
         : await callClaude(token, config.vertexModel, prompt, ["chosenEra", "narrative"]);
 
     const resultData = result as { chosenEra?: string; narrative?: string };

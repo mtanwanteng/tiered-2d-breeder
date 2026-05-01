@@ -150,11 +150,22 @@ export async function callGeminiImage(
   return { base64: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType };
 }
 
+export interface CallGeminiOptions {
+  /** Gemini 2.5 Flash thinking-budget control. Defaults to dynamic (model
+   *  decides). Pass `0` to disable thinking entirely (fastest, cheapest —
+   *  appropriate for short structured outputs that don't benefit from
+   *  reasoning). Pass a positive integer (1–24576) to cap thinking tokens.
+   *  Pass -1 to force dynamic. See:
+   *  https://cloud.google.com/vertex-ai/generative-ai/docs/thinking */
+  thinkingBudget?: number;
+}
+
 export async function callGemini(
   token: string,
   model: string,
   prompt: string,
   schema: Record<string, unknown>,
+  options: CallGeminiOptions = {},
 ): Promise<{ data: unknown; inputTokens: number; outputTokens: number }> {
   const url = `${VERTEX_BASE}/google/models/${model}:generateContent`;
   const response = await fetch(url, {
@@ -168,6 +179,12 @@ export async function callGemini(
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: schema,
+        ...(options.thinkingBudget !== undefined && {
+          thinkingConfig: {
+            thinkingBudget: options.thinkingBudget,
+            includeThoughts: false,
+          },
+        }),
       },
     }),
   });

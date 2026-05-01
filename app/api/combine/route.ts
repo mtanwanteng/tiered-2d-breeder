@@ -39,7 +39,12 @@ export async function POST(request: Request) {
 
     const { data: result, inputTokens, outputTokens } =
       config.publisher === "google"
-        ? await callGemini(token, config.vertexModel, prompt, COMBINE_SCHEMA)
+        ? await callGemini(token, config.vertexModel, prompt, COMBINE_SCHEMA, {
+            // Combine returns a 5-field structured JSON. No reasoning needed —
+            // disabling thinking on 2.5 Flash typically halves roundtrip
+            // latency and cuts billed tokens by 30-60%.
+            thinkingBudget: 0,
+          })
         : await callClaude(token, config.vertexModel, prompt, [
             "name",
             "color",
