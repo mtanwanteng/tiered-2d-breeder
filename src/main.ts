@@ -199,23 +199,22 @@ function renderEraProgress() {
 //
 // Decision model — asymmetric per-axis thresholds, mutually exclusive,
 // mode-locking once committed:
-//   Drag fires when vertical motion crosses VERTICAL_DRAG_THRESHOLD_PX (20px)
-//     AND the gesture is inside the 67.5° wedge around vertical. The
-//     threshold is set well above casual touch jitter so an angled swipe
-//     that would otherwise read as "horizontal" has time to accumulate
-//     enough adx to commit to scroll first.
+//   Drag fires when vertical motion crosses VERTICAL_DRAG_THRESHOLD_PX (10px)
+//     AND the gesture is inside the 50° wedge around vertical.
 //   Scroll fires when horizontal motion crosses HORIZONTAL_SCROLL_THRESHOLD_PX
-//     (16px) AND the gesture is inside the 22.5° wedge around horizontal.
-//   The two wedges partition the plane (67.5° + 22.5° = 90° per quadrant), so
+//     (16px) AND the gesture is inside the 40° wedge around horizontal.
+//   The two wedges partition the plane (50° + 40° = 90° per quadrant), so
 //   only one branch can fire. Whichever crosses its threshold first wins.
 //   Once committed, the arming listener is detached and the gesture is
 //   locked — no late motion in the other direction can switch modes.
 //   - Mouse: drag begins immediately on pointerdown (no scroll race).
 const VERTICAL_DRAG_THRESHOLD_PX = 10;
 const HORIZONTAL_SCROLL_THRESHOLD_PX = 16;
-// tan(22.5°) ≈ 0.4142. ady > adx · this ⟺ motion is in the vertical 67.5°
-// wedge ⟺ classify as drag (the complementary check classifies as scroll).
-const VERTICAL_WEDGE_TAN = Math.tan(Math.PI / 8);
+// tan(40°) ≈ 0.839. ady > adx · this ⟺ motion is in the vertical 50°
+// wedge ⟺ classify as drag (the complementary check classifies as scroll —
+// motion within 40° of horizontal). Wider scroll wedge so a finger arcing
+// down naturally as it moves sideways still routes to scroll.
+const VERTICAL_WEDGE_TAN = Math.tan((40 * Math.PI) / 180);
 
 // JS-owned horizontal scroll. The browser's native pan would race the
 // arming logic and let scroll commit before drag classification finishes
@@ -371,10 +370,8 @@ function attachDragToSpawn(
       const adx = Math.abs(dx);
       const ady = Math.abs(dy);
       const inVerticalWedge = ady > adx * VERTICAL_WEDGE_TAN;
-      // Drag — vertical wedge + 20px of vertical motion. The threshold is
-      // deliberately above the scroll threshold so an angled swipe that
-      // sits inside the wide drag wedge has time to accumulate enough
-      // adx to commit to scroll first if the player meant horizontal.
+      // Drag — gesture inside the 50° vertical wedge AND vertical motion
+      // has crossed 10px.
       if (inVerticalWedge && ady >= VERTICAL_DRAG_THRESHOLD_PX) {
         armed = false;
         cleanup();
@@ -382,9 +379,8 @@ function attachDragToSpawn(
         beginDrag(moveEvent.clientX, moveEvent.clientY);
         return;
       }
-      // Scroll — horizontal wedge + 16px of horizontal motion. Higher
-      // threshold so accidental sideways jitter doesn't lock the gesture
-      // into scroll mode and prevent a follow-up vertical pull.
+      // Scroll — gesture inside the 40° horizontal wedge AND horizontal
+      // motion has crossed 16px.
       if (!inVerticalWedge && adx >= HORIZONTAL_SCROLL_THRESHOLD_PX) {
         armed = false;
         cleanup();
