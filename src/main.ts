@@ -2750,6 +2750,14 @@ if (selectFiveMode) {
 // sidebar regardless of stacking context. On drop they convert back to absolute.
 const handlePointerMove = (e: PointerEvent) => {
   if (!dragItem) return;
+  // Lock out native horizontal scroll on the inventory + chapter strip while
+  // a tile is in flight. Without this, a sideways finger can yank the strip
+  // out from under the dragged tile, which the browser interprets as
+  // pointercancel — the tile drops at its last position. CSS hooks the
+  // body[data-dragging] attribute to set overflow-x: hidden on those rows.
+  if (document.body.dataset.dragging !== "true") {
+    document.body.dataset.dragging = "true";
+  }
   dragItem.el.style.left = `${e.clientX - dragOffsetX}px`;
   dragItem.el.style.top = `${e.clientY - dragOffsetY}px`;
   // Keep workspace-relative coords in sync for overlap detection
@@ -2812,6 +2820,7 @@ const handlePointerUp = (e: PointerEvent) => {
   if (!dragItem) return;
   const item = dragItem;
   dragItem = null;
+  document.body.removeAttribute("data-dragging");
   clearAllGlow();
   clearSlotHover();
   document.getElementById("era-idea-slot")?.classList.remove("slot-hover");
@@ -2934,6 +2943,11 @@ function spawnInkBleedRing(item: CombineItem) {
 
 document.addEventListener("pointermove", handlePointerMove);
 document.addEventListener("pointerup", handlePointerUp);
+// If the OS / browser yanks the pointer mid-drag (e.g., system gesture),
+// drop the dragging flag so the inventory tray gets its scroll back.
+document.addEventListener("pointercancel", () => {
+  document.body.removeAttribute("data-dragging");
+});
 
 // First user gesture resumes the AudioContext — browsers block autoplay until
 // the user interacts with the page (Chrome/Safari/Firefox autoplay policy).
@@ -3635,6 +3649,12 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
         panel.style.opacity = "";
         panel.style.filter = "";
       }
+      // Restore the objectives card now that the next chapter begins —
+      // showEraIdeaSlot collapsed it on bind to keep the header tidy.
+      if (eraGoalsCollapsed) {
+        eraGoalsCollapsed = false;
+        applyEraGoalsState();
+      }
       onContinue();
     };
     // Peel the era-summary spread away into the next chapter (spec §6 page-turn).
@@ -3847,6 +3867,13 @@ function showEraIdeaSlot() {
   if (!wrapper) return;
   wrapper.removeAttribute("hidden");
   pendingEraIdeaTile = null;
+  // Collapse the objectives card so the bind slot has the header to itself —
+  // the era is already won; the goals are just visual noise at this point.
+  // Reopened on era-summary dismissal so the next chapter starts expanded.
+  if (!eraGoalsCollapsed) {
+    eraGoalsCollapsed = true;
+    applyEraGoalsState();
+  }
   ensureEraIdeaArrowTrail();
   renderEraIdeaSlot();
   // Defer idle-loop start so the wrapper has laid out first; if a tile is
@@ -3862,6 +3889,13 @@ function hideEraIdeaSlot() {
   pendingEraIdeaTile = null;
   stopBindArrowIdleLoop();
   renderEraIdeaSlot();
+  // Restore the objectives card if showEraIdeaSlot collapsed it. The success
+  // path hides the wrapper via direct setAttribute (and expands on summary
+  // close), so this branch is only reached on the error path — no double-fire.
+  if (eraGoalsCollapsed) {
+    eraGoalsCollapsed = false;
+    applyEraGoalsState();
+  }
 }
 
 async function persistEraIdeaTile(eraName: string, tile: EraIdeaTilePick) {

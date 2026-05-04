@@ -1031,6 +1031,17 @@ body {
 }
  #palette-items::-webkit-scrollbar-track { background: transparent; }
 
+/* While a tile is in flight (body[data-dragging="true"], set by the
+ * document-level pointermove handler), freeze native horizontal scroll on
+ * the inventory tray and chapter strip. Otherwise a sideways finger after
+ * the drag begins yanks the row out from under the tile, the browser fires
+ * pointercancel, and the tile drops at its last position. */
+body[data-dragging="true"] #palette-items,
+body[data-dragging="true"] #era-progress {
+  overflow-x: hidden;
+  touch-action: none;
+}
+
 /* Stack header + items: header pinned above tray.
  * minmax(0, 1fr) on the workspace track lets it compress when auto rows
  * above grow, keeping the tray docked at the bottom of the viewport. */
