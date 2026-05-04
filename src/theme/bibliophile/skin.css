@@ -809,9 +809,9 @@ body {
   cursor: grab;
   z-index: 2;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
-  /* Horizontal pans should scroll the strip natively; the JS drag-out only
-     commits on vertical-dominant motion (matches the idea-tray pattern). */
-  touch-action: pan-x;
+  /* JS owns the gesture (matches .palette-item). attachDragToSpawn drives
+   * #era-progress.scrollLeft directly when the gesture commits to scroll. */
+  touch-action: none;
 }
  .era-cube-idea:hover {
   transform: scale(1.18);
@@ -1078,9 +1078,11 @@ body[data-dragging="true"] #era-progress {
   color: var(--ink-black);
   cursor: grab;
   transition: transform 0.12s, box-shadow 0.12s;
-  /* Allow the parent's horizontal pan to win on touch — the JS pointerdown handler
-     uses a movement threshold before starting a drag, so swipes still scroll. */
-  touch-action: pan-x;
+  /* JS owns the gesture. Browser-driven pan-x on the tile would race the
+   * arming logic and let scroll commit before drag classification could
+   * finish — both states would coexist mid-gesture. The release-to-scroll
+   * branch drives paletteItems.scrollLeft itself. */
+  touch-action: none;
 }
  .palette-item::before {
   content: "";

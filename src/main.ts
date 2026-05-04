@@ -211,11 +211,92 @@ function renderEraProgress() {
 //   Once committed, the arming listener is detached and the gesture is
 //   locked — no late motion in the other direction can switch modes.
 //   - Mouse: drag begins immediately on pointerdown (no scroll race).
-const VERTICAL_DRAG_THRESHOLD_PX = 20;
+const VERTICAL_DRAG_THRESHOLD_PX = 10;
 const HORIZONTAL_SCROLL_THRESHOLD_PX = 16;
 // tan(22.5°) ≈ 0.4142. ady > adx · this ⟺ motion is in the vertical 67.5°
 // wedge ⟺ classify as drag (the complementary check classifies as scroll).
 const VERTICAL_WEDGE_TAN = Math.tan(Math.PI / 8);
+
+// JS-owned horizontal scroll. The browser's native pan would race the
+// arming logic and let scroll commit before drag classification finishes
+// (see Apple HIG / WWDC 2014 #235: you cannot reliably win a gesture
+// arena from movement direction alone). With `touch-action: none` on
+// draggable items, the browser never starts a pan, and the scroll branch
+// of attachDragToSpawn drives scrollLeft itself.
+function findHorizontalScroller(el: HTMLElement): HTMLElement | null {
+  let cur: HTMLElement | null = el.parentElement;
+  while (cur) {
+    const ox = getComputedStyle(cur).overflowX;
+    if ((ox === "auto" || ox === "scroll") && cur.scrollWidth > cur.clientWidth) return cur;
+    cur = cur.parentElement;
+  }
+  return null;
+}
+
+// While a JS scroll is active, the existing touchmove rubber-band handler
+// on #palette-items would double-fire alongside beginJsScroll's own
+// boundary handling. Gate it on this flag.
+let jsScrollActivePointerId: number | null = null;
+
+function beginJsScroll(scroller: HTMLElement, e: PointerEvent) {
+  const startX = e.clientX;
+  const startScrollLeft = scroller.scrollLeft;
+  const maxScroll = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+  let lastX = startX;
+  let lastT = e.timeStamp;
+  let velocity = 0; // px / ms, signed; positive = finger moving right
+
+  jsScrollActivePointerId = e.pointerId;
+  try { scroller.setPointerCapture(e.pointerId); } catch {}
+
+  const onMove = (m: PointerEvent) => {
+    const dt = Math.max(1, m.timeStamp - lastT);
+    const dxStep = m.clientX - lastX;
+    velocity = velocity * 0.7 + (dxStep / dt) * 0.3;
+    lastX = m.clientX;
+    lastT = m.timeStamp;
+
+    const target = startScrollLeft - (m.clientX - startX);
+    const clamped = Math.max(0, Math.min(maxScroll, target));
+    scroller.scrollLeft = clamped;
+
+    // Past-boundary motion → rubber-band (inventory only). dxStep sign
+    // already encodes pull direction: at left boundary, finger-right →
+    // dxStep > 0 → positive overscroll; at right boundary, finger-left →
+    // dxStep < 0 → negative overscroll.
+    if (scroller === paletteItems && target !== clamped) {
+      applyOverscroll(dxStep);
+    }
+    m.preventDefault();
+  };
+
+  const onEnd = (m: PointerEvent) => {
+    scroller.removeEventListener("pointermove", onMove);
+    scroller.removeEventListener("pointerup", onEnd);
+    scroller.removeEventListener("pointercancel", onEnd);
+    try { scroller.releasePointerCapture(m.pointerId); } catch {}
+    jsScrollActivePointerId = null;
+    if (scroller === paletteItems) scheduleOverscrollSnap(0);
+    if (Math.abs(velocity) > 0.05) coastScroll(scroller, velocity);
+  };
+
+  scroller.addEventListener("pointermove", onMove, { passive: false });
+  scroller.addEventListener("pointerup", onEnd);
+  scroller.addEventListener("pointercancel", onEnd);
+}
+
+function coastScroll(scroller: HTMLElement, initialVelocityPxPerMs: number) {
+  const decay = 0.95; // per ~16ms frame
+  let v = initialVelocityPxPerMs * 16; // px per frame
+  const maxScroll = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+  const step = () => {
+    v *= decay;
+    if (Math.abs(v) < 0.5) return;
+    scroller.scrollLeft = Math.max(0, Math.min(maxScroll, scroller.scrollLeft - v));
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
 
 interface DragSpawnHookOptions {
   /** Pixels to offset the spawned tile's top-left from the pointer (default 36). */
@@ -236,11 +317,12 @@ function attachDragToSpawn(
 
   targetEl.addEventListener("pointerdown", (e) => {
     if (busy) return;
-    // Multi-touch lock: if a tile is already in flight, ignore additional
-    // pointerdowns from the inventory. Without this, a second finger on a
-    // different palette card would overwrite dragItem and turn the first
-    // tile into a ghost stuck at its last position.
-    if (dragItem) return;
+    // Multi-touch lock: if a tile is already in flight or a JS scroll is
+    // capturing a pointer, ignore additional pointerdowns from draggable
+    // surfaces. Without this, a second finger could overwrite dragItem
+    // (orphaning the first tile) or fire its pointermoves into the
+    // document-level handler while the first finger is scrolling.
+    if (dragItem || jsScrollActivePointerId !== null) return;
     const data = getData();
     if (!data) return;
 
@@ -306,8 +388,13 @@ function attachDragToSpawn(
       if (!inVerticalWedge && adx >= HORIZONTAL_SCROLL_THRESHOLD_PX) {
         armed = false;
         cleanup();
-        // Release the rest of the gesture to the browser's native scroll;
-        // armed = false ensures we can't switch back to drag mid-gesture.
+        // Take ownership of horizontal scroll. Draggable items have
+        // touch-action: none, so the browser doesn't pan natively — we
+        // drive scrollLeft on the nearest scrollable ancestor for the
+        // rest of the gesture. armed = false ensures we can't switch
+        // back to drag mid-gesture.
+        const scroller = findHorizontalScroller(targetEl);
+        if (scroller) beginJsScroll(scroller, moveEvent);
         return;
       }
       // Otherwise: gesture hasn't committed yet — keep waiting.
@@ -1861,10 +1948,15 @@ let touchPrevX: number | null = null;
 let touchOverscrollEngaged = false;
 paletteItems.addEventListener("touchstart", (e) => {
   if (e.touches.length !== 1) return;
+  if (jsScrollActivePointerId !== null) return;
   touchPrevX = e.touches[0].clientX;
   touchOverscrollEngaged = false;
 }, { passive: true });
 paletteItems.addEventListener("touchmove", (e) => {
+  // beginJsScroll owns the gesture for finger-on-card touches; its own
+  // pointermove handler clamps scrollLeft and feeds applyOverscroll, so
+  // skip this finger-on-gap rubber-band path to avoid double-firing.
+  if (jsScrollActivePointerId !== null) return;
   if (e.touches.length !== 1 || touchPrevX === null) return;
   const x = e.touches[0].clientX;
   const dx = x - touchPrevX;
