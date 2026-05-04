@@ -195,11 +195,20 @@ function renderEraProgress() {
 //   - bound-chapter-cube tiles (.era-cube-idea) — the strip
 //
 // Both surfaces sit inside horizontal scroll containers, so the touch behavior
-// must distinguish "I'm scrolling the parent" from "I'm dragging this tile out":
-//   - Mouse: drag begins immediately on pointerdown.
-//   - Touch / pen: drag begins only when the player pulls VERTICALLY past the
-//     threshold. Horizontal motion releases to the browser's native scroll.
-const TOUCH_SPAWN_DRAG_THRESHOLD_PX = 10;
+// must distinguish "I'm scrolling the parent" from "I'm dragging this tile out".
+//
+// Decision model — single threshold, single classification, no race:
+//   The first move past TOUCH_DECISION_THRESHOLD_PX of total motion wins.
+//   Motion within 67.5° of vertical (a 135° arc, two opposing 67.5°
+//   wedges) → drag. Anything else (the 45° arc around horizontal, two
+//   opposing 22.5° wedges) → release to browser scroll. The two arcs
+//   partition the plane — no indeterminate zone where neither fires while
+//   the browser starts scrolling on its own.
+//   - Mouse: drag begins immediately on pointerdown (no scroll race).
+const TOUCH_DECISION_THRESHOLD_PX = 8;
+// tan(22.5°) ≈ 0.4142. ady > adx · this ⟺ motion is in the vertical 67.5°
+// wedge ⟺ classify as drag.
+const VERTICAL_WEDGE_TAN = Math.tan(Math.PI / 8);
 
 interface DragSpawnHookOptions {
   /** Pixels to offset the spawned tile's top-left from the pointer (default 36). */
@@ -238,6 +247,16 @@ function attachDragToSpawn(
       item.el.style.left = `${clientX - offsetX}px`;
       item.el.style.top = `${clientY - offsetY}px`;
       item.el.style.zIndex = "100";
+      // Lock the gesture to the spawned tile. Without this, the browser
+      // can reclaim the pointer for a horizontal scroll partway through a
+      // diagonal pull, fire pointercancel, and leave the tile dropped at
+      // its last position. Capture also routes pointerup through item.el,
+      // which still bubbles to the document-level handlePointerUp.
+      try { item.el.setPointerCapture(e.pointerId); } catch {}
+      // Set the dragging flag at the actual drag-begin moment (not on the
+      // first handlePointerMove tick) so the inventory + strip scroll lock
+      // applies before any subsequent motion can scroll them.
+      document.body.setAttribute("data-dragging", "true");
       opts.onBegin?.(data);
     };
 
@@ -257,23 +276,19 @@ function attachDragToSpawn(
       const dy = moveEvent.clientY - startY;
       const adx = Math.abs(dx);
       const ady = Math.abs(dy);
-      // Bias toward scroll: any clearly-horizontal motion releases the
-      // pointer to the browser ASAP (low threshold + 1.2× ratio). The drag
-      // only arms on clearly-vertical motion (higher threshold + 1.5× ratio
-      // so a slightly-diagonal swipe across the inventory bar doesn't get
-      // mis-classified as a vertical pull on iOS, which previously spawned
-      // a tile that immediately got dropped on pointerup).
-      if (adx >= 5 && adx > ady * 1.2) {
-        armed = false;
-        cleanup();
-        return;
-      }
-      if (ady >= TOUCH_SPAWN_DRAG_THRESHOLD_PX && ady > adx * 1.5) {
-        armed = false;
-        cleanup();
+      // Wait for clear intent (single threshold). Once total motion crosses
+      // the threshold, classify in one shot — no second branch can fire
+      // later in the same gesture.
+      if (Math.hypot(adx, ady) < TOUCH_DECISION_THRESHOLD_PX) return;
+      armed = false;
+      cleanup();
+      if (ady > adx * VERTICAL_WEDGE_TAN) {
+        // Inside the 67.5° vertical wedge → drag.
         moveEvent.preventDefault();
         beginDrag(moveEvent.clientX, moveEvent.clientY);
       }
+      // Otherwise: inside the 22.5° horizontal wedge → release to the
+      // browser's native horizontal scroll on the parent strip.
     };
     const onCancel = () => {
       armed = false;
@@ -2943,10 +2958,14 @@ function spawnInkBleedRing(item: CombineItem) {
 
 document.addEventListener("pointermove", handlePointerMove);
 document.addEventListener("pointerup", handlePointerUp);
-// If the OS / browser yanks the pointer mid-drag (e.g., system gesture),
-// drop the dragging flag so the inventory tray gets its scroll back.
-document.addEventListener("pointercancel", () => {
+// setPointerCapture in attachDragToSpawn keeps the browser from yanking the
+// gesture for scroll, so pointercancel here is the rare system-level case
+// (notification, app switch). Route it through handlePointerUp so the drag
+// terminates cleanly — without this, dragItem would dangle and the next
+// pointermove would still be moving a ghost tile.
+document.addEventListener("pointercancel", (e) => {
   document.body.removeAttribute("data-dragging");
+  if (dragItem) handlePointerUp(e);
 });
 
 // First user gesture resumes the AudioContext — browsers block autoplay until
