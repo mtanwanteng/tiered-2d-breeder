@@ -245,6 +245,12 @@ function beginJsScroll(scroller: HTMLElement, e: PointerEvent) {
   let lastT = e.timeStamp;
   let velocity = 0; // px / ms, signed; positive = finger moving right
 
+  // CSS scroll-snap (used on #palette-items) re-snaps on JS scrollLeft
+  // updates in some browsers — that fights the per-pointermove drive.
+  // Suspend snap for the gesture, restore after coast settles.
+  const prevSnap = scroller.style.scrollSnapType;
+  scroller.style.scrollSnapType = "none";
+
   jsScrollActivePointerId = e.pointerId;
   try { scroller.setPointerCapture(e.pointerId); } catch {}
 
@@ -276,7 +282,15 @@ function beginJsScroll(scroller: HTMLElement, e: PointerEvent) {
     try { scroller.releasePointerCapture(m.pointerId); } catch {}
     jsScrollActivePointerId = null;
     if (scroller === paletteItems) scheduleOverscrollSnap(0);
-    if (Math.abs(velocity) > 0.05) coastScroll(scroller, velocity);
+    if (Math.abs(velocity) > 0.05) {
+      // Restore snap after coast settles; immediate restore would snap
+      // the in-flight inertia back to the nearest tile.
+      coastScroll(scroller, velocity, () => {
+        scroller.style.scrollSnapType = prevSnap;
+      });
+    } else {
+      scroller.style.scrollSnapType = prevSnap;
+    }
   };
 
   scroller.addEventListener("pointermove", onMove, { passive: false });
@@ -284,13 +298,20 @@ function beginJsScroll(scroller: HTMLElement, e: PointerEvent) {
   scroller.addEventListener("pointercancel", onEnd);
 }
 
-function coastScroll(scroller: HTMLElement, initialVelocityPxPerMs: number) {
+function coastScroll(
+  scroller: HTMLElement,
+  initialVelocityPxPerMs: number,
+  onSettle?: () => void,
+) {
   const decay = 0.95; // per ~16ms frame
   let v = initialVelocityPxPerMs * 16; // px per frame
   const maxScroll = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
   const step = () => {
     v *= decay;
-    if (Math.abs(v) < 0.5) return;
+    if (Math.abs(v) < 0.5) {
+      onSettle?.();
+      return;
+    }
     scroller.scrollLeft = Math.max(0, Math.min(maxScroll, scroller.scrollLeft - v));
     requestAnimationFrame(step);
   };
