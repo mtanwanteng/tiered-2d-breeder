@@ -3431,7 +3431,7 @@ async function combine(a: CombineItem, b: CombineItem) {
   if (elementData) {
     isCacheHit = true;
     log.debug("game", `Cache hit: ${key} → ${elementData.name}`);
-    // Onboarding ceremony pause: hold the combine placeholder visible for 5s
+    // Onboarding ceremony pause: hold the combine placeholder visible for 2s
     // so the player feels the "held breath" beat from spec §3.1 Frame 04 even
     // though the recipe is pre-cached. Triggered only on the first guided
     // Fire+Wood combine.
@@ -3439,7 +3439,7 @@ async function combine(a: CombineItem, b: CombineItem) {
     const isGuidedFirstCombine =
       (onboardingFrame === "guide" || onboardingFrame === "merging") &&
       key === recipeKey("Fire", "Wood");
-    if (isGuidedFirstCombine) await wait(5000);
+    if (isGuidedFirstCombine) await wait(2000);
   } else {
     const childTier = Math.min(Math.max(a.tier, b.tier) + 1, 5) as Tier;
 
