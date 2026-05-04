@@ -751,6 +751,31 @@ body {
   text-shadow: none;
   letter-spacing: -1px;
 }
+/* Failed-combine X — two crossing red bars over the rejected tile. Higher
+ * specificity than the .combine-item::before bookplate frame so the bars
+ * cleanly override the frame's `inset: 3px`, sepia border, and 55% opacity
+ * that were pinning the first bar to the top-left and tinting it sepia.
+ * `inset: auto` first clears the inherited shorthand before re-positioning
+ * with top/left so the bar centers correctly on the tile. */
+ .combine-item.combo-reject::before,
+ .combine-item.combo-reject::after {
+  content: "";
+  position: absolute;
+  inset: auto;
+  top: 50%;
+  left: 10%;
+  width: 80%;
+  height: 3px;
+  background: rgba(255, 60, 60, 0.95);
+  border: none;
+  border-radius: 2px;
+  opacity: 1;
+  z-index: 10;
+  pointer-events: none;
+}
+ .combine-item.combo-reject::before { transform: translateY(-50%) rotate(45deg); }
+ .combine-item.combo-reject::after  { transform: translateY(-50%) rotate(-45deg); }
+
  .combine-item.glow-green {
   box-shadow: 0 0 0 2px var(--accent-secondary), 0 0 16px 4px rgba(201, 168, 95, 0.4);
   border-color: var(--accent-secondary);
