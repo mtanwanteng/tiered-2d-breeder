@@ -141,9 +141,9 @@ export const cartographer: Theme = {
     bariFirstWallFull:
       "— an atlas is what we have charted. press a pin to return its place to the world.",
     slotPrompts: {
-      saveTilePrompt: "// pin to the master map",
+      saveTilePrompt: "// pin to your master map",
       dropTileHint: "drop a find here",
-      holdToBindPrompt: "hold to pin",
+      holdToBindPrompt: "press and hold to pin",
       tapToBindPrompt: "tap to pin",
     },
     onboarding: {
