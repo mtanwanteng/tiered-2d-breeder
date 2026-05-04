@@ -102,6 +102,17 @@ let goalsPage = 0;
 const GOALS_PAGE_SIZE = 3;
 const GOALS_NARROW_QUERY = "(max-width: 600px)";
 
+// Goals reorder state.
+//   - `unmet-first` (default): unmet goals first, met goals at the end of
+//     the last page so the front page prioritizes what's left to do.
+//   - `met-first`: triggered the moment the era's required count is hit.
+//     Completed goals first, the now-skipped uncompleted ones after.
+// `bumpedGoals` holds descriptions currently being celebrated (just-met,
+// pinned to the top of page 1 until popup + glow finish).
+type GoalsPartition = "unmet-first" | "met-first";
+let goalsPartition: GoalsPartition = "unmet-first";
+const bumpedGoals = new Set<string>();
+
 // --- Select-five mode state ---
 type SelectionSlotItem = { name: string; tier: Tier; emoji: string; color: string };
 interface SelectionSlot { index: number; el: HTMLElement; item: SelectionSlotItem | null; }
@@ -527,18 +538,41 @@ function wireEraCubeIdeaTiles() {
 
 let lastGoalsEraName: string | null = null;
 
+// Compute display order for the AI conditions:
+//   1. Bumped goals (currently celebrating) at the top, in manifest order.
+//   2. Then the rest, partitioned by met/unmet — `unmet-first` while the
+//      era is still in progress, `met-first` after the required count is
+//      hit. Within each group, manifest order.
+function orderedConditions(conditions: { met: boolean; description: string }[]): typeof conditions {
+  const bumped: typeof conditions = [];
+  const rest: typeof conditions = [];
+  for (const c of conditions) {
+    (bumpedGoals.has(c.description) ? bumped : rest).push(c);
+  }
+  const met: typeof conditions = [];
+  const unmet: typeof conditions = [];
+  for (const c of rest) {
+    (c.met ? met : unmet).push(c);
+  }
+  return goalsPartition === "met-first"
+    ? [...bumped, ...met, ...unmet]
+    : [...bumped, ...unmet, ...met];
+}
+
 function renderGoals() {
   const goalsEl = document.getElementById("era-goals")!;
   const goals = eraManager.current.goals;
   const aiGoal = goals.find((g) => g.minTier === undefined);
   const tierGoal = goals.find((g) => g.minTier !== undefined);
   if (!aiGoal && !tierGoal) { goalsEl.innerHTML = ""; return; }
-  // Reset paginator on era change so a new chapter always opens on page 1;
-  // re-renders within the same era (a goal becoming met) keep the player's
-  // current page so they don't jump back to the start.
+  // Reset paginator + reorder state on era change so a new chapter always
+  // opens on page 1 with the manifest's intended order. Re-renders within
+  // the same era keep the player's page + partition state.
   if (eraManager.current.name !== lastGoalsEraName) {
     lastGoalsEraName = eraManager.current.name;
     goalsPage = 0;
+    goalsPartition = "unmet-first";
+    bumpedGoals.clear();
   }
   const metCount = aiGoal ? aiGoal.conditions.filter((c) => c.met).length : 0;
   const counterEl = document.getElementById("era-goal-counter");
@@ -548,13 +582,14 @@ function renderGoals() {
   // The objectives card surfaces narrative-milestone (AI-judged) conditions only.
   goalsEl.innerHTML = `
     ${aiGoal ? `<div class="era-goal-header">${aiRequiredMet ? `✔ ` : ``}Complete ${aiGoal.requiredCount} of ${aiGoal.conditions.length} tasks${aiRequiredMet ? `` : ` (${metCount} done)`}</div>
-    ${aiGoal.conditions
+    ${orderedConditions(aiGoal.conditions)
       .map((c) => {
         const classes = c.met ? " met" : (aiRequiredMet ? " skipped" : "");
+        const cond = c as typeof aiGoal.conditions[number];
         return `
-        <div class="era-goal${classes}"${c.met && c.narrative ? ` data-narrative="${c.narrative.replace(/"/g, '&quot;')}"` : ""}>
-          ${c.description}
-          ${c.met && c.narrative ? `<span class="era-goal-info">ⓘ</span>` : ""}
+        <div class="era-goal${classes}"${cond.met && cond.narrative ? ` data-narrative="${cond.narrative.replace(/"/g, '&quot;')}"` : ""}>
+          ${cond.description}
+          ${cond.met && cond.narrative ? `<span class="era-goal-info">ⓘ</span>` : ""}
         </div>
       `;
       })
@@ -1425,11 +1460,11 @@ const GOAL_FLASH_DISPLAY_MS = 5000;
 const GOAL_FLASH_FADE_MS = 300;
 const GOAL_FLASH_CASCADE_MS = 2500;
 
-function flashGoalNarrative(narrative: string): void {
+function flashGoalNarrative(narrative: string, onAfterGlow?: () => void): void {
   const now = Date.now();
   const startAt = Math.max(now, goalFlashSpawnAt);
   goalFlashSpawnAt = startAt + GOAL_FLASH_CASCADE_MS;
-  setTimeout(() => spawnGoalFlash(narrative), Math.max(0, startAt - now));
+  setTimeout(() => spawnGoalFlash(narrative, onAfterGlow), Math.max(0, startAt - now));
 }
 
 function findGoalEl(narrative: string): HTMLElement | null {
@@ -1438,9 +1473,14 @@ function findGoalEl(narrative: string): HTMLElement | null {
   return null;
 }
 
-function spawnGoalFlash(narrative: string): void {
+function spawnGoalFlash(narrative: string, onAfterGlow?: () => void): void {
   const found = findGoalEl(narrative);
-  if (!found) return;
+  if (!found) {
+    // Goal element vanished (re-render gap, etc.) — still fire the callback
+    // so the bump-tracking can finish even if the celebration UI doesn't.
+    onAfterGlow?.();
+    return;
+  }
   const target: HTMLElement = found;
 
   const tip = document.createElement("div");
@@ -1474,7 +1514,7 @@ function spawnGoalFlash(narrative: string): void {
       tip.remove();
       // After the popup disappears, advertise re-readability by glowing the
       // goal text left-to-right and popping the trailing ⓘ marker.
-      pulseGoalAffordance(target);
+      pulseGoalAffordance(target, onAfterGlow);
     }, GOAL_FLASH_FADE_MS + 20);
   }
 
@@ -1490,12 +1530,15 @@ function spawnGoalFlash(narrative: string): void {
   });
 }
 
-function pulseGoalAffordance(goalEl: HTMLElement): void {
+function pulseGoalAffordance(goalEl: HTMLElement, onComplete?: () => void): void {
   // Wrap the description text node's characters in spans with staggered
   // animation-delay so the gilt highlight runs left-to-right. The trailing
   // ⓘ span gets its own larger pop. Restore plain text after the animation
   // completes so subsequent renderGoals() rounds aren't affected.
-  if (!goalEl.isConnected) return;
+  if (!goalEl.isConnected) {
+    onComplete?.();
+    return;
+  }
   const infoEl = goalEl.querySelector<HTMLElement>(".era-goal-info");
   // The description sits as the first text node before the optional ⓘ.
   let textNode: Text | null = null;
@@ -1505,7 +1548,10 @@ function pulseGoalAffordance(goalEl: HTMLElement): void {
       break;
     }
   }
-  if (!textNode) return;
+  if (!textNode) {
+    onComplete?.();
+    return;
+  }
   const original = textNode.textContent ?? "";
   const frag = document.createDocumentFragment();
   const perCharMs = 28;
@@ -1533,12 +1579,15 @@ function pulseGoalAffordance(goalEl: HTMLElement): void {
   // replacement). Otherwise the delayed insertBefore would APPEND the old
   // original text alongside whatever new content replaced it, producing
   // glued strings like "Save an idea tile for this eraPress and hold to bind".
+  // onComplete fires unconditionally at the same end-of-glow moment so the
+  // caller (e.g. the goals reorder logic) can sequence its tuck-away.
   setTimeout(() => {
-    if (!goalEl.isConnected) return;
-    if (charSpans[0]?.parentNode !== goalEl) return;
-    const restored = document.createTextNode(original);
-    goalEl.insertBefore(restored, charSpans[0]);
-    for (const s of charSpans) s.remove();
+    if (goalEl.isConnected && charSpans[0]?.parentNode === goalEl) {
+      const restored = document.createTextNode(original);
+      goalEl.insertBefore(restored, charSpans[0]);
+      for (const s of charSpans) s.remove();
+    }
+    onComplete?.();
   }, totalCharsMs + 800);
 }
 
@@ -3618,15 +3667,47 @@ async function checkEraAdvancement() {
     runId,
   );
 
+  // Goals reorder: bump newly-met goals to the top of page 1 for the
+  // duration of the celebration. After every popup + glow finishes, tuck
+  // them back — to the END of the list normally, or to the FRONT if this
+  // round flipped the era over its required count.
+  const newlyMetWithNarrative = aiGoalRef
+    ? aiGoalRef.conditions.filter((c) => c.met && c.narrative && !wasMetSet.has(c.description))
+    : [];
+  const aiRequiredMetNow = aiGoalRef
+    ? aiGoalRef.conditions.filter((c) => c.met).length >= aiGoalRef.requiredCount
+    : false;
+  const justReachedEnough = aiRequiredMetNow && wasMetSet.size < (aiGoalRef?.requiredCount ?? 0);
+
+  if (newlyMetWithNarrative.length > 0) {
+    for (const c of newlyMetWithNarrative) bumpedGoals.add(c.description);
+    goalsPage = 0;
+  }
+
   renderGoals();
 
   // Auto-pop newly-met goal narratives for ~3s, then fade. Queued sequentially.
-  if (aiGoalRef) {
-    for (const c of aiGoalRef.conditions) {
-      if (c.met && c.narrative && !wasMetSet.has(c.description)) {
-        flashGoalNarrative(c.narrative);
-      }
+  if (newlyMetWithNarrative.length > 0) {
+    let pending = newlyMetWithNarrative.length;
+    const onOneCelebrationDone = () => {
+      pending--;
+      if (pending > 0) return;
+      // All celebrations finished — tuck the bumped goals back into the
+      // partitioned order. If this round crossed the required count, flip
+      // to met-first; otherwise the default unmet-first puts completed
+      // goals at the end of the last page.
+      bumpedGoals.clear();
+      if (justReachedEnough) goalsPartition = "met-first";
+      renderGoals();
+    };
+    for (const c of newlyMetWithNarrative) {
+      flashGoalNarrative(c.narrative!, onOneCelebrationDone);
     }
+  } else if (justReachedEnough) {
+    // No new narratives this round but the era still tipped over (e.g.,
+    // tier-5 fallback path). Flip to met-first immediately.
+    goalsPartition = "met-first";
+    renderGoals();
   }
 
   if (!result) return;
