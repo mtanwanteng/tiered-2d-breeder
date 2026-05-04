@@ -12,6 +12,10 @@ import { Bookplate, type BookplateTile } from "../components/Bookplate";
 import { chapterStripeColor } from "../../src/theme/chapterColor";
 
 const LIBRARY_CAP = 24;
+// Temporary demo gate — only the first N slots are active; the rest render
+// as locked placeholders. Bind/retirement logic still uses LIBRARY_CAP, so
+// flipping this back to LIBRARY_CAP restores the full shelf.
+const LIBRARY_DEMO_ACTIVE_SLOTS = 3;
 
 interface LibraryTile extends BookplateTile {}
 
@@ -72,12 +76,24 @@ export default function LibraryPage() {
 
       {tiles && tiles.length > 0 && (
         <>
-          <p className={`library-counter${tiles.length >= LIBRARY_CAP ? " library-counter--full" : ""}`}>
-            {tiles.length} of {LIBRARY_CAP} kept
-            {tiles.length >= LIBRARY_CAP && " · the next chapter you bind will ask you to choose"}
+          <p className={`library-counter${tiles.length >= LIBRARY_DEMO_ACTIVE_SLOTS ? " library-counter--full" : ""}`}>
+            {Math.min(tiles.length, LIBRARY_DEMO_ACTIVE_SLOTS)} of {LIBRARY_DEMO_ACTIVE_SLOTS} kept
+            {tiles.length >= LIBRARY_DEMO_ACTIVE_SLOTS && " · the next chapter you bind will ask you to choose"}
           </p>
           <div className="library-grid">
             {Array.from({ length: LIBRARY_CAP }).map((_, i) => {
+              if (i >= LIBRARY_DEMO_ACTIVE_SLOTS) {
+                return (
+                  <div
+                    key={`locked-${i}`}
+                    className="library-slot library-slot--locked"
+                    aria-label="Locked"
+                    title="Locked"
+                  >
+                    <span className="library-slot-lock" aria-hidden="true">🔒</span>
+                  </div>
+                );
+              }
               const tile = tiles[i];
               if (!tile) {
                 return <div key={`empty-${i}`} className="library-slot library-slot--empty" />;

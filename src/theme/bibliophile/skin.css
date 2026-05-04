@@ -1618,6 +1618,24 @@ body[data-dragging="true"] #era-progress {
  .library-slot--empty {
   background: rgba(42, 31, 21, 0.6);
 }
+/* Demo-only locked placeholder — distinct from the empty (paid-but-unfilled)
+ * slot so the player reads "you can't have this slot yet" instead of "this
+ * slot is waiting for a tile." */
+ .library-slot--locked {
+  background: rgba(42, 31, 21, 0.4);
+  border-style: dashed;
+  border-color: var(--border-faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;
+  opacity: 0.55;
+}
+ .library-slot-lock {
+  font-size: 18px;
+  filter: grayscale(0.6);
+  color: var(--text-tertiary);
+}
  .library-slot--filled {
   background:
     /* binding stripe on left + top edges, then marble */
