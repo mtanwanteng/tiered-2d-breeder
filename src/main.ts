@@ -547,8 +547,7 @@ function renderGoals() {
   // The tier-floor goal is rendered as a badge in the chapter title bar (see renderEraName).
   // The objectives card surfaces narrative-milestone (AI-judged) conditions only.
   goalsEl.innerHTML = `
-    ${aiGoal ? `<div class="era-goal-header">${aiRequiredMet ? `✔ ` : ``}Complete ${aiGoal.requiredCount} of ${aiGoal.conditions.length} tasks${aiRequiredMet ? `` : ` (${metCount} done)`}</div>
-    ${aiGoal.conditions
+    ${aiGoal ? `${aiGoal.conditions
       .map((c) => {
         const classes = c.met ? " met" : (aiRequiredMet ? " skipped" : "");
         return `
@@ -558,16 +557,46 @@ function renderGoals() {
         </div>
       `;
       })
-      .join("")}
-    <div class="era-goals-paginate" hidden>
-      <button class="era-goals-paginate-btn era-goals-prev" type="button" disabled aria-label="Previous objectives">&#8249;</button>
-      <span class="era-goals-page-indicator" aria-live="polite">1 / 1</span>
-      <button class="era-goals-paginate-btn era-goals-next" type="button" aria-label="Next objectives">&#8250;</button>
-    </div>` : ""}
+      .join("")}` : ""}
   `;
   applyGoalsPagination();
   renderEraName();  // refresh tier-floor badge if the tier goal flipped
   renderEraProgress();
+}
+
+// Floating prev/next chevrons for the mobile objectives paginator. Created
+// once at module init and pinned to the viewport edges via position: fixed
+// so they don't take any horizontal or vertical space inside the goals
+// frame. JS-positions their `top` to vertically center on the goals card
+// each time the layout changes.
+let goalsPaginateButtons: { prev: HTMLButtonElement; next: HTMLButtonElement } | null = null;
+
+function ensureGoalsPaginateButtons() {
+  if (goalsPaginateButtons) return goalsPaginateButtons;
+  const make = (cls: string, label: string, glyph: string) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `era-goals-paginate-btn ${cls}`;
+    btn.setAttribute("aria-label", label);
+    btn.innerHTML = glyph;
+    btn.hidden = true;
+    document.body.appendChild(btn);
+    return btn;
+  };
+  const prev = make("era-goals-prev", "Previous objectives", "&#8249;");
+  const next = make("era-goals-next", "Next objectives", "&#8250;");
+  prev.addEventListener("click", () => {
+    if (goalsPage > 0) {
+      goalsPage--;
+      applyGoalsPagination();
+    }
+  });
+  next.addEventListener("click", () => {
+    goalsPage++;
+    applyGoalsPagination();
+  });
+  goalsPaginateButtons = { prev, next };
+  return goalsPaginateButtons;
 }
 
 // Recompute which conditions are visible based on goalsPage + viewport
@@ -575,8 +604,8 @@ function renderGoals() {
 function applyGoalsPagination() {
   const goalsEl = document.getElementById("era-goals");
   if (!goalsEl) return;
+  const buttons = ensureGoalsPaginateButtons();
   const goals = Array.from(goalsEl.querySelectorAll<HTMLElement>(".era-goal"));
-  const paginate = goalsEl.querySelector<HTMLElement>(".era-goals-paginate");
   const isNarrow = window.matchMedia(GOALS_NARROW_QUERY).matches;
   const totalPages = Math.max(1, Math.ceil(goals.length / GOALS_PAGE_SIZE));
   if (goalsPage >= totalPages) goalsPage = totalPages - 1;
@@ -584,7 +613,8 @@ function applyGoalsPagination() {
 
   if (!isNarrow || goals.length <= GOALS_PAGE_SIZE) {
     for (const g of goals) g.classList.remove("era-goal--hidden");
-    if (paginate) paginate.hidden = true;
+    buttons.prev.hidden = true;
+    buttons.next.hidden = true;
     return;
   }
 
@@ -593,30 +623,18 @@ function applyGoalsPagination() {
     g.classList.toggle("era-goal--hidden", !inPage);
   });
 
-  if (paginate) {
-    paginate.hidden = false;
-    const prev = paginate.querySelector<HTMLButtonElement>(".era-goals-prev");
-    const next = paginate.querySelector<HTMLButtonElement>(".era-goals-next");
-    const indicator = paginate.querySelector<HTMLElement>(".era-goals-page-indicator");
-    if (prev) prev.disabled = goalsPage <= 0;
-    if (next) next.disabled = goalsPage >= totalPages - 1;
-    if (indicator) indicator.textContent = `${goalsPage + 1} / ${totalPages}`;
-  }
-}
+  buttons.prev.hidden = false;
+  buttons.next.hidden = false;
+  buttons.prev.disabled = goalsPage <= 0;
+  buttons.next.disabled = goalsPage >= totalPages - 1;
 
-// Click delegation on the goals card — survives renderGoals re-renders.
-document.getElementById("era-goals")?.addEventListener("click", (e) => {
-  const t = e.target as HTMLElement;
-  if (t.closest(".era-goals-prev")) {
-    if (goalsPage > 0) {
-      goalsPage--;
-      applyGoalsPagination();
-    }
-  } else if (t.closest(".era-goals-next")) {
-    goalsPage++;
-    applyGoalsPagination();
-  }
-});
+  // Vertically center the floating chevrons on the goals card.
+  const rect = goalsEl.getBoundingClientRect();
+  const buttonHeight = buttons.prev.offsetHeight || 44;
+  const top = Math.max(8, rect.top + rect.height / 2 - buttonHeight / 2);
+  buttons.prev.style.top = `${top}px`;
+  buttons.next.style.top = `${top}px`;
+}
 
 // Re-paginate when crossing the mobile breakpoint or on orientation change.
 window.matchMedia(GOALS_NARROW_QUERY).addEventListener("change", applyGoalsPagination);

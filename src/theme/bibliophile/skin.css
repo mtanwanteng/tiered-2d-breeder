@@ -240,7 +240,12 @@ body {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 11px;
-  color: var(--marble-warm);
+  /* --text-secondary so the chapter label reads against each theme's
+   * bg-page (warm tan on dark paper for Bibliophile, dark grey on light
+   * cream for Curator, oxblood on vellum for Cartographer). --marble-warm
+   * was hardcoded warm tan, which on Curator's near-white surface read as
+   * low-contrast grey. */
+  color: var(--text-secondary);
   letter-spacing: 1px;
 }
  #era-roman:empty { display: none; }
@@ -373,55 +378,56 @@ body {
 }
 
 /* Mobile-only objectives paginator. JS hides .era-goal--hidden rows when the
- * viewport is narrow + the list overflows the page size, and unhides the
- * paginate footer below. Buttons inherit theme tokens so each theme styles
- * them in its own ink. */
+ * viewport is narrow + the list overflows GOALS_PAGE_SIZE. The chevrons are
+ * floating siblings of the goals card, position: fixed at the viewport's
+ * left and right edges and JS-positioned vertically to center on the goals
+ * card. They take no space inside the frame so the workspace below stays
+ * full-size. Buttons inherit theme tokens for color/border. */
  .era-goal--hidden {
   display: none;
 }
- .era-goals-paginate {
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px solid var(--border-faint);
-}
- .era-goals-paginate:not([hidden]) {
-  display: flex;
-}
  .era-goals-paginate-btn {
-  background: transparent;
-  border: 1px solid var(--border-faint);
-  border-radius: 2px;
+  position: fixed;
+  top: 0; /* JS overrides each render */
+  width: 28px;
+  height: 44px;
+  z-index: 6;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
   color: var(--accent-secondary);
   font-family: var(--font-display, var(--font-serif));
-  font-size: 16px;
+  font-size: 18px;
   font-style: italic;
   line-height: 1;
-  width: 28px;
-  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   cursor: pointer;
-  transition: border-color 0.12s, background 0.12s, color 0.12s, opacity 0.12s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.12s, background 0.12s, color 0.12s, opacity 0.12s, transform 0.08s;
+}
+ .era-goals-paginate-btn[hidden] { display: none; }
+ .era-goals-prev {
+  left: 0;
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+}
+ .era-goals-next {
+  right: 0;
+  border-right: none;
+  border-radius: 4px 0 0 4px;
 }
  .era-goals-paginate-btn:hover:not([disabled]) {
   border-color: var(--accent-secondary);
   background: var(--glow-callout-bg, rgba(201, 168, 95, 0.10));
 }
+ .era-goals-paginate-btn:active:not([disabled]) {
+  transform: translateY(1px);
+}
  .era-goals-paginate-btn[disabled] {
   opacity: 0.32;
   cursor: default;
-}
- .era-goals-page-indicator {
-  font-family: var(--font-ui, var(--font-sans));
-  font-size: 11px;
-  letter-spacing: 0.5px;
-  color: var(--text-secondary);
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -967,6 +973,9 @@ body {
   font-size: 16px;
   line-height: 1;
   width: 22px;
+  /* Curator override below resets the dark-leather plaque to a light card
+   * with dark text — its --accent-secondary (oxblood) on --leather-deep
+   * (dark grey) was 2:1 contrast and unreadable. */
   /* Full tray height — the leather plaque acts as a continuous edge so cards don't
      visually clip past a too-short button when scrolled. */
   height: auto;
@@ -1023,6 +1032,41 @@ body {
 }
  .tray-paginate[hidden] {
   display: none;
+}
+
+/* Curator: invert the leather-plaque chrome — oxblood-on-dark-grey was
+ * unreadable (~2:1). Curator's vocabulary is light card + dark ink, so the
+ * paginate button reads as a small mat plaque with the accent glyph. */
+[data-theme="curator"] .tray-paginate {
+  background: var(--bg-surface);
+  color: var(--accent-secondary);
+  border-color: var(--border-strong);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+}
+[data-theme="curator"] .tray-paginate:hover:not([disabled]) {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 1px var(--border-strong), 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+[data-theme="curator"] .tray-paginate:active:not([disabled]) {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+[data-theme="curator"] .tray-paginate[disabled] {
+  color: var(--text-tertiary);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+/* Cartographer: ocean-teal accent-secondary on dark-sepia leather is
+ * ~2:1 — under WCAG AA. Switch the glyph to vellum so the dark plaque
+ * has a pale ink stamp readable as the chevron. */
+[data-theme="cartographer"] .tray-paginate {
+  color: var(--vellum);
+}
+[data-theme="cartographer"] .tray-paginate:hover:not([disabled]) {
+  color: var(--accent); /* compass-rose copper on hover */
+}
+[data-theme="cartographer"] .tray-paginate[disabled] {
+  color: var(--marble-warm);
 }
 
 /* The actual horizontal-scroll tile row.
