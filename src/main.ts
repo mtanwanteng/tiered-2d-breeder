@@ -1942,9 +1942,18 @@ paletteItems.addEventListener(
 // release. Mid-bound horizontal swipes still scroll natively.
 let touchPrevX: number | null = null;
 let touchOverscrollEngaged = false;
+// Only the gap-touch path — finger-on-tile is owned by attachDragToSpawn
+// (arming → beginJsScroll). If we let this fire on tile touches it would
+// stretch the row at boundaries during the arming window, before the
+// drag-vs-scroll decision is made — that's the inventory's "stickiness"
+// vs the era-cube strip which has no such layer.
+const touchStartedOnTile = (e: TouchEvent) =>
+  (e.touches[0]?.target as HTMLElement | undefined)?.closest?.(".palette-item") != null;
+
 paletteItems.addEventListener("touchstart", (e) => {
   if (e.touches.length !== 1) return;
   if (jsScrollActivePointerId !== null) return;
+  if (touchStartedOnTile(e)) return;
   touchPrevX = e.touches[0].clientX;
   touchOverscrollEngaged = false;
 }, { passive: true });
@@ -1953,6 +1962,7 @@ paletteItems.addEventListener("touchmove", (e) => {
   // pointermove handler clamps scrollLeft and feeds applyOverscroll, so
   // skip this finger-on-gap rubber-band path to avoid double-firing.
   if (jsScrollActivePointerId !== null) return;
+  if (touchStartedOnTile(e)) return;
   if (e.touches.length !== 1 || touchPrevX === null) return;
   const x = e.touches[0].clientX;
   const dx = x - touchPrevX;
