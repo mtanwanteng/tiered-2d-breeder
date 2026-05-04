@@ -547,7 +547,8 @@ function renderGoals() {
   // The tier-floor goal is rendered as a badge in the chapter title bar (see renderEraName).
   // The objectives card surfaces narrative-milestone (AI-judged) conditions only.
   goalsEl.innerHTML = `
-    ${aiGoal ? `${aiGoal.conditions
+    ${aiGoal ? `<div class="era-goal-header">${aiRequiredMet ? `✔ ` : ``}Complete ${aiGoal.requiredCount} of ${aiGoal.conditions.length} tasks${aiRequiredMet ? `` : ` (${metCount} done)`}</div>
+    ${aiGoal.conditions
       .map((c) => {
         const classes = c.met ? " met" : (aiRequiredMet ? " skipped" : "");
         return `
@@ -607,11 +608,15 @@ function applyGoalsPagination() {
   const buttons = ensureGoalsPaginateButtons();
   const goals = Array.from(goalsEl.querySelectorAll<HTMLElement>(".era-goal"));
   const isNarrow = window.matchMedia(GOALS_NARROW_QUERY).matches;
+  const collapsed = goalsEl.classList.contains("era-goals--collapsed");
   const totalPages = Math.max(1, Math.ceil(goals.length / GOALS_PAGE_SIZE));
   if (goalsPage >= totalPages) goalsPage = totalPages - 1;
   if (goalsPage < 0) goalsPage = 0;
 
-  if (!isNarrow || goals.length <= GOALS_PAGE_SIZE) {
+  // Goals card hidden (player toggled collapse, or wide enough to show all,
+  // or list fits in one page) → no paginator. The chevrons follow the
+  // visibility of the conditions they navigate.
+  if (collapsed || !isNarrow || goals.length <= GOALS_PAGE_SIZE) {
     for (const g of goals) g.classList.remove("era-goal--hidden");
     buttons.prev.hidden = true;
     buttons.next.hidden = true;
@@ -1803,6 +1808,10 @@ function applyEraGoalsState() {
   eraGoalsEl.classList.toggle("era-goals--collapsed", eraGoalsCollapsed);
   eraToggleIcon.textContent = eraGoalsCollapsed ? "\u25B8" : "\u25BE";
   eraToggleBtn.setAttribute("aria-expanded", String(!eraGoalsCollapsed));
+  // The floating prev/next chevrons should follow the goals card \u2014
+  // collapsing the card hides them, expanding re-reveals them (subject
+  // to viewport + page-size checks).
+  applyGoalsPagination();
 }
 applyEraGoalsState();
 

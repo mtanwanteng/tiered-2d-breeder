@@ -389,7 +389,7 @@ body {
  .era-goals-paginate-btn {
   position: fixed;
   top: 0; /* JS overrides each render */
-  width: 28px;
+  width: 20px;
   height: 44px;
   z-index: 6;
   background: var(--bg-surface);
