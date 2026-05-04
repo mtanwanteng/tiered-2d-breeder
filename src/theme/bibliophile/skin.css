@@ -411,10 +411,13 @@ body {
 @keyframes era-goal-char-glow {
   /* `color: inherit` at 0/100 so the same animation can be reused on any
      text element (era-goal rows are ink-black, but the press-and-hold prompt
-     is oxblood — both should pulse to gilt and back without flashing through
-     ink-black on the way in). */
+     is oxblood — both should pulse to the accent and back without flashing
+     through ink-black on the way in). The text-shadow tint is themed via
+     --glow-tint so the halo reads as the theme's accent (gilt for
+     Bibliophile, ocean teal for Cartographer, oxblood for Curator) rather
+     than always Bibliophile gilt. */
   0%   { color: inherit; text-shadow: none; }
-  45%  { color: var(--accent-secondary); text-shadow: 0 0 6px rgba(201, 168, 95, 0.6); }
+  45%  { color: var(--accent-secondary); text-shadow: 0 0 6px var(--glow-tint, rgba(201, 168, 95, 0.6)); }
   100% { color: inherit; text-shadow: none; }
 }
  .era-goal-glow {
@@ -467,14 +470,16 @@ body {
   background: transparent;
 }
 
-/* Bold + sharp-shadow + gilt-callout fires only when a tile is parked. */
+/* Bold + sharp-shadow + accent-callout fires only when a tile is parked.
+   Background is themed via --glow-callout-bg so each theme's prompt
+   sits on its own accent tint rather than Bibliophile gilt. */
  .era-idea-prompt.is-active {
   font-weight: 700;
   letter-spacing: 0.4px;
   text-shadow:
     1px 1px 0 var(--vellum, #f4ead5),
     1px 1px 0 rgba(26, 18, 8, 0.35);
-  background: rgba(201, 168, 95, 0.10);
+  background: var(--glow-callout-bg, rgba(201, 168, 95, 0.10));
 }
  .era-idea-slot {
   background: transparent;

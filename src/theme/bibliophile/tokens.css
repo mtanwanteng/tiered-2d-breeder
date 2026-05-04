@@ -31,6 +31,13 @@
   --border-strong: var(--leather-deep);
   --border-faint: var(--marble-cool);
 
+  /* Press-and-hold prompt tint — the gilt halo + callout background that
+     pulses across each character of the bind prompt. Each theme overrides
+     these so the pulse reads as that theme's accent rather than bibliophile
+     gilt baked in. Fully-formed rgba so consumers don't have to compose. */
+  --glow-tint: rgba(201, 168, 95, 0.6);
+  --glow-callout-bg: rgba(201, 168, 95, 0.10);
+
   /* Phase A→B transitional aliases. Some skin.css and style.css selectors
      still reference these older names. Phase B rewrites consumers to the
      abstract roles above and removes these. */

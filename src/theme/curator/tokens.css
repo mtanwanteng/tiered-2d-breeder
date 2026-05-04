@@ -30,6 +30,12 @@
   --border-strong: #1a1a1a;
   --border-faint: #c4c0b6;
 
+  /* Press-and-hold prompt tint — oxblood halo + callout matching
+     accent-secondary so the per-character pulse reads as Curator's reserved
+     warm ink, not Bibliophile's gilt. */
+  --glow-tint: rgba(122, 62, 42, 0.55);
+  --glow-callout-bg: rgba(122, 62, 42, 0.10);
+
   /* Phase A→B transitional aliases (older skin.css selectors). */
   --bg-body: var(--bg-page);
   --bg-panel: var(--bg-surface);

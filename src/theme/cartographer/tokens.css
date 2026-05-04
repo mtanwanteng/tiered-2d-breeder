@@ -30,6 +30,12 @@
   --border-strong: #3a2818;
   --border-faint: #a8794a;
 
+  /* Press-and-hold prompt tint — ocean-teal halo + callout matching
+     accent-secondary so the per-character pulse reads as Cartographer's
+     ink, not Bibliophile's gilt. */
+  --glow-tint: rgba(29, 94, 110, 0.6);
+  --glow-callout-bg: rgba(29, 94, 110, 0.12);
+
   /* Phase A→B transitional aliases. */
   --bg-body: var(--bg-page);
   --bg-panel: var(--bg-surface);
