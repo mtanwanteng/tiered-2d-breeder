@@ -197,17 +197,21 @@ function renderEraProgress() {
 // Both surfaces sit inside horizontal scroll containers, so the touch behavior
 // must distinguish "I'm scrolling the parent" from "I'm dragging this tile out".
 //
-// Decision model — single threshold, single classification, no race:
-//   The first move past TOUCH_DECISION_THRESHOLD_PX of total motion wins.
-//   Motion within 67.5° of vertical (a 135° arc, two opposing 67.5°
-//   wedges) → drag. Anything else (the 45° arc around horizontal, two
-//   opposing 22.5° wedges) → release to browser scroll. The two arcs
-//   partition the plane — no indeterminate zone where neither fires while
-//   the browser starts scrolling on its own.
+// Decision model — asymmetric per-axis thresholds, mutually exclusive,
+// mode-locking once committed:
+//   Drag fires when vertical motion crosses VERTICAL_DRAG_THRESHOLD_PX (8px)
+//     AND the gesture is inside the 67.5° wedge around vertical.
+//   Scroll fires when horizontal motion crosses HORIZONTAL_SCROLL_THRESHOLD_PX
+//     (16px) AND the gesture is inside the 22.5° wedge around horizontal.
+//   The two wedges partition the plane (67.5° + 22.5° = 90° per quadrant), so
+//   only one branch can fire. Whichever crosses its threshold first wins.
+//   Once committed, the arming listener is detached and the gesture is
+//   locked — no late motion in the other direction can switch modes.
 //   - Mouse: drag begins immediately on pointerdown (no scroll race).
-const TOUCH_DECISION_THRESHOLD_PX = 16;
+const VERTICAL_DRAG_THRESHOLD_PX = 8;
+const HORIZONTAL_SCROLL_THRESHOLD_PX = 16;
 // tan(22.5°) ≈ 0.4142. ady > adx · this ⟺ motion is in the vertical 67.5°
-// wedge ⟺ classify as drag.
+// wedge ⟺ classify as drag (the complementary check classifies as scroll).
 const VERTICAL_WEDGE_TAN = Math.tan(Math.PI / 8);
 
 interface DragSpawnHookOptions {
@@ -281,19 +285,27 @@ function attachDragToSpawn(
       const dy = moveEvent.clientY - startY;
       const adx = Math.abs(dx);
       const ady = Math.abs(dy);
-      // Wait for clear intent (single threshold). Once total motion crosses
-      // the threshold, classify in one shot — no second branch can fire
-      // later in the same gesture.
-      if (Math.hypot(adx, ady) < TOUCH_DECISION_THRESHOLD_PX) return;
-      armed = false;
-      cleanup();
-      if (ady > adx * VERTICAL_WEDGE_TAN) {
-        // Inside the 67.5° vertical wedge → drag.
+      const inVerticalWedge = ady > adx * VERTICAL_WEDGE_TAN;
+      // Drag — vertical wedge + 8px of vertical motion. Lower threshold
+      // than scroll so a deliberate tile-pull commits quickly.
+      if (inVerticalWedge && ady >= VERTICAL_DRAG_THRESHOLD_PX) {
+        armed = false;
+        cleanup();
         moveEvent.preventDefault();
         beginDrag(moveEvent.clientX, moveEvent.clientY);
+        return;
       }
-      // Otherwise: inside the 22.5° horizontal wedge → release to the
-      // browser's native horizontal scroll on the parent strip.
+      // Scroll — horizontal wedge + 16px of horizontal motion. Higher
+      // threshold so accidental sideways jitter doesn't lock the gesture
+      // into scroll mode and prevent a follow-up vertical pull.
+      if (!inVerticalWedge && adx >= HORIZONTAL_SCROLL_THRESHOLD_PX) {
+        armed = false;
+        cleanup();
+        // Release the rest of the gesture to the browser's native scroll;
+        // armed = false ensures we can't switch back to drag mid-gesture.
+        return;
+      }
+      // Otherwise: gesture hasn't committed yet — keep waiting.
     };
     const onCancel = () => {
       armed = false;
