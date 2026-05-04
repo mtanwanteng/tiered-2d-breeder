@@ -1,3 +1,4 @@
+import { isLocalBuild } from "./env";
 import { log } from "./logger";
 import type { LogLevel, LogCategory, LogEntry } from "./logger";
 
@@ -28,8 +29,7 @@ export interface DebugActions {
 }
 
 export function initDebugConsole(actions?: DebugActions): { modelSelect: HTMLSelectElement | null } {
-  const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
-  if (isProd) return { modelSelect: null };
+  if (!isLocalBuild) return { modelSelect: null };
 
   // Toggle button
   const toggle = document.createElement("button");
@@ -50,10 +50,10 @@ export function initDebugConsole(actions?: DebugActions): { modelSelect: HTMLSel
         </select>
         ${ALL_CATEGORIES.map((c) => `<label class="debug-cat-label"><input type="checkbox" data-cat="${c}" checked><span style="color:${CATEGORY_COLORS[c]}">${c}</span></label>`).join("")}
       </div>
-      ${!isProd && actions?.modelOptions ? `<select id="debug-model-select">${actions.modelOptions}</select>` : ''}
+      ${actions?.modelOptions ? `<select id="debug-model-select">${actions.modelOptions}</select>` : ''}
       <button id="debug-clear">Clear</button>
-      ${!isProd ? `<button id="debug-test-victory">Test Victory</button>` : ''}
-      ${!isProd ? `<button id="debug-reset-player">Reset Player</button>` : ''}
+      <button id="debug-test-victory">Test Victory</button>
+      <button id="debug-reset-player">Reset Player</button>
       <button id="debug-heatmap">Heatmap</button>
     </div>
     <div id="debug-log"></div>
@@ -120,17 +120,15 @@ export function initDebugConsole(actions?: DebugActions): { modelSelect: HTMLSel
     logEl.innerHTML = "";
   });
 
-  if (!isProd) {
-    document.getElementById("debug-test-victory")!.addEventListener("click", () => {
-      if (actions?.testVictory) actions.testVictory();
-      else log.warn("system", "No testVictory callback registered");
-    });
+  document.getElementById("debug-test-victory")!.addEventListener("click", () => {
+    if (actions?.testVictory) actions.testVictory();
+    else log.warn("system", "No testVictory callback registered");
+  });
 
-    document.getElementById("debug-reset-player")!.addEventListener("click", () => {
-      if (actions?.resetPlayer) actions.resetPlayer();
-      else log.warn("system", "No resetPlayer callback registered");
-    });
-  }
+  document.getElementById("debug-reset-player")!.addEventListener("click", () => {
+    if (actions?.resetPlayer) actions.resetPlayer();
+    else log.warn("system", "No resetPlayer callback registered");
+  });
 
   document.getElementById("debug-heatmap")!.addEventListener("click", () => {
     if (actions?.showHeatmap) actions.showHeatmap();

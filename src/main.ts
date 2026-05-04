@@ -5,6 +5,7 @@ import { InMemoryRecipeStore } from "./recipes";
 import { FilePromptProvider } from "./prompt-loader";
 import { EraManager } from "./era-manager";
 import { log } from "./logger";
+import { isLocalBuild } from "./env";
 import { initDebugConsole } from "./debug-console";
 import { saveGame, loadGame, clearSave, SAVE_KEY, SELECT_FIVE_SAVE_KEY } from "./save";
 import type { SaveData } from "./save";
@@ -944,7 +945,7 @@ let pipelineHudEl: HTMLElement | null = null;
 let pipelineDebounceIndicator = false;
 
 function initPipelineHud() {
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") return;
+  if (!isLocalBuild) return;
   const el = document.createElement("div");
   el.id = "pipeline-hud";
   document.body.appendChild(el);
@@ -1813,8 +1814,7 @@ const menuBtn = document.getElementById("menu-btn") as HTMLButtonElement | null;
 const menuOverlay = document.getElementById("menu-overlay")!;
 const menuItemAccount = document.getElementById("menu-item-account") as HTMLButtonElement | null;
 const menuItemDebug = document.getElementById("menu-item-debug") as HTMLButtonElement | null;
-const isDevBuild = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";
-if (menuItemDebug && isDevBuild) menuItemDebug.hidden = false;
+if (menuItemDebug && isLocalBuild) menuItemDebug.hidden = false;
 
 function syncMenuAccountLabel() {
   if (!menuItemAccount) return;
