@@ -245,11 +245,30 @@ function beginJsScroll(scroller: HTMLElement, e: PointerEvent) {
   let lastT = e.timeStamp;
   let velocity = 0; // px / ms, signed; positive = finger moving right
 
-  // CSS scroll-snap (used on #palette-items) re-snaps on JS scrollLeft
-  // updates in some browsers — that fights the per-pointermove drive.
-  // Suspend snap for the gesture, restore after coast settles.
+  // Three CSS properties on #palette-items fight per-frame JS scrollLeft
+  // updates and have to be suspended for the gesture. Era cubes have none
+  // of them, which is why the strip felt right and the inventory didn't.
+  //   scroll-snap-type: x proximity — re-snaps to nearest tile on each update
+  //   scroll-behavior: smooth — animates every scrollLeft assignment over
+  //     ~250ms; with pointermove firing at 60Hz, each new target arrives
+  //     mid-animation and the scroll barely advances ("doesn't move at all")
+  //   -webkit-overflow-scrolling: touch — iOS hardware-scrolled layer that
+  //     can ignore or lag behind JS scrollLeft updates
   const prevSnap = scroller.style.scrollSnapType;
+  const prevBehavior = scroller.style.scrollBehavior;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prevWebkitScroll = (scroller.style as any).webkitOverflowScrolling;
   scroller.style.scrollSnapType = "none";
+  scroller.style.scrollBehavior = "auto";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (scroller.style as any).webkitOverflowScrolling = "auto";
+
+  const restore = () => {
+    scroller.style.scrollSnapType = prevSnap;
+    scroller.style.scrollBehavior = prevBehavior;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (scroller.style as any).webkitOverflowScrolling = prevWebkitScroll;
+  };
 
   jsScrollActivePointerId = e.pointerId;
   try { scroller.setPointerCapture(e.pointerId); } catch {}
@@ -283,13 +302,12 @@ function beginJsScroll(scroller: HTMLElement, e: PointerEvent) {
     jsScrollActivePointerId = null;
     if (scroller === paletteItems) scheduleOverscrollSnap(0);
     if (Math.abs(velocity) > 0.05) {
-      // Restore snap after coast settles; immediate restore would snap
-      // the in-flight inertia back to the nearest tile.
-      coastScroll(scroller, velocity, () => {
-        scroller.style.scrollSnapType = prevSnap;
-      });
+      // Restore the original styles only after coast settles; restoring
+      // mid-coast would either re-snap to the nearest tile or smooth-
+      // animate the per-frame updates and stall the inertia.
+      coastScroll(scroller, velocity, restore);
     } else {
-      scroller.style.scrollSnapType = prevSnap;
+      restore();
     }
   };
 
