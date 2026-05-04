@@ -205,7 +205,7 @@ function renderEraProgress() {
 //   partition the plane — no indeterminate zone where neither fires while
 //   the browser starts scrolling on its own.
 //   - Mouse: drag begins immediately on pointerdown (no scroll race).
-const TOUCH_DECISION_THRESHOLD_PX = 8;
+const TOUCH_DECISION_THRESHOLD_PX = 16;
 // tan(22.5°) ≈ 0.4142. ady > adx · this ⟺ motion is in the vertical 67.5°
 // wedge ⟺ classify as drag.
 const VERTICAL_WEDGE_TAN = Math.tan(Math.PI / 8);
@@ -229,6 +229,11 @@ function attachDragToSpawn(
 
   targetEl.addEventListener("pointerdown", (e) => {
     if (busy) return;
+    // Multi-touch lock: if a tile is already in flight, ignore additional
+    // pointerdowns from the inventory. Without this, a second finger on a
+    // different palette card would overwrite dragItem and turn the first
+    // tile into a ghost stuck at its last position.
+    if (dragItem) return;
     const data = getData();
     if (!data) return;
 
