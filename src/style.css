@@ -339,9 +339,16 @@ body {
   pointer-events: none;
 }
 
-.palette-item:hover .tooltip,
-.combine-item:hover .tooltip {
-  display: block;
+/* Show the tooltip only on true hover-capable devices (mouse). Touch
+ * devices have a "sticky hover" emulation that latches `:hover` on the
+ * touched element until the user taps elsewhere — without this gate
+ * the tooltip would pop up on every drop / pickup on mobile. Touch
+ * users get tile info via long-press on inventory tiles instead. */
+@media (hover: hover) {
+  .palette-item:hover .tooltip,
+  .combine-item:hover .tooltip {
+    display: block;
+  }
 }
 
 .tooltip-desc {
