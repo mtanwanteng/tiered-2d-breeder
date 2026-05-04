@@ -1649,10 +1649,14 @@ body[data-dragging="true"] #era-progress {
   font-size: 11px;
   margin-top: 4px;
   color: var(--ink-black);
-  max-width: 60px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* Allow word-wrap so multi-word tile names ("Steam Engine") aren't
+   * truncated mid-word with ellipsis. line-height tightened for the
+   * two-line case so the second line doesn't push the emoji off-slot. */
+  max-width: 100%;
+  text-align: center;
+  line-height: 1.15;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 /* ─────────────────────────────────────────────────────────────────────
