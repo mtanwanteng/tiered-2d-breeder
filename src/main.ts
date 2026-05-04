@@ -94,6 +94,14 @@ let dragOffsetX = 0;
 let dragOffsetY = 0;
 let busy = false;
 
+// Mobile-only objectives pagination — show GOALS_PAGE_SIZE conditions at a
+// time and let the player swap between sets so the goals card doesn't
+// crowd out the workspace on narrow screens. Desktop / wide layouts show
+// the full list (the era-goals card has its own max-height + scroll).
+let goalsPage = 0;
+const GOALS_PAGE_SIZE = 3;
+const GOALS_NARROW_QUERY = "(max-width: 600px)";
+
 // --- Select-five mode state ---
 type SelectionSlotItem = { name: string; tier: Tier; emoji: string; color: string };
 interface SelectionSlot { index: number; el: HTMLElement; item: SelectionSlotItem | null; }
@@ -517,12 +525,21 @@ function wireEraCubeIdeaTiles() {
   });
 }
 
+let lastGoalsEraName: string | null = null;
+
 function renderGoals() {
   const goalsEl = document.getElementById("era-goals")!;
   const goals = eraManager.current.goals;
   const aiGoal = goals.find((g) => g.minTier === undefined);
   const tierGoal = goals.find((g) => g.minTier !== undefined);
   if (!aiGoal && !tierGoal) { goalsEl.innerHTML = ""; return; }
+  // Reset paginator on era change so a new chapter always opens on page 1;
+  // re-renders within the same era (a goal becoming met) keep the player's
+  // current page so they don't jump back to the start.
+  if (eraManager.current.name !== lastGoalsEraName) {
+    lastGoalsEraName = eraManager.current.name;
+    goalsPage = 0;
+  }
   const metCount = aiGoal ? aiGoal.conditions.filter((c) => c.met).length : 0;
   const counterEl = document.getElementById("era-goal-counter");
   if (counterEl) counterEl.textContent = aiGoal ? `(${metCount}/${aiGoal.requiredCount})` : "";
@@ -541,11 +558,69 @@ function renderGoals() {
         </div>
       `;
       })
-      .join("")}` : ""}
+      .join("")}
+    <div class="era-goals-paginate" hidden>
+      <button class="era-goals-paginate-btn era-goals-prev" type="button" disabled aria-label="Previous objectives">&#8249;</button>
+      <span class="era-goals-page-indicator" aria-live="polite">1 / 1</span>
+      <button class="era-goals-paginate-btn era-goals-next" type="button" aria-label="Next objectives">&#8250;</button>
+    </div>` : ""}
   `;
+  applyGoalsPagination();
   renderEraName();  // refresh tier-floor badge if the tier goal flipped
   renderEraProgress();
 }
+
+// Recompute which conditions are visible based on goalsPage + viewport
+// width. Idempotent — safe to call from renderGoals or window listeners.
+function applyGoalsPagination() {
+  const goalsEl = document.getElementById("era-goals");
+  if (!goalsEl) return;
+  const goals = Array.from(goalsEl.querySelectorAll<HTMLElement>(".era-goal"));
+  const paginate = goalsEl.querySelector<HTMLElement>(".era-goals-paginate");
+  const isNarrow = window.matchMedia(GOALS_NARROW_QUERY).matches;
+  const totalPages = Math.max(1, Math.ceil(goals.length / GOALS_PAGE_SIZE));
+  if (goalsPage >= totalPages) goalsPage = totalPages - 1;
+  if (goalsPage < 0) goalsPage = 0;
+
+  if (!isNarrow || goals.length <= GOALS_PAGE_SIZE) {
+    for (const g of goals) g.classList.remove("era-goal--hidden");
+    if (paginate) paginate.hidden = true;
+    return;
+  }
+
+  goals.forEach((g, i) => {
+    const inPage = i >= goalsPage * GOALS_PAGE_SIZE && i < (goalsPage + 1) * GOALS_PAGE_SIZE;
+    g.classList.toggle("era-goal--hidden", !inPage);
+  });
+
+  if (paginate) {
+    paginate.hidden = false;
+    const prev = paginate.querySelector<HTMLButtonElement>(".era-goals-prev");
+    const next = paginate.querySelector<HTMLButtonElement>(".era-goals-next");
+    const indicator = paginate.querySelector<HTMLElement>(".era-goals-page-indicator");
+    if (prev) prev.disabled = goalsPage <= 0;
+    if (next) next.disabled = goalsPage >= totalPages - 1;
+    if (indicator) indicator.textContent = `${goalsPage + 1} / ${totalPages}`;
+  }
+}
+
+// Click delegation on the goals card — survives renderGoals re-renders.
+document.getElementById("era-goals")?.addEventListener("click", (e) => {
+  const t = e.target as HTMLElement;
+  if (t.closest(".era-goals-prev")) {
+    if (goalsPage > 0) {
+      goalsPage--;
+      applyGoalsPagination();
+    }
+  } else if (t.closest(".era-goals-next")) {
+    goalsPage++;
+    applyGoalsPagination();
+  }
+});
+
+// Re-paginate when crossing the mobile breakpoint or on orientation change.
+window.matchMedia(GOALS_NARROW_QUERY).addEventListener("change", applyGoalsPagination);
+window.addEventListener("resize", applyGoalsPagination);
 
 // Roman numerals for chapters I–XX (we have 11 chapters; XX is generous overhead).
 const ROMAN_NUMERALS = [

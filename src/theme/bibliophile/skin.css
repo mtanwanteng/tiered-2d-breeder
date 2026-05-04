@@ -372,6 +372,58 @@ body {
   text-decoration-color: var(--marble-warm);
 }
 
+/* Mobile-only objectives paginator. JS hides .era-goal--hidden rows when the
+ * viewport is narrow + the list overflows the page size, and unhides the
+ * paginate footer below. Buttons inherit theme tokens so each theme styles
+ * them in its own ink. */
+ .era-goal--hidden {
+  display: none;
+}
+ .era-goals-paginate {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-faint);
+}
+ .era-goals-paginate:not([hidden]) {
+  display: flex;
+}
+ .era-goals-paginate-btn {
+  background: transparent;
+  border: 1px solid var(--border-faint);
+  border-radius: 2px;
+  color: var(--accent-secondary);
+  font-family: var(--font-display, var(--font-serif));
+  font-size: 16px;
+  font-style: italic;
+  line-height: 1;
+  width: 28px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, color 0.12s, opacity 0.12s;
+}
+ .era-goals-paginate-btn:hover:not([disabled]) {
+  border-color: var(--accent-secondary);
+  background: var(--glow-callout-bg, rgba(201, 168, 95, 0.10));
+}
+ .era-goals-paginate-btn[disabled] {
+  opacity: 0.32;
+  cursor: default;
+}
+ .era-goals-page-indicator {
+  font-family: var(--font-ui, var(--font-sans));
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
 /* ─────────────────────────────────────────────────────────────────────
    GOAL-MET FLASH: per-goal popup + post-fade glow advertising re-read.
    Spec: D24 (goal-met cascade). Each new flash spawns its own .goal-popup
