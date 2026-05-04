@@ -129,11 +129,13 @@ let pendingS5SlotRestore: ({ name: string; tier: Tier; emoji?: string; color?: s
 const MAX_ACTION_LOG = 500;
 
 // --- In-game era idea slot state ---
-// One slot above #chart-era-btn ("Next Age →") in the era-objectives panel. Visible only while
-// the era is ready to advance. Filled by dragging a workspace tile into it; #chart-era-btn is
-// disabled until the slot is filled. On click the picked tile is captured, attached to the
-// just-completed era's history record (after recordHistory runs), persisted server-side, and
-// rendered above the corresponding cube in #era-progress.
+// The bind slot lives at the bottom of the era-objectives panel. Visible only while the era
+// is ready to advance. Filled by dragging a workspace tile into it; the press-and-hold
+// gesture on the slot itself commits. Once committed, the picked tile is captured, attached
+// to the just-completed era's history record (after recordHistory runs), persisted
+// server-side, and rendered above the corresponding cube in #era-progress.
+// (The legacy #chart-era-btn — a "Next Age →" / "Release" button — is dormant: kept in the
+// DOM as a disabled stub for back-compat but hidden via skin.css and never wired to a click.)
 type EraIdeaSlotItem = SelectionSlotItem & { description?: string; narrative?: string };
 let pendingEraIdeaTile: EraIdeaSlotItem | null = null;
 let eraIdeaArrowTrail: ArrowTrailHandle | null = null;
@@ -1001,7 +1003,10 @@ app.innerHTML = `
 
 const paletteItems = document.getElementById("palette-items")!;
 const workspace = document.getElementById("workspace")!;
-const chartEraBtn = document.getElementById("chart-era-btn")!;
+// #chart-era-btn (legacy "Next Age →" / "Release" button) is dormant — kept
+// in the DOM as a disabled stub but no JS handle is taken on it. Hidden by
+// skin.css. The bind ceremony (era-idea-slot-wrapper + press-and-hold) is
+// the entire commit grammar now.
 const toast = document.getElementById("result-toast")!;
 const bari = document.getElementById("bari")!;
 const eraToast = document.getElementById("era-toast")!;
@@ -3718,7 +3723,6 @@ async function checkEraAdvancement() {
 
   eraAdvancing = true;
   pendingEraResult = result;
-  chartEraBtn.classList.add("visible");
   showEraIdeaSlot();
   runAdvancementPipeline(); // first pipeline fires immediately — no debounce
 }
@@ -3825,7 +3829,7 @@ async function doEraTransition(result: { narrative: string }) {
     });
     eraManager.recordHistory(completedEraActions, result.narrative, inventory, completedEraStartedAt, completedAt, completedEraSpawnCounts, completedEraSpawnByTier);
 
-    // Attach the player's idea-tile pick (captured by the slot above #chart-era-btn) to the
+    // Attach the player's idea-tile pick (captured by the bind slot) to the
     // just-recorded era and fire-and-forget persistence to the user's account.
     if (pendingEraIdeaTile) {
       const picked = pendingEraIdeaTile;
@@ -3946,7 +3950,6 @@ async function doEraTransition(result: { narrative: string }) {
     }
   } catch (err) {
     log.error("era", `[ERA-TRN] Era transition failed${process.env.NEXT_PUBLIC_VERCEL_ENV !== "production" ? `: ${err instanceof Error ? err.message : String(err)}` : ""}`);
-    chartEraBtn.classList.remove("visible");
     hideEraIdeaSlot();
     busy = false;
     eraAdvancing = false;
@@ -4212,7 +4215,7 @@ function renderEraIdeaSlot() {
       const tapMode = getSettings().prefersTapToCommit;
       // Keep the prompt visible during the hold so the slot wrapper's
       // height doesn't reflow mid-ceremony (an empty string here was
-      // causing a vertical shift of the chart-era-btn underneath).
+      // causing a vertical shift in the elements underneath).
       const slotPrompts = getTheme().copy.slotPrompts;
       promptEl.textContent = tapMode ? slotPrompts.tapToBindPrompt : slotPrompts.holdToBindPrompt;
       promptEl.classList.add("is-active");
@@ -4527,8 +4530,9 @@ document.getElementById("thanks-toast-close")!.addEventListener("click", () => {
 //   3. Player presses-and-holds on the slot → beginBindHold() starts the 2.5s arc.
 //      Releasing before 2.5s aborts the fill; the tile stays in the plate so the
 //      player can retry. Reaching 2.5s commits.
-//   4. The chart-era-btn is a "Release" affordance — clicking it returns the tile
-//      to the workspace, emptying the slot entirely.
+//   4. To release a parked tile, the player drags it back out of the slot
+//      onto the workspace — the slot empties and the bind ceremony resets.
+//      (The legacy #chart-era-btn "Release" click affordance is dormant.)
 //   5. On commit, brass clasp plays and we route into doEraTransition().
 
 function beginBindHold() {
