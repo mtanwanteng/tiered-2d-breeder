@@ -365,6 +365,9 @@ function attachDragToSpawn(
     if (!data) return;
 
     const beginDrag = (clientX: number, clientY: number) => {
+      // If a workspace-tile long-press popped the bookplate, close it as
+      // soon as any drag begins (matches the workspace tile's own behavior).
+      closeTileInfo();
       const wsRect = workspace.getBoundingClientRect();
       const item = spawnItem(
         data,
@@ -3176,17 +3179,72 @@ function spawnItem(data: ElementData, x: number, y: number): CombineItem {
   updateOnboardingPulses();
 
   // --- Start drag on pointerdown (move/up handled at document level) ---
-  el.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
+  // Mouse drags begin immediately. Touch / pen arms a 600ms long-press
+  // alongside drag detection: motion > 8px commits drag (and closes any
+  // open info popup); 600ms with motion ≤ 8px opens the bookplate info
+  // sheet. After the popup opens, a follow-up move still commits drag and
+  // closes the popup, so the player can peek-then-drag in one gesture.
+  const beginWorkspaceDrag = (clientX: number, clientY: number) => {
+    closeTileInfo();
     dragItem = item;
     dragSourceSlotIndex = null;
-    dragOffsetX = e.clientX - item.x - workspace.getBoundingClientRect().left;
-    dragOffsetY = e.clientY - item.y - workspace.getBoundingClientRect().top;
+    const wsRect = workspace.getBoundingClientRect();
+    dragOffsetX = clientX - item.x - wsRect.left;
+    dragOffsetY = clientY - item.y - wsRect.top;
     // Switch to fixed so the tile renders above the palette/selection panel during drag
     el.style.position = 'fixed';
-    el.style.left = `${e.clientX - dragOffsetX}px`;
-    el.style.top = `${e.clientY - dragOffsetY}px`;
+    el.style.left = `${clientX - dragOffsetX}px`;
+    el.style.top = `${clientY - dragOffsetY}px`;
     el.style.zIndex = "100";
+  };
+
+  el.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    if (e.pointerType === "mouse") {
+      beginWorkspaceDrag(e.clientX, e.clientY);
+      return;
+    }
+    const startX = e.clientX;
+    const startY = e.clientY;
+    let resolved = false;
+    const longPressTimer = window.setTimeout(() => {
+      if (resolved) return;
+      // Don't mark resolved — leave the popup open while the finger may
+      // still start a drag. beginWorkspaceDrag (called from onMove past
+      // threshold) closes the popup if it's open.
+      openTileInfo({
+        name: item.name,
+        tier: item.tier,
+        emoji: item.emoji,
+        color: item.color,
+        description: item.description,
+        narrative: item.narrative,
+      });
+    }, 600);
+    const onMove = (m: PointerEvent) => {
+      if (resolved) return;
+      const dx = Math.abs(m.clientX - startX);
+      const dy = Math.abs(m.clientY - startY);
+      if (dx > 8 || dy > 8) {
+        resolved = true;
+        clearTimeout(longPressTimer);
+        cleanup();
+        beginWorkspaceDrag(m.clientX, m.clientY);
+      }
+    };
+    const onUp = () => {
+      resolved = true;
+      clearTimeout(longPressTimer);
+      cleanup();
+    };
+    const cleanup = () => {
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
+    };
+    document.addEventListener("pointermove", onMove, { passive: false });
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", onUp);
   });
 
   return item;
