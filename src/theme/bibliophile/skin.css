@@ -2435,6 +2435,7 @@ body[data-dragging="true"] #era-progress {
 [data-theme="bibliophile"][data-contrast="high"] .bookplate-sheet,
 [data-theme="bibliophile"][data-contrast="high"] #era-goals,
 [data-theme="bibliophile"][data-contrast="high"] #era-summary-panel,
+[data-theme="bibliophile"][data-contrast="high"] #victory-panel,
 [data-theme="bibliophile"][data-contrast="high"] .vault-info-card {
   background-image: none !important;
   background-color: var(--vellum);
@@ -2856,10 +2857,12 @@ body[data-dragging="true"] #era-progress {
   color: var(--ink-black);
 }
 
-/* Victory panel theming refit — match the era-summary's oxblood-on-vellum
- * vocabulary instead of the legacy gilt-fill buttons. The Discord button
- * becomes a corner icon; the save (image-export) button moves into the
- * auth row alongside Sign in / ✓ Saved. */
+/* Victory panel theming refit — re-uses the era-summary spread vocabulary
+ * (parchment outer, vellum bookplate sub-cards, gilt-italic headers,
+ * oxblood labels) so the run-end scoreboard reads as a continuation of
+ * the per-chapter summary rather than a separate dialog idiom. Driven
+ * entirely by the abstract token layer; Curator/Cartographer inherit
+ * the structure with their own swatches. */
  /* Two-layer panel: outer #victory-panel is non-scrolling and serves as
   * the visual frame + positioning anchor for the discord corner button.
   * Inner #victory-panel-scroll holds the actual content and owns the
@@ -2873,14 +2876,19 @@ body[data-dragging="true"] #era-progress {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  /* Differentiate the outer panel from the .victory-era sub-cards (which
-   * use --leather-deep). Texture-overlaid paper-dark reads as "leather
-   * cover" with the warm-brown era plaques sitting on top. Border
-   * promoted to gilt for the celebratory feel. */
+  /* Match #era-summary-panel: parchment-textured vellum on a leather-deep
+   * border, with the same faint gilt inner rule echoing the chapter title
+   * bar. Curator picks linen/mat-board on cream; Cartographer picks its
+   * own equivalents — purely token-driven. */
   background:
-    var(--texture-page-bg) repeat,
-    var(--paper-dark);
-  border: 2px solid var(--accent-secondary);
+    var(--texture-border) repeat,
+    var(--vellum);
+  border: 2px solid var(--leather-deep);
+  color: var(--ink-black);
+  border-radius: 2px;
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(201, 168, 95, 0.25);
 }
  #victory-panel-scroll {
   overflow-y: auto;
@@ -2888,9 +2896,9 @@ body[data-dragging="true"] #era-progress {
   min-height: 0; /* allow flex item to shrink under panel max-height */
   padding: 32px 40px;
   text-align: center;
-  /* Themed scrollbar — gilt thumb, transparent track, narrow gauge. */
+  /* Themed scrollbar — leather-deep thumb on vellum, oxblood on hover. */
   scrollbar-width: thin;
-  scrollbar-color: var(--accent-secondary) transparent;
+  scrollbar-color: var(--leather-deep) transparent;
 }
  #victory-panel-scroll::-webkit-scrollbar {
   width: 8px;
@@ -2899,15 +2907,124 @@ body[data-dragging="true"] #era-progress {
   background: transparent;
 }
  #victory-panel-scroll::-webkit-scrollbar-thumb {
-  background: var(--accent-secondary);
+  background: var(--leather-deep);
   border-radius: 4px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
  #victory-panel-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--vellum);
+  background: var(--accent);
   background-clip: padding-box;
   border: 2px solid transparent;
+}
+/* Title — gilt italic Cardo, mirrors #era-summary-panel h2. */
+ #victory-panel h2 {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(22px, 5vw, 28px);
+  color: var(--accent-secondary);
+  letter-spacing: 0.5px;
+  margin: 0 0 8px;
+  line-height: 1.15;
+}
+/* Subtitle — oxblood small-caps Inter, like .era-summary-completed-label. */
+ .victory-subtitle {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 500;
+  margin: 0 0 12px;
+}
+/* Run-summary narrative under the subtitle — italic Cardo, ink-black. */
+ #victory-narrative {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-black);
+  line-height: 1.5;
+  margin: 0 0 18px;
+}
+/* Era cards — vellum bookplates, mirroring .era-summary-completed.
+ * Each chapter sits on its own pale plaque with a thin leather rule
+ * and an oxblood lead-in stripe (gilt in Bibliophile via accent-secondary).
+ * The legacy --leather-deep fill is gone. */
+ .victory-era {
+  background:
+    var(--texture-border) repeat,
+    var(--vellum) !important;
+  border: 1px solid var(--leather-deep) !important;
+  border-left: 3px solid var(--accent-secondary) !important;
+  border-radius: 2px !important;
+  padding: 14px 16px !important;
+  color: var(--ink-black);
+  text-align: left;
+}
+/* Era name — gilt italic Cardo, like #era-summary-panel h3. */
+ .victory-era h4 {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(15px, 3.4vw, 18px);
+  color: var(--accent-secondary);
+  margin: 0 0 6px;
+  letter-spacing: 0.3px;
+}
+/* "Started with: …" caption — oxblood small-caps lead-in, ink-black tail. */
+ .victory-seeds {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--leather-deep);
+  margin-bottom: 8px;
+}
+/* Per-era advancement narrative — italic Cardo, ink-black. */
+ .victory-narrative {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-black);
+  margin: 6px 0;
+}
+/* Discovered-items tail — quiet leather-deep on vellum, mirrors
+ * .era-summary-discovered. */
+ .victory-items {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--leather-deep);
+  margin-top: 6px;
+}
+/* Stats row — oxblood labels feel, but the markup is just <span>s; soften
+ * the legacy #888 to leather-deep so it reads on the vellum bookplate. */
+ .victory-stats {
+  color: var(--leather-deep);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+/* Embedded line graph — wrap inherits transparent (not the leather backdrop
+ * the legacy stylesheet implied); border drops to a faint marble rule so the
+ * graph doesn't punch through the bookplate. */
+ .victory-graph-wrap {
+  margin-top: 8px;
+  background: transparent;
+}
+ .victory-graph {
+  border: 1px solid var(--border-faint);
+  background: rgba(255, 255, 255, 0.35);
+}
+/* Tier-table sticky cells inside .victory-era — style.css line 1263 paints
+ * these with leather-deep on the assumption the parent card is leather-deep.
+ * The card is now vellum, so override back to transparent so the cells
+ * inherit the row tint from the global skin.css tier-table rules (3081+). */
+ .victory-era .era-tier-table thead th:first-child,
+ .victory-era .era-tier-table tbody tr:nth-child(even) .era-tier-label {
+  background: transparent !important;
 }
  .victory-actions {
   display: flex;
@@ -2949,18 +3066,21 @@ body[data-dragging="true"] #era-progress {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(88, 101, 242, 0.18);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  /* Faint discord-blue tint on the vellum panel — the icon shows through
+   * in discord-blue at rest, the whole circle fills discord-blue on hover. */
+  background: rgba(88, 101, 242, 0.10);
+  color: #5865F2;
+  border: 1px solid rgba(88, 101, 242, 0.45);
   border-radius: 50%;
   padding: 0;
   gap: 0;
   text-decoration: none;
   font-weight: 400;
-  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
 }
  #victory-discord-btn:hover {
   background: #5865F2;
+  color: #fff;
   border-color: #5865F2;
   transform: translateY(-2px);
 }
@@ -2969,6 +3089,23 @@ body[data-dragging="true"] #era-progress {
   height: 19px;
 }
 
+/* Auth section dividers — legacy translucent-white borders disappear on
+ * vellum; promote to a faint marble rule that matches the panel's inner
+ * gilt shadow vocabulary. */
+ .victory-auth-prompt,
+ .victory-auth-saved {
+  border-top: 1px solid var(--border-faint);
+}
+ .victory-auth-prompt p {
+  color: var(--leather-deep);
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+ .victory-auth-saved {
+  color: var(--accent);
+  font-family: var(--font-serif);
+  font-style: italic;
+}
  .victory-signin-btn {
   background: var(--accent);
   color: var(--vellum);
