@@ -2763,21 +2763,15 @@ body[data-dragging="true"] #era-progress {
   transition: opacity 0.5s ease-out;
 }
 
-/* Brief soft bloom that punctuates the reveal → done turn. Radial vellum
- * centered on the prompt slot (top: 38%) so the flash reads as light
- * blooming from where the narrative just finished, not a full-screen
- * curtain. Peaks low (~32% alpha at the centre) and decays in 500ms so
- * it never obscures the new tile underneath. */
+/* Brief soft full-screen flash that punctuates the reveal → done turn.
+ * Flat vellum across the whole viewport, peaks low (~32% alpha) and
+ * decays in 500ms so the new tile underneath stays visible. */
  .onboarding-flash {
   position: fixed;
   inset: 0;
   z-index: 240;
   pointer-events: none;
-  background: radial-gradient(
-    ellipse 60% 45% at 50% 38%,
-    var(--vellum),
-    transparent 75%
-  );
+  background: var(--vellum);
   opacity: 0;
   animation: onboarding-flash-pulse 500ms ease-out forwards;
 }
