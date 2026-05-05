@@ -1794,14 +1794,32 @@ body[data-dragging="true"] #era-progress {
   color: var(--accent-secondary);
   margin: 0;
   text-align: center;
+  /* Vellum bookplate-style backdrop so the gilt title reads against the
+   * dark overlay scrim instead of fighting the texture behind it. */
+  background:
+    var(--texture-border) repeat,
+    var(--vellum);
+  border: 1px solid var(--leather-deep);
+  border-radius: 2px;
+  padding: 8px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
  #retirement-prompt {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 13px;
-  color: var(--marble-warm);
+  color: var(--ink-black);
   margin: 0 0 4px;
   text-align: center;
+  /* Same vellum strip as the title, just thinner — so the press-and-hold
+   * instruction is legible above the library grid. */
+  background:
+    var(--texture-border) repeat,
+    var(--vellum);
+  border: 1px solid var(--leather-deep);
+  border-radius: 2px;
+  padding: 4px 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
  #retirement-library-grid {
