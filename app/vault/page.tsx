@@ -26,6 +26,8 @@ interface VaultEntry {
   bindingStripeColor: string | null;
   /** Precomputed fnv1a seed (server-side) for theme-agnostic stripe rendering. */
   chapterColorSeed: number;
+  /** Surfaced as the only label on each spine + in the popup. */
+  tileName: string;
   createdAt: string;
 }
 
@@ -104,8 +106,9 @@ export default function VaultPage() {
                   className="vault-spine"
                   style={{ "--stripe": stripe } as React.CSSProperties}
                   onClick={() => setSelected(entry)}
-                  aria-label={`Retired chapter ${roman}`}
+                  aria-label={`Retired chapter ${roman} — ${entry.tileName}`}
                 >
+                  <span className="vault-spine-name">{entry.tileName}</span>
                   <span className="vault-spine-roman">{roman}</span>
                 </button>
               </li>
@@ -131,6 +134,7 @@ export default function VaultPage() {
                   : null,
               ].filter(Boolean).join(" · ")}
             </p>
+            <p className="vault-info-tile-name">{selected.tileName}</p>
             <button
               className="vault-info-close"
               onClick={() => setSelected(null)}

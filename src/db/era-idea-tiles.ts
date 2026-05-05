@@ -93,6 +93,12 @@ export interface VaultRow {
   retiredAt: Date | null;
   bindingStripeColor: string | null;
   chapterColorSeed: number;
+  /** Surfaced in the vault UI as the only label on each spine. Spec §3.7
+   *  originally redacted everything but the binding color + chapter index;
+   *  the demo build adds the name back so the player can recognize what
+   *  they retired. Other tile fields (emoji, narrative, color) stay
+   *  server-side. */
+  tileName: string;
   createdAt: Date;
 }
 
@@ -102,8 +108,9 @@ export async function getVaultForOwner(input: {
 }): Promise<VaultRow[]> {
   const filter = ownerFilter(input);
   if (!filter) return [];
-  // Selects tile_name *only* to compute the seed; the response interface
-  // does not expose it. Spec §3.7 spine-only contract preserved on the wire.
+  // tile_name now surfaces in the response (the demo build labels each
+  // spine with the tile name). The seed still uses the same string so the
+  // chapter-color render parity with the library / Bookplate is preserved.
   const rows = await db
     .select({
       id: eraIdeaTile.id,
@@ -119,9 +126,9 @@ export async function getVaultForOwner(input: {
     .where(and(filter, isNotNull(eraIdeaTile.retiredAt)))
     .orderBy(desc(eraIdeaTile.retiredAt));
 
-  return rows.map(({ tileName, ...rest }) => ({
-    ...rest,
-    chapterColorSeed: chapterColorSeed(rest.eraName, tileName, rest.runId ?? ""),
+  return rows.map((row) => ({
+    ...row,
+    chapterColorSeed: chapterColorSeed(row.eraName, row.tileName, row.runId ?? ""),
   }));
 }
 

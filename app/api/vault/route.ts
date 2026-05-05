@@ -4,13 +4,12 @@ import { getVaultForOwner } from "../../../src/db/era-idea-tiles";
 
 /** GET /api/vault
  *
- * Returns the active player's retired tiles, **spine fields only** (id,
- * eraName, chapterIndex, runId, retiredAt, bindingStripeColor,
- * chapterColorSeed, createdAt). The full tile data is in the row but the
- * API doesn't surface tileName/face/narrative — spec §3.7: "the information
- * loss is the meaning." `chapterColorSeed` is a precomputed fnv1a hash so
- * the renderer can re-skin to any theme's palette without ever seeing
- * tile_name client-side.
+ * Returns the active player's retired tiles, spine fields + tileName
+ * (id, eraName, chapterIndex, runId, retiredAt, bindingStripeColor,
+ * chapterColorSeed, tileName, createdAt). Demo build labels each spine
+ * with the tile name; emoji / face / narrative / description still stay
+ * server-side. `chapterColorSeed` is a precomputed fnv1a hash so the
+ * renderer can re-skin to any theme's palette.
  *
  * Query params:
  *   anonId — required when no session is present

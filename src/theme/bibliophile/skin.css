@@ -1974,6 +1974,19 @@ body[data-dragging="true"] #era-progress {
  .vault-spine-roman {
   font-size: 11px;
   letter-spacing: 0.4px;
+  flex-shrink: 0;
+}
+ .vault-spine-name {
+  flex: 1;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--vellum);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 8px;
 }
 
  .vault-info-card {
@@ -2004,6 +2017,13 @@ body[data-dragging="true"] #era-progress {
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--text-tertiary);
+  margin: 0;
+}
+ .vault-info-tile-name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink-black);
   margin: 0 0 8px;
 }
  .vault-info-close {
