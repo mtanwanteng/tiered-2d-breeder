@@ -2690,7 +2690,10 @@ body[data-dragging="true"] #era-progress {
   }
 }
 
-/* Floating "Try." prompt — italic Cardo, soft gilt, sits above workspace. */
+/* Floating "Try." prompt — italic Cardo on a vellum bookplate, sits above
+ * the workspace. Bookplate matches .onboarding-reveal's vocabulary so the
+ * two consecutive prompts read as one chrome family; the opaque
+ * parchment-on-vellum surface lifts the prompt off whatever's underneath. */
  .onboarding-try {
   position: fixed;
   top: 38%;
@@ -2704,6 +2707,13 @@ body[data-dragging="true"] #era-progress {
   pointer-events: none;
   z-index: 235;
   margin: 0;
+  padding: 6px 22px;
+  background:
+    var(--texture-border) repeat,
+    var(--vellum);
+  border: 1px solid var(--accent-secondary);
+  border-radius: 2px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   opacity: 0;
   text-shadow: 0 0 24px rgba(201, 168, 95, 0.35);
   animation: onboarding-try-fade-in 800ms 200ms ease-out forwards;
