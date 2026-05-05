@@ -389,7 +389,9 @@ body {
  .era-goals-paginate-btn {
   position: fixed;
   top: 0; /* JS overrides each render */
-  width: 20px;
+  /* 22px matches .tray-paginate / .era-strip-paginate so the three edge
+   * paginators share a width and read as one chrome family. */
+  width: 22px;
   height: 44px;
   z-index: 6;
   background: var(--bg-surface);
@@ -426,7 +428,11 @@ body {
   transform: translateY(1px);
 }
  .era-goals-paginate-btn[disabled] {
-  opacity: 0.32;
+  /* No opacity — the button must stay fully opaque so the underlying
+   * objectives copy doesn't bleed through. Muted glyph + faint border
+   * carry the "disabled" read instead. */
+  color: var(--text-tertiary);
+  border-color: var(--border-faint);
   cursor: default;
 }
 
@@ -1063,7 +1069,10 @@ body {
 }
  .tray-paginate[disabled],
  .era-strip-paginate[disabled] {
-  opacity: 0.4;
+  /* No opacity — the plaque must stay fully opaque so the underlying
+   * idea-tray rubber-band transform / chapter-strip cubes don't bleed
+   * through. The muted marble glyph and softer emboss carry the
+   * "disabled" read on their own. */
   cursor: default;
   color: var(--marble-warm);
   box-shadow:
