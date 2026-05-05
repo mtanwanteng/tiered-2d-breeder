@@ -1155,6 +1155,17 @@ body {
   border-color: var(--border-faint);
 }
 
+/* Onboarding / help arrow trail — lighten the under-shadow on the
+ * lighter theme palettes. arrow-trail.ts injects the base style with a
+ * black 30% stroke, which reads heavy on Curator's archival cream and
+ * on Cartographer's fawn parchment. Halving alpha to 15% keeps the
+ * "soft anchor" cue without the blot. Bibliophile keeps the original
+ * 30% — the dark-leather page absorbs the heavier shadow. */
+[data-theme="curator"] .arrow-trail-shadow,
+[data-theme="cartographer"] .arrow-trail-shadow {
+  stroke: rgba(0, 0, 0, 0.15);
+}
+
 /* The actual horizontal-scroll tile row.
    End-spacing is applied via ::before / ::after pseudo-elements rather than
    padding-x, because flex containers with overflow-x don't honor padding-right
