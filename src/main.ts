@@ -612,6 +612,31 @@ function renderGoals() {
   renderEraProgress();
 }
 
+// Edge-anchored paginate buttons (era goals prev, era strip prev, tray prev)
+// sit at `left: 0`, which on real iOS Safari overlaps the OS edge-swipe-
+// back gesture zone (~25–30px). Click events get eaten before they fire.
+// pointerdown fires immediately on the first touch — before iOS classifies
+// the gesture — so binding the handler there as well as on click recovers
+// the tap on mobile while keeping mouse + keyboard ("Enter" → click) paths
+// intact. The lastTouchHandledAt timestamp dedupes the synthesized click
+// that follows a touch pointerdown.
+function bindFastTap(el: HTMLElement, handler: () => void) {
+  let lastTouchHandledAt = 0;
+  const isDisabled = () => el.hasAttribute("disabled");
+  el.addEventListener("pointerdown", (e) => {
+    if (isDisabled()) return;
+    if (e.pointerType !== "touch") return;
+    lastTouchHandledAt = e.timeStamp;
+    handler();
+    e.preventDefault();
+  });
+  el.addEventListener("click", (e) => {
+    if (isDisabled()) return;
+    if (e.timeStamp - lastTouchHandledAt < 600) return;
+    handler();
+  });
+}
+
 // Floating prev/next chevrons for the mobile objectives paginator. Created
 // once at module init and pinned to the viewport edges via position: fixed
 // so they don't take any horizontal or vertical space inside the goals
@@ -633,13 +658,13 @@ function ensureGoalsPaginateButtons() {
   };
   const prev = make("era-goals-prev", "Previous objectives", "&#8249;");
   const next = make("era-goals-next", "Next objectives", "&#8250;");
-  prev.addEventListener("click", () => {
+  bindFastTap(prev, () => {
     if (goalsPage > 0) {
       goalsPage--;
       applyGoalsPagination();
     }
   });
-  next.addEventListener("click", () => {
+  bindFastTap(next, () => {
     goalsPage++;
     applyGoalsPagination();
   });
@@ -2119,10 +2144,10 @@ function updateTrayPaginationVisibility() {
     paletteItems.scrollLeft + paletteItems.clientWidth >= paletteItems.scrollWidth - 1;
 }
 
-trayPrev?.addEventListener("click", () => {
+if (trayPrev) bindFastTap(trayPrev, () => {
   paletteItems.scrollBy({ left: -paletteItems.clientWidth * 0.85, behavior: "smooth" });
 });
-trayNext?.addEventListener("click", () => {
+if (trayNext) bindFastTap(trayNext, () => {
   paletteItems.scrollBy({ left: paletteItems.clientWidth * 0.85, behavior: "smooth" });
 });
 paletteItems.addEventListener("scroll", updateTrayPaginationVisibility, { passive: true });
@@ -2153,11 +2178,11 @@ function updateEraStripPagination() {
   eraStripNextBtn.style.top = `${top}px`;
 }
 
-eraStripPrevBtn?.addEventListener("click", () => {
+if (eraStripPrevBtn) bindFastTap(eraStripPrevBtn, () => {
   if (eraProgressForStrip)
     eraProgressForStrip.scrollBy({ left: -eraProgressForStrip.clientWidth * 0.85, behavior: "smooth" });
 });
-eraStripNextBtn?.addEventListener("click", () => {
+if (eraStripNextBtn) bindFastTap(eraStripNextBtn, () => {
   if (eraProgressForStrip)
     eraProgressForStrip.scrollBy({ left: eraProgressForStrip.clientWidth * 0.85, behavior: "smooth" });
 });
