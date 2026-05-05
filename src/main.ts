@@ -4918,8 +4918,27 @@ async function playRunEndSeal(): Promise<void> {
 }
 
 async function commitRetirement(btn: HTMLElement, tileId: string): Promise<void> {
-  // Visual: ink-point dispersal at the tile's center
-  await playInkPointDispersal({ target: btn, count: 9, durationMs: 1400 });
+  // Visual: tile dissolves (fade + blur + slight grayscale + scale-down)
+  // alongside the ink-point dispersal — the dots emanating outward AND
+  // the tile itself dissolving in place reads as "given to the world."
+  // The btn keeps its space in the grid (fill: forwards) so neighboring
+  // tiles don't reflow during the ceremony.
+  const dissolve = btn.animate(
+    [
+      { opacity: 1, filter: "blur(0px) grayscale(0)", transform: "scale(1)" },
+      { opacity: 0.55, filter: "blur(2.5px) grayscale(0.35)", transform: "scale(0.95)", offset: 0.45 },
+      { opacity: 0, filter: "blur(7px) grayscale(0.7)", transform: "scale(0.85)" },
+    ],
+    { duration: 1100, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" },
+  );
+  const dissolvePromise = new Promise<void>((resolve) => {
+    dissolve.onfinish = () => resolve();
+    dissolve.oncancel = () => resolve();
+  });
+  await Promise.all([
+    dissolvePromise,
+    playInkPointDispersal({ target: btn, count: 9, durationMs: 1400 }),
+  ]);
   // Server: retire the chosen row
   try {
     const anonId = getOrCreateAnonId();

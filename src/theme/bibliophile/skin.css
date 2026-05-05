@@ -808,7 +808,7 @@ body {
  .era-cube {
   flex-shrink: 0;
   width: 56px;
-  height: 30px;
+  height: 36px;
   border-radius: 2px;
   background: var(--bg-page);
   border: 1px solid var(--leather-deep);
@@ -1850,6 +1850,13 @@ body[data-dragging="true"] #era-progress {
   font-family: var(--font-serif);
   position: relative;
   transition: transform 0.12s, box-shadow 0.12s, opacity 0.2s;
+  /* iOS Safari hijacks long-press for callout / text selection by default,
+   * which can cancel the JS hold-arc gesture mid-fill. Lock both out so the
+   * 2.5s hold reads cleanly to commit. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
  .retire-tile:hover {
   transform: translateY(-2px);
