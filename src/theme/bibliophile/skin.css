@@ -915,6 +915,7 @@ body {
 }
  .era-cube--bound:has(.era-cube-idea) {
   opacity: 1;
+  cursor: grab;
 }
 
 /* Hide legacy era-dots / era-dash in favor of just-cubes */

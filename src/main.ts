@@ -521,9 +521,18 @@ function attachLongPress(
 // Make each idea tile attached to a completed era cube draggable: spawning a workspace copy
 // without depleting the cube tile (inventory-style, like the select-five carry-over slots).
 function wireEraCubeIdeaTiles() {
-  document.querySelectorAll<HTMLElement>(".era-cube-idea[data-era-idea-idx]").forEach((el) => {
-    const idx = Number(el.dataset.eraIdeaIdx);
-    attachDragToSpawn(el, () => {
+  // Attach the drag listener to the .era-cube cell (56×36) instead of just
+  // the smaller .era-cube-idea inside it (~26×28, inset top-left of the
+  // cell). Players were hitting the cube margin (right side, Roman-numeral
+  // area, vertical edges) and seeing only the idea's :hover scale-up — no
+  // drag, because the listener didn't fire there. With the listener on the
+  // cube parent, the entire cell is the drag target. The idea's :hover
+  // scale still fires for visual feedback when the cursor lands on it.
+  document.querySelectorAll<HTMLElement>(".era-cube--bound").forEach((cubeEl) => {
+    const ideaEl = cubeEl.querySelector<HTMLElement>(".era-cube-idea[data-era-idea-idx]");
+    if (!ideaEl) return;
+    const idx = Number(ideaEl.dataset.eraIdeaIdx);
+    attachDragToSpawn(cubeEl, () => {
       const h = eraManager.history[idx];
       const pick = h?.ideaTilePick;
       if (!pick) return null;
@@ -4842,7 +4851,18 @@ function openRetirementOverlay(boundPreview: BoundTilePreview): Promise<"retired
             ev.preventDefault();
             const tileId = btn.dataset.tileId!;
             btn.classList.add("retire-tile--holding");
-            retirementHoldHandle = startHoldArc({ target: btn, durationMs: 2500 });
+            // Render the arc inside the retirement-overlay's stacking context.
+            // Default parent (document.body) places the SVG at z-index 60,
+            // which is *behind* the overlay's z-index 220 backdrop — the
+            // arc was being painted but covered. Appending into the overlay
+            // puts it inside the same stacking context as the modal so the
+            // arc sits above the backdrop.
+            const retirementOverlay = document.getElementById("retirement-overlay");
+            retirementHoldHandle = startHoldArc({
+              target: btn,
+              durationMs: 2500,
+              parent: retirementOverlay ?? undefined,
+            });
 
             const releaseHold = () => {
               document.removeEventListener("pointerup", releaseHold);
