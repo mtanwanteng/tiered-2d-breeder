@@ -2763,6 +2763,33 @@ body[data-dragging="true"] #era-progress {
   transition: opacity 0.5s ease-out;
 }
 
+/* Brief soft bloom that punctuates the reveal → done turn. Radial vellum
+ * centered on the prompt slot (top: 38%) so the flash reads as light
+ * blooming from where the narrative just finished, not a full-screen
+ * curtain. Peaks low (~32% alpha at the centre) and decays in 500ms so
+ * it never obscures the new tile underneath. */
+ .onboarding-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 60% 45% at 50% 38%,
+    var(--vellum),
+    transparent 75%
+  );
+  opacity: 0;
+  animation: onboarding-flash-pulse 500ms ease-out forwards;
+}
+@keyframes onboarding-flash-pulse {
+  0%   { opacity: 0; }
+  35%  { opacity: 0.32; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+   .onboarding-flash { animation-duration: 200ms; }
+}
+
 /* Frame 05 "reveal" — typewriter narrative card. Positioned in the
  * tryPrompt's slot (top: 38%, vertically centered) instead of below the
  * workspace, so the freshly combined tile in the center of the page

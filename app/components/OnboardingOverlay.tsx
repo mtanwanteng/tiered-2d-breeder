@@ -175,6 +175,10 @@ export function OnboardingOverlay() {
           )}
         </>
       )}
+
+      {frame === "done" && (
+        <div className="onboarding-flash" aria-hidden="true" />
+      )}
     </>
   );
 }
