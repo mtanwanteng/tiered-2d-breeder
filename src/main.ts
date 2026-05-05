@@ -6,6 +6,7 @@ import { FilePromptProvider } from "./prompt-loader";
 import { EraManager } from "./era-manager";
 import { log } from "./logger";
 import { isLocalBuild } from "./env";
+import { LIBRARY_DEMO_ACTIVE_SLOTS } from "./library-cap";
 import { initDebugConsole } from "./debug-console";
 import { saveGame, loadGame, clearSave, SAVE_KEY, SELECT_FIVE_SAVE_KEY } from "./save";
 import type { SaveData } from "./save";
@@ -4629,9 +4630,10 @@ interface LibraryEntry {
 
 let retirementHoldHandle: HoldArcHandle | null = null;
 
-/** True if the player has 24 non-retired bound tiles already; the next bind
- *  must replace one. Fetches /api/library and checks length. Fail-open on
- *  error so a network blip doesn't block the bind. */
+/** True if the player has reached the visible library cap (LIBRARY_DEMO_ACTIVE_SLOTS
+ *  while the demo gate is in effect, LIBRARY_CAP otherwise). The next bind must
+ *  replace one. Fetches /api/library and checks length. Fail-open on error so a
+ *  network blip doesn't block the bind. */
 async function isLibraryFullForRetirement(): Promise<boolean> {
   try {
     const anonId = getOrCreateAnonId();
@@ -4640,7 +4642,7 @@ async function isLibraryFullForRetirement(): Promise<boolean> {
     });
     if (!r.ok) return false;
     const data = (await r.json()) as { tiles?: LibraryEntry[] };
-    return (data.tiles?.length ?? 0) >= 24;
+    return (data.tiles?.length ?? 0) >= LIBRARY_DEMO_ACTIVE_SLOTS;
   } catch {
     return false;
   }

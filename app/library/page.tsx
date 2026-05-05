@@ -10,12 +10,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Bookplate, type BookplateTile } from "../components/Bookplate";
 import { chapterStripeColor } from "../../src/theme/chapterColor";
-
-const LIBRARY_CAP = 24;
-// Temporary demo gate — only the first N slots are active; the rest render
-// as locked placeholders. Bind/retirement logic still uses LIBRARY_CAP, so
-// flipping this back to LIBRARY_CAP restores the full shelf.
-const LIBRARY_DEMO_ACTIVE_SLOTS = 3;
+import { LIBRARY_CAP, LIBRARY_DEMO_ACTIVE_SLOTS } from "../../src/library-cap";
 
 interface LibraryTile extends BookplateTile {}
 
