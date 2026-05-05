@@ -2773,15 +2773,18 @@ body[data-dragging="true"] #era-progress {
   pointer-events: none;
   background: var(--vellum);
   opacity: 0;
-  animation: onboarding-flash-pulse 500ms ease-out forwards;
+  /* Slow, gentle pulse — a long ease-in-out so the rise and decay both
+   * read as a "swell" rather than a strobe. ~1s total: page-turn pacing,
+   * not flash-bulb. */
+  animation: onboarding-flash-pulse 1100ms ease-in-out forwards;
 }
 @keyframes onboarding-flash-pulse {
   0%   { opacity: 0; }
-  25%  { opacity: 0.7; }
+  45%  { opacity: 0.7; }
   100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-   .onboarding-flash { animation-duration: 200ms; }
+   .onboarding-flash { animation-duration: 400ms; }
 }
 
 /* Frame 05 "reveal" — typewriter narrative card. Positioned in the

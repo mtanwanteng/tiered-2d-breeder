@@ -96,7 +96,9 @@ export function OnboardingOverlay() {
   useEffect(() => {
     if (frame !== "done") return;
     try { localStorage.setItem(ONBOARDED_KEY, "true"); } catch {}
-    const t = window.setTimeout(() => setFrame("hidden"), 700);
+    // Match the .onboarding-flash animation (1100ms) so the swell finishes
+    // before unmount instead of being clipped mid-decay.
+    const t = window.setTimeout(() => setFrame("hidden"), 1200);
     return () => window.clearTimeout(t);
   }, [frame]);
 
