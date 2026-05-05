@@ -997,10 +997,9 @@ app.innerHTML = `
       <div id="victory-timeline"></div>
       <div class="victory-actions">
         <a id="victory-library-link" href="/library">Open the library →</a>
-        <button id="victory-share-btn" aria-label="Save victory screen"></button>
-        <a id="victory-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer">${DISCORD_SVG} Join our Discord</a>
         <button id="victory-continue-btn">Continue</button>
       </div>
+      <a id="victory-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer" aria-label="Join our Discord">${DISCORD_SVG}</a>
     </div>
   </div>
   <div id="tapestry-overlay">
@@ -1063,8 +1062,9 @@ const eraToastBtn = document.getElementById("era-toast-btn")!;
 const victoryOverlay = document.getElementById("victory-overlay")!;
 const victoryPanel = document.getElementById("victory-panel")!;
 const victoryTimeline = document.getElementById("victory-timeline")!;
-const victoryShareBtn = document.getElementById("victory-share-btn")!;
-victoryShareBtn.innerHTML = SAVE_SVG;
+// #victory-share-btn is rendered dynamically inside #victory-auth-section
+// (so it can sit next to Sign in / ✓ Saved). Click handler is attached
+// in updateVictoryAuthSection, not at module init.
 document.getElementById("tapestry-share-btn")!.innerHTML = SAVE_SVG;
 const restartButton = document.getElementById("restart-btn")!;
 let modelSelect: HTMLSelectElement | null = null;
@@ -4572,19 +4572,33 @@ function updateVictoryAuthSection() {
   const section = document.getElementById("victory-auth-section");
   if (!section) return;
   const { isLoggedIn, name, openLoginFromVictory } = authStore.getState();
+  // Save-victory-screen icon button lives alongside Sign in / ✓ Saved so
+  // both player-facing "save" affordances (account-save + image-save) sit
+  // in the same visual cluster. Per-render so the re-attach is clean
+  // across login/logout cycles.
+  const saveBtnHtml = `<button id="victory-share-btn" class="victory-share-btn" aria-label="Save victory screen as image" title="Save image">${SAVE_SVG}</button>`;
   if (isLoggedIn) {
-    section.innerHTML = `<div class="victory-auth-saved">✓ Saved to ${name ?? "your account"}</div>`;
+    section.innerHTML = `
+      <div class="victory-auth-row">
+        <div class="victory-auth-saved">✓ Saved to ${esc(name ?? "your account")}</div>
+        ${saveBtnHtml}
+      </div>
+    `;
   } else {
     section.innerHTML = `
       <div class="victory-auth-prompt">
         <p>Save your achievements to your account</p>
-        <button id="victory-signin-btn" class="victory-signin-btn">Sign in</button>
+        <div class="victory-auth-row">
+          <button id="victory-signin-btn" class="victory-signin-btn">Sign in</button>
+          ${saveBtnHtml}
+        </div>
       </div>
     `;
     document.getElementById("victory-signin-btn")?.addEventListener("click", () => {
       openLoginFromVictory?.();
     });
   }
+  document.getElementById("victory-share-btn")?.addEventListener("click", handleVictoryShare);
 
   setDiscordCta(document.getElementById("victory-discord-btn"));
 }
@@ -4625,7 +4639,7 @@ function showVictory(narrative?: string) {
   renderEraGraphs(eraManager.history, "victory-graph");
 }
 
-const handleVictoryShare = async () => {
+async function handleVictoryShare() {
   const panel = document.getElementById("victory-panel")!;
   try {
     const dataUrl = await toPng(panel, { pixelRatio: 2 });
@@ -4636,7 +4650,8 @@ const handleVictoryShare = async () => {
   }
 };
 
-victoryShareBtn.addEventListener("click", handleVictoryShare);
+// victory-share-btn click handler is attached per render in
+// updateVictoryAuthSection (the button is recreated each call).
 
 document.getElementById("victory-continue-btn")!.addEventListener("click", async () => {
   victoryOverlay.classList.remove("visible");
@@ -5338,7 +5353,7 @@ return () => {
   if (selectFiveMode) restartButton.removeEventListener("click", s5HandleChangeEra);
   demoResetConfirmBtn.removeEventListener("click", handleDemoResetConfirm);
   demoResetCancelBtn.removeEventListener("click", handleDemoResetCancel);
-  victoryShareBtn.removeEventListener("click", handleVictoryShare);
+  document.getElementById("victory-share-btn")?.removeEventListener("click", handleVictoryShare);
   scoreboardBtn.removeEventListener("click", showScoreboard);
   document.removeEventListener("keydown", handleKeyDown);
   app.innerHTML = "";

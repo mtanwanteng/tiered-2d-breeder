@@ -2851,6 +2851,115 @@ body[data-dragging="true"] #era-progress {
   color: var(--ink-black);
 }
 
+/* Victory panel theming refit — match the era-summary's oxblood-on-vellum
+ * vocabulary instead of the legacy gilt-fill buttons. The Discord button
+ * becomes a corner icon; the save (image-export) button moves into the
+ * auth row alongside Sign in / ✓ Saved. */
+ #victory-panel {
+  position: relative; /* anchor for the discord corner button */
+}
+ .victory-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+ #victory-continue-btn {
+  background: var(--accent);
+  color: var(--vellum);
+  border: 1px solid var(--accent-secondary);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 14px;
+  border-radius: 2px;
+  padding: 10px 18px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  font-weight: 400;
+  transition: background 0.15s, color 0.15s;
+}
+ #victory-continue-btn:hover {
+  background: var(--accent-secondary);
+  color: var(--ink-black);
+}
+ #victory-discord-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-faint);
+  border-radius: 50%;
+  padding: 0;
+  gap: 0;
+  text-decoration: none;
+  font-weight: 400;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+ #victory-discord-btn:hover {
+  background: #5865F2;
+  color: #fff;
+  border-color: #5865F2;
+}
+ #victory-discord-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+ .victory-auth-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+ .victory-signin-btn {
+  background: var(--accent);
+  color: var(--vellum);
+  border: 1px solid var(--accent-secondary);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  border-radius: 2px;
+  padding: 8px 20px;
+  cursor: pointer;
+  font-weight: 400;
+  transition: background 0.15s, color 0.15s;
+}
+ .victory-signin-btn:hover {
+  background: var(--accent-secondary);
+  color: var(--ink-black);
+}
+ .victory-share-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--accent-secondary);
+  border: 1px solid var(--accent-secondary);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+ .victory-share-btn:hover {
+  background: var(--accent-secondary);
+  color: var(--ink-black);
+}
+ .victory-share-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
 /* ─────────────────────────────────────────────────────────────────────
    ERA SUMMARY OVERLAY — bibliophile refit. The legacy panel layered
    ink-black text on dark-leather sub-cards, which read as illegible
