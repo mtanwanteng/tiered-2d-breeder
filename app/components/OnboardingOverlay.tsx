@@ -164,22 +164,16 @@ export function OnboardingOverlay() {
         </div>
       )}
 
-      {(frame === "guide" || frame === "merging" || frame === "reveal") && (
+      {(frame === "guide" || frame === "merging" || frame === "reveal" || frame === "done") && (
         <>
           <p className="onboarding-try" aria-hidden="true">{onboardingCopy.tryPrompt}</p>
-          {frame === "reveal" && (
+          {(frame === "reveal" || frame === "done") && (
             <p className="onboarding-reveal" aria-live="polite">
               {onboardingCopy.torchNarrative.slice(0, revealChars)}
               <span className="onboarding-reveal-caret">|</span>
             </p>
           )}
         </>
-      )}
-
-      {frame === "done" && (
-        <div className="onboarding-overlay onboarding-overlay--fading" aria-hidden="true">
-          <div className="onboarding-content" />
-        </div>
       )}
     </>
   );

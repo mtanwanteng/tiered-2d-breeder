@@ -2697,9 +2697,17 @@ body[data-dragging="true"] #era-progress {
   transition: filter 0.45s ease-out;
 }
 [data-onboarding="merging"] .onboarding-try,
-[data-onboarding="reveal"] .onboarding-try {
+[data-onboarding="reveal"] .onboarding-try,
+[data-onboarding="done"] .onboarding-try {
   opacity: 0;
   transition: opacity 0.4s ease-out;
+}
+/* Frame "done" — fade the reveal narrative out in place instead of mounting
+ * a fresh full-screen vellum overlay (which used to flash because its own
+ * onboarding-fade-in animation overrode the --fading opacity:0 for 600ms). */
+[data-onboarding="done"] .onboarding-reveal {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
 }
 
 /* Frame 05 "reveal" — typewriter narrative card under the new tile. */
