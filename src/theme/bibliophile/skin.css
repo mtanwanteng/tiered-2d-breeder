@@ -2777,7 +2777,7 @@ body[data-dragging="true"] #era-progress {
 }
 @keyframes onboarding-flash-pulse {
   0%   { opacity: 0; }
-  35%  { opacity: 0.32; }
+  25%  { opacity: 0.7; }
   100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
