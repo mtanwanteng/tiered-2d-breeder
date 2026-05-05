@@ -808,7 +808,11 @@ app.innerHTML = `
   <div id="workspace">
     <p id="workspace-caption">${getTheme().copy.workspaceCaption}</p>
     <p id="workspace-hint">${getTheme().copy.writingDeskHint}</p>
-    <div id="era-progress"></div>
+    <div id="era-strip-row">
+      <button id="era-strip-prev" class="era-strip-paginate" hidden type="button" aria-label="Scroll chapter strip left">&#8249;</button>
+      <div id="era-progress"></div>
+      <button id="era-strip-next" class="era-strip-paginate" hidden type="button" aria-label="Scroll chapter strip right">&#8250;</button>
+    </div>
   </div>
   <div id="card-catalog-overlay">
     <div id="card-catalog-modal">
@@ -2074,6 +2078,40 @@ trayNext?.addEventListener("click", () => {
   paletteItems.scrollBy({ left: paletteItems.clientWidth * 0.85, behavior: "smooth" });
 });
 paletteItems.addEventListener("scroll", updateTrayPaginationVisibility, { passive: true });
+
+// --- Chapter strip pagination (mirror of the inventory tray's prev/next) ---
+// Same chrome (themed plaque), same near-page scroll-by, same hidden-when-no-
+// overflow gate. Strip is rendered once at every renderEraProgress, so the
+// MutationObserver below catches every cube re-render.
+const eraStripPrevBtn = document.getElementById("era-strip-prev") as HTMLButtonElement | null;
+const eraStripNextBtn = document.getElementById("era-strip-next") as HTMLButtonElement | null;
+const eraProgressForStrip = document.getElementById("era-progress");
+
+function updateEraStripPagination() {
+  if (!eraStripPrevBtn || !eraStripNextBtn || !eraProgressForStrip) return;
+  const overflow = eraProgressForStrip.scrollWidth > eraProgressForStrip.clientWidth + 1;
+  eraStripPrevBtn.hidden = !overflow;
+  eraStripNextBtn.hidden = !overflow;
+  if (!overflow) return;
+  eraStripPrevBtn.disabled = eraProgressForStrip.scrollLeft <= 0;
+  eraStripNextBtn.disabled =
+    eraProgressForStrip.scrollLeft + eraProgressForStrip.clientWidth >= eraProgressForStrip.scrollWidth - 1;
+}
+
+eraStripPrevBtn?.addEventListener("click", () => {
+  if (eraProgressForStrip)
+    eraProgressForStrip.scrollBy({ left: -eraProgressForStrip.clientWidth * 0.85, behavior: "smooth" });
+});
+eraStripNextBtn?.addEventListener("click", () => {
+  if (eraProgressForStrip)
+    eraProgressForStrip.scrollBy({ left: eraProgressForStrip.clientWidth * 0.85, behavior: "smooth" });
+});
+if (eraProgressForStrip) {
+  eraProgressForStrip.addEventListener("scroll", updateEraStripPagination, { passive: true });
+  new MutationObserver(updateEraStripPagination).observe(eraProgressForStrip, { childList: true });
+  new ResizeObserver(updateEraStripPagination).observe(eraProgressForStrip);
+  requestAnimationFrame(updateEraStripPagination);
+}
 
 // --- Idea-tray rubber-band overscroll ---
 // At a boundary (start or end), wheel + touch attempts to scroll past trigger a

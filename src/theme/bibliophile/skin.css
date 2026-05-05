@@ -789,8 +789,20 @@ body {
    STRIP (kept tiles row) — 4 states with binding stripes + Roman numerals
    ───────────────────────────────────────────────────────────────────── */
 
+/* Wrapper that hosts the chapter strip + its prev/next paginate buttons.
+ * Mirror of #idea-tray-row from the inventory: 3-column grid (auto 1fr auto)
+ * so the buttons take their natural width and the scroll surface fills the
+ * middle. The buttons sit OUTSIDE the scrollable container so they don't
+ * scroll with the content. */
+ #era-strip-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
+  position: relative;
+  z-index: 5;
+}
+
  #era-progress {
-  grid-area: strip;
   position: static;
   background: transparent;
   padding: 6px 18px;
@@ -801,7 +813,7 @@ body {
   overflow-y: hidden;
   scrollbar-width: none;
   pointer-events: auto;
-  z-index: 5;
+  min-width: 0;
 }
  #era-progress::-webkit-scrollbar { display: none; }
 
@@ -997,7 +1009,8 @@ body {
    leather + inset highlight) and consistent with the bibliophile chrome
    vocabulary: gilt italic glyph on a pressed-leather panel. Sized for usable
    touch targets while taking minimum tray space. */
- .tray-paginate {
+ .tray-paginate,
+ .era-strip-paginate {
   background: linear-gradient(to bottom, var(--leather-deep) 0%, #3f311c 100%);
   border: 1px solid var(--ink-black);
   color: var(--accent-secondary);
@@ -1023,11 +1036,13 @@ body {
   justify-content: center;
 }
 /* Square the outer-edge corners; round only the corner that faces the cards. */
- #tray-prev {
+ #tray-prev,
+ #era-strip-prev {
   border-left: none;
   border-radius: 0 2px 2px 0;
 }
- #tray-next {
+ #tray-next,
+ #era-strip-next {
   border-right: none;
   border-radius: 2px 0 0 2px;
   /* Embossed: gilt highlight along the top inner edge, ink shadow along the bottom,
@@ -1039,7 +1054,8 @@ body {
     0 1px 2px rgba(0, 0, 0, 0.5);
   transition: box-shadow 0.12s ease-out, color 0.15s, transform 0.08s;
 }
- .tray-paginate:hover:not([disabled]) {
+ .tray-paginate:hover:not([disabled]),
+ .era-strip-paginate:hover:not([disabled]) {
   color: var(--vellum);
   box-shadow:
     inset 0 1px 0 rgba(201, 168, 95, 0.28),
@@ -1047,7 +1063,8 @@ body {
     0 0 0 1px var(--accent-secondary),
     0 2px 6px rgba(0, 0, 0, 0.55);
 }
- .tray-paginate:active:not([disabled]) {
+ .tray-paginate:active:not([disabled]),
+ .era-strip-paginate:active:not([disabled]) {
   /* "pressed in" — invert the emboss */
   box-shadow:
     inset 0 1px 3px rgba(0, 0, 0, 0.55),
@@ -1055,7 +1072,8 @@ body {
     0 1px 1px rgba(0, 0, 0, 0.3);
   transform: translateY(1px);
 }
- .tray-paginate[disabled] {
+ .tray-paginate[disabled],
+ .era-strip-paginate[disabled] {
   opacity: 0.4;
   cursor: default;
   color: var(--marble-warm);
@@ -1063,28 +1081,33 @@ body {
     inset 0 1px 0 rgba(201, 168, 95, 0.06),
     0 1px 1px rgba(0, 0, 0, 0.25);
 }
- .tray-paginate[hidden] {
+ .tray-paginate[hidden],
+ .era-strip-paginate[hidden] {
   display: none;
 }
 
 /* Curator: invert the leather-plaque chrome — oxblood-on-dark-grey was
  * unreadable (~2:1). Curator's vocabulary is light card + dark ink, so the
  * paginate button reads as a small mat plaque with the accent glyph. */
-[data-theme="curator"] .tray-paginate {
+[data-theme="curator"] .tray-paginate,
+[data-theme="curator"] .era-strip-paginate {
   background: var(--bg-surface);
   color: var(--accent-secondary);
   border-color: var(--border-strong);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
 }
-[data-theme="curator"] .tray-paginate:hover:not([disabled]) {
+[data-theme="curator"] .tray-paginate:hover:not([disabled]),
+[data-theme="curator"] .era-strip-paginate:hover:not([disabled]) {
   background: var(--bg-page);
   color: var(--text-primary);
   box-shadow: 0 0 0 1px var(--border-strong), 0 1px 2px rgba(0, 0, 0, 0.12);
 }
-[data-theme="curator"] .tray-paginate:active:not([disabled]) {
+[data-theme="curator"] .tray-paginate:active:not([disabled]),
+[data-theme="curator"] .era-strip-paginate:active:not([disabled]) {
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.18);
 }
-[data-theme="curator"] .tray-paginate[disabled] {
+[data-theme="curator"] .tray-paginate[disabled],
+[data-theme="curator"] .era-strip-paginate[disabled] {
   color: var(--text-tertiary);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
 }
@@ -1092,13 +1115,16 @@ body {
 /* Cartographer: ocean-teal accent-secondary on dark-sepia leather is
  * ~2:1 — under WCAG AA. Switch the glyph to vellum so the dark plaque
  * has a pale ink stamp readable as the chevron. */
-[data-theme="cartographer"] .tray-paginate {
+[data-theme="cartographer"] .tray-paginate,
+[data-theme="cartographer"] .era-strip-paginate {
   color: var(--vellum);
 }
-[data-theme="cartographer"] .tray-paginate:hover:not([disabled]) {
+[data-theme="cartographer"] .tray-paginate:hover:not([disabled]),
+[data-theme="cartographer"] .era-strip-paginate:hover:not([disabled]) {
   color: var(--accent); /* compass-rose copper on hover */
 }
-[data-theme="cartographer"] .tray-paginate[disabled] {
+[data-theme="cartographer"] .tray-paginate[disabled],
+[data-theme="cartographer"] .era-strip-paginate[disabled] {
   color: var(--marble-warm);
 }
 
