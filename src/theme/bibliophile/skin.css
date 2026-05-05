@@ -2833,20 +2833,22 @@ body[data-dragging="true"] #era-progress {
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
+ /* Library link — same vocabulary as Continue: oxblood fill + gilt border
+  * + vellum italic Cardo. Two side-by-side filled buttons read as a
+  * matched pair; Continue's hover flips to gilt fill so the player can
+  * still tell them apart. */
  #victory-library-link {
+  background: var(--accent);
+  color: var(--vellum);
+  border: 1px solid var(--accent-secondary);
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 14px;
-  /* Vellum text instead of gilt — gilt-on-dark-leather was ~3:1 contrast,
-   * borderline. Vellum on dark reads cleanly. Gilt border still anchors
-   * the button visually as a peer of the oxblood-fill Continue. */
-  color: var(--vellum);
-  border: 1px solid var(--accent-secondary);
-  background: transparent;
-  padding: 10px 18px;
   border-radius: 2px;
+  padding: 10px 18px;
   text-decoration: none;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
  #victory-library-link:hover {
@@ -2887,16 +2889,17 @@ body[data-dragging="true"] #era-progress {
   background: var(--accent-secondary);
   color: var(--ink-black);
 }
+ /* Discord button — bottom-right corner of the popup, icon only. The
+  * panel itself is position: relative (set above) so absolute children
+  * anchor to the panel's padding box. The popup content rarely
+  * overflows on real-world screens so position: absolute is fine
+  * (panel max-height is 90dvh and content typically fits). */
  #victory-discord-btn {
-  /* Pinned to the viewport corner (overlay is fixed inset:0), not the
-   * scrolling panel content — otherwise it sits at the bottom of the
-   * scroll height and only appears when the player scrolls all the
-   * way down. */
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  width: 40px;
-  height: 40px;
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2908,7 +2911,6 @@ body[data-dragging="true"] #era-progress {
   gap: 0;
   text-decoration: none;
   font-weight: 400;
-  z-index: 5;
   transition: background 0.15s, border-color 0.15s, transform 0.12s;
 }
  #victory-discord-btn:hover {
@@ -2917,17 +2919,10 @@ body[data-dragging="true"] #era-progress {
   transform: translateY(-2px);
 }
  #victory-discord-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
 }
 
- .victory-auth-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 8px;
-}
  .victory-signin-btn {
   background: var(--accent);
   color: var(--vellum);
@@ -2944,28 +2939,6 @@ body[data-dragging="true"] #era-progress {
  .victory-signin-btn:hover {
   background: var(--accent-secondary);
   color: var(--ink-black);
-}
- .victory-share-btn {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  color: var(--accent-secondary);
-  border: 1px solid var(--accent-secondary);
-  border-radius: 2px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-}
- .victory-share-btn:hover {
-  background: var(--accent-secondary);
-  color: var(--ink-black);
-}
- .victory-share-btn svg {
-  width: 18px;
-  height: 18px;
 }
 
 /* ─────────────────────────────────────────────────────────────────────
