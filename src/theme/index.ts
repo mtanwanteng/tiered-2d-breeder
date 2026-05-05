@@ -30,7 +30,21 @@ export const THEMES: Record<string, Theme> = {
 
 export { bibliophile, curator, cartographer };
 
-let activeTheme: Theme = curator;
+/** App-wide default theme. Single source of truth for "what theme does a
+ *  brand-new player land on." Imported by:
+ *  - this module (initial activeTheme)
+ *  - src/settings.ts (defaults().themePreference)
+ *  - app/layout.tsx (SSR cookie fallback)
+ *  - app/api/settings/route.ts (pre-migration GET fallback)
+ *  - app/auth.ts (user.create.before hook → new user's themePreference)
+ *
+ *  The DB column's stored .default("bibliophile") in src/db/schema.ts is
+ *  the historical value frozen for migration stability — it is not the
+ *  app default. New rows get DEFAULT_THEME_NAME via the auth hook. */
+export const DEFAULT_THEME: Theme = curator;
+export const DEFAULT_THEME_NAME = DEFAULT_THEME.name;
+
+let activeTheme: Theme = DEFAULT_THEME;
 
 export function getTheme(): Theme {
   return activeTheme;

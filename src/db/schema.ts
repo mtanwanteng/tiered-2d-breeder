@@ -38,14 +38,18 @@ export const user = pgTable("user", {
     .notNull(),
   // Phase F theme switcher. Values are theme manifest names registered in
   // src/theme/index.ts THEMES (bibliophile | curator | cartographer).
-  // Validation lives in app code; the DB stores the raw string. The DB-side
-  // .default() is required so drizzle-kit push can backfill existing rows
-  // when this column is added; the $defaultFn covers the same value at
-  // insert time from the ORM (the existing settings columns follow the
-  // same pattern).
+  // Validation lives in app code; the DB stores the raw string.
+  //
+  // The DB-side .default() / $defaultFn here are the *historical* default
+  // at column-add time, kept frozen so existing rows backfill cleanly and
+  // drizzle-kit push doesn't churn the column on every app-default change.
+  // The current app default lives in src/theme/index.ts (DEFAULT_THEME_NAME)
+  // and is applied to *new* user rows by the user.create.before hook in
+  // app/auth.ts (it reads the player's `theme` cookie and falls back to
+  // DEFAULT_THEME_NAME).
   themePreference: text("theme_preference")
-    .default("curator")
-    .$defaultFn(() => "curator")
+    .default("bibliophile")
+    .$defaultFn(() => "bibliophile")
     .notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())

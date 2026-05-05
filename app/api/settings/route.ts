@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "../../auth";
 import { db } from "../../../src/db";
 import { user } from "../../../src/db/schema";
+import { DEFAULT_THEME_NAME } from "../../../src/theme";
 
 const VALID_THEMES = new Set(["bibliophile", "curator", "cartographer"]);
 
@@ -56,7 +57,7 @@ export async function GET(req: NextRequest) {
       .limit(1);
     const u = rows[0];
     if (!u) return NextResponse.json({ settings: null });
-    return NextResponse.json({ settings: { ...u, themePreference: "curator" } });
+    return NextResponse.json({ settings: { ...u, themePreference: DEFAULT_THEME_NAME } });
   }
 }
 

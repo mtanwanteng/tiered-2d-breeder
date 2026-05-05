@@ -10,7 +10,7 @@
 // theme preference also writes a `theme` cookie so SSR's first paint matches
 // the chosen theme on the next page load.
 
-import { setThemeByName } from "./theme";
+import { setThemeByName, DEFAULT_THEME_NAME } from "./theme";
 
 export interface SettingsState {
   prefersReducedMotion: boolean;
@@ -40,7 +40,7 @@ function defaults(): SettingsState {
     prefersTapToCommit: false,
     prefersHighContrast: false,
     roomToneEnabled: true, // default ON; spec §7 makes the room tone optional
-    themePreference: "curator",
+    themePreference: DEFAULT_THEME_NAME as SettingsState["themePreference"],
   };
 }
 
