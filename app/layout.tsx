@@ -7,7 +7,7 @@ import { PostHogProvider } from "./posthog-provider";
 import PostHogPageView from "./posthog-pageview";
 import { AuthProvider } from "./components/auth-provider";
 import { DiscordActivityProvider } from "./components/discord-activity-provider";
-import { THEMES, bibliophile } from "../src/theme";
+import { THEMES, curator } from "../src/theme";
 import { getFontStylesheetUrl } from "../src/theme/fontStylesheet";
 
 export const metadata: Metadata = {
@@ -32,13 +32,13 @@ export default async function RootLayout({
   children: ReactNode;
 }>) {
   // Phase F: SSR first paint reads the player's theme cookie set by
-  // src/settings.ts when they switch themes. Falls back to bibliophile for
+  // src/settings.ts when they switch themes. Falls back to curator for
   // first visits and rejects unknown values so a stale cookie can't poison
   // the render. Phase B's getTheme() runtime indirection still drives the
   // client-side dispatch; this just gets the right CSS scope on first paint.
   const cookieStore = await cookies();
   const cookieName = cookieStore.get("theme")?.value;
-  const theme = (cookieName && THEMES[cookieName]) ? THEMES[cookieName] : bibliophile;
+  const theme = (cookieName && THEMES[cookieName]) ? THEMES[cookieName] : curator;
   return (
     <html lang="en" data-theme={theme.name}>
       <head>

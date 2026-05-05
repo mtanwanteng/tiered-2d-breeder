@@ -44,8 +44,8 @@ export const user = pgTable("user", {
   // insert time from the ORM (the existing settings columns follow the
   // same pattern).
   themePreference: text("theme_preference")
-    .default("bibliophile")
-    .$defaultFn(() => "bibliophile")
+    .default("curator")
+    .$defaultFn(() => "curator")
     .notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())

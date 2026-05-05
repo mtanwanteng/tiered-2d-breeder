@@ -18,7 +18,7 @@ export interface SettingsState {
   prefersHighContrast: boolean;
   roomToneEnabled: boolean;
   /** Active theme preference. One of the registered theme names; arbitrary
-   *  strings are clamped to "bibliophile" on read so a renamed/removed theme
+   *  strings are clamped to the default on read so a renamed/removed theme
    *  doesn't lock the player into a broken state. */
   themePreference: "bibliophile" | "curator" | "cartographer";
 }
@@ -40,7 +40,7 @@ function defaults(): SettingsState {
     prefersTapToCommit: false,
     prefersHighContrast: false,
     roomToneEnabled: true, // default ON; spec §7 makes the room tone optional
-    themePreference: "bibliophile",
+    themePreference: "curator",
   };
 }
 

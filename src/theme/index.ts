@@ -1,7 +1,7 @@
-// Active theme registry. Bibliophile is the v1 default; Curator and
-// Cartographer are parallel themes registered from Phase D onward. The
-// indirection exists so future themes are a manifest swap, not a code rewrite.
-// See docs/design/bibliophile-spec.md §1 "Theme architecture" and
+// Active theme registry. Curator is the current default; Bibliophile and
+// Cartographer are parallel themes selectable from the Appearance picker.
+// The indirection exists so future themes are a manifest swap, not a code
+// rewrite. See docs/design/bibliophile-spec.md §1 "Theme architecture" and
 // docs/design/theming-architecture.md.
 
 import type { Theme } from "./Theme";
@@ -30,7 +30,7 @@ export const THEMES: Record<string, Theme> = {
 
 export { bibliophile, curator, cartographer };
 
-let activeTheme: Theme = bibliophile;
+let activeTheme: Theme = curator;
 
 export function getTheme(): Theme {
   return activeTheme;

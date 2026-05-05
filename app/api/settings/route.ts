@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
       .limit(1);
     const u = rows[0];
     if (!u) return NextResponse.json({ settings: null });
-    return NextResponse.json({ settings: { ...u, themePreference: "bibliophile" } });
+    return NextResponse.json({ settings: { ...u, themePreference: "curator" } });
   }
 }
 
