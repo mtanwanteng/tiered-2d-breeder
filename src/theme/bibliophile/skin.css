@@ -2729,11 +2729,20 @@ body[data-dragging="true"] #era-progress {
   filter: saturate(0.55) brightness(0.9);
   transition: filter 0.45s ease-out;
 }
+/* Once we leave "guide", fade the prompt out. The base .onboarding-try
+ * uses animation-fill-mode: forwards on its fade-in, which holds opacity
+ * at 0.92 and overrides any plain opacity:0 + transition rule. So we
+ * override with a second keyframe animation here — the animation
+ * shorthand resets the previous animation, and forwards-fill holds the
+ * faded-out state cleanly. */
 [data-onboarding="merging"] .onboarding-try,
 [data-onboarding="reveal"] .onboarding-try,
 [data-onboarding="done"] .onboarding-try {
-  opacity: 0;
-  transition: opacity 0.4s ease-out;
+  animation: onboarding-try-fade-out 400ms ease-out forwards;
+}
+@keyframes onboarding-try-fade-out {
+  from { opacity: 0.92; }
+  to   { opacity: 0; }
 }
 /* Frame "done" — fade the reveal narrative out in place instead of mounting
  * a fresh full-screen vellum overlay (which used to flash because its own
