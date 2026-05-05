@@ -4880,8 +4880,13 @@ function openRetirementOverlay(
     overlay.addEventListener("click", onBackdrop);
     document.addEventListener("keydown", onKey);
     if (mode === "show-collection") {
-      releaseBtn?.addEventListener("click", onRelease);
+      // Below cap — Continue is the only action (default-keep the new tile).
       continueBtn?.addEventListener("click", onContinue);
+    } else {
+      // At cap — the player normally press-and-holds an old tile to retire
+      // it, but the Release button is an out: sacrifice the just-bound
+      // tile instead so the existing collection stays intact.
+      releaseBtn?.addEventListener("click", onRelease);
     }
 
     // Fetch the library content, render the grid
@@ -5171,14 +5176,13 @@ async function commitBindCeremony() {
 
   // After every bind, surface the player's growing collection so they can
   // see what they're adding to. Two modes:
-  //   library-full → spec §3.6 retirement ceremony (existing behavior).
-  //     Player must press-and-hold an old tile to make room. Cancelling
-  //     reverts the bind so they can re-pick a different tile.
-  //   show-collection → grid is visible but tiles are not interactive.
-  //     A "Continue" button keeps the new tile (default — backdrop tap or
-  //     ESC also count as keep). A "Release this tile to the world" button
-  //     dissolves the new tile and skips the persist path so the cube ends
-  //     up bound but with no kept idea-tile inside.
+  //   library-full → at cap. Player either press-and-holds an old tile
+  //     to retire it (existing — spec §3.6) OR clicks "Release this tile
+  //     to the world" to sacrifice the just-bound tile instead so the
+  //     existing collection stays intact. Backdrop tap reverts the bind.
+  //   show-collection → below cap. Grid is visible but tiles are not
+  //     interactive. A "Continue" button keeps the new tile (default —
+  //     backdrop tap or ESC also count as keep).
   if (pendingEraIdeaTile) {
     const libraryFull = await isLibraryFullForRetirement();
     const overlayMode: RetirementMode = libraryFull ? "library-full" : "show-collection";

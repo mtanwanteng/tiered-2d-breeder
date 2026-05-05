@@ -1913,10 +1913,14 @@ body[data-dragging="true"] #era-progress {
   /* Empty in show-collection mode; collapse the backdrop strip too. */
   display: none;
 }
- #retirement-overlay[data-mode="library-full"] #retirement-actions {
-  /* The continue/release pair is only meaningful in show-collection mode.
-   * library-full keeps the existing "press-and-hold to retire" gesture
-   * on the grid as the only commit affordance. */
+ /* Per-mode button visibility. show-collection has Continue (the new
+  * tile is being added; player just acknowledges). library-full has
+  * Release (an opt-out from retiring an old tile — sacrifice the new
+  * bind instead). */
+ #retirement-overlay[data-mode="show-collection"] #retirement-release-btn {
+  display: none;
+}
+ #retirement-overlay[data-mode="library-full"] #retirement-continue-btn {
   display: none;
 }
  #retirement-overlay[data-mode="show-collection"] .retire-tile {
