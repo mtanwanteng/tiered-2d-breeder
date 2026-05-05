@@ -143,7 +143,7 @@ export const cartographer: Theme = {
       "— an atlas is what we have charted. press a pin to return its place to the world.",
     slotPrompts: {
       saveTilePrompt: "// pin to your master map",
-      dropTileHint: "drop a find here",
+      dropTileHint: "drop your favorite find here",
       holdToBindPrompt: "press and hold to pin",
       tapToBindPrompt: "tap to pin",
     },

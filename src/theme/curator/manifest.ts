@@ -147,7 +147,7 @@ export const curator: Theme = {
       "— a collection is what we have chosen to keep. press a piece to send it onward.",
     slotPrompts: {
       saveTilePrompt: "FOR THE PERMANENT COLLECTION",
-      dropTileHint: "drop a piece here",
+      dropTileHint: "place your favorite piece here",
       holdToBindPrompt: "HOLD TO ADD",
       tapToBindPrompt: "TAP TO ADD",
     },

@@ -833,14 +833,18 @@ app.innerHTML = `
       </div>
     </div>
   </div>
-  <div id="retirement-overlay">
+  <div id="retirement-overlay" data-mode="library-full">
     <div id="retirement-modal">
       <div id="retirement-bound-tile-frame">
         <div id="retirement-bound-tile"></div>
       </div>
-      <h2 id="retirement-title">twenty-four spaces. one must yield.</h2>
+      <h2 id="retirement-title">six spaces. one must yield.</h2>
       <p id="retirement-prompt">press and hold a tile to give it back to the world</p>
       <div id="retirement-library-grid"></div>
+      <div id="retirement-actions">
+        <button id="retirement-release-btn" type="button">Release this tile to the world</button>
+        <button id="retirement-continue-btn" type="button">Continue</button>
+      </div>
     </div>
   </div>
   <button id="settings-btn" type="button" aria-label="Settings" title="Settings">⚙</button>
@@ -4769,14 +4773,47 @@ interface BoundTilePreview {
  *  library tile (→ "retired") or cancels (→ "cancelled"). Cancellation in
  *  Phase 4 minimum is via the ESC key or backdrop tap; the spec's "Don't keep
  *  this chapter" affordance can be wired later. */
-function openRetirementOverlay(boundPreview: BoundTilePreview): Promise<"retired" | "cancelled"> {
+type RetirementMode = "library-full" | "show-collection";
+type RetirementOutcome = "retired" | "released-bound" | "kept" | "cancelled";
+
+// Snapshot the static-template copy so library-full mode can restore the
+// strings after a prior show-collection open swapped them. Read once at
+// module load — DOM is populated by the time this evaluates.
+const ORIGINAL_RETIREMENT_TITLE =
+  document.getElementById("retirement-title")?.textContent?.trim() ?? "";
+const ORIGINAL_RETIREMENT_PROMPT =
+  document.getElementById("retirement-prompt")?.textContent?.trim() ?? "";
+
+function openRetirementOverlay(
+  boundPreview: BoundTilePreview,
+  mode: RetirementMode = "library-full",
+): Promise<RetirementOutcome> {
   return new Promise((resolve) => {
     const overlay = document.getElementById("retirement-overlay");
     const grid = document.getElementById("retirement-library-grid");
     const boundEl = document.getElementById("retirement-bound-tile");
+    const titleEl = document.getElementById("retirement-title");
+    const promptEl = document.getElementById("retirement-prompt");
+    const releaseBtn = document.getElementById("retirement-release-btn") as HTMLButtonElement | null;
+    const continueBtn = document.getElementById("retirement-continue-btn") as HTMLButtonElement | null;
     if (!overlay || !grid || !boundEl) {
       resolve("cancelled");
       return;
+    }
+
+    // Mode-conditional copy + affordance visibility. CSS keys off
+    // [data-mode] so the layout differences (hide title/prompt, show
+    // continue+release buttons in show-collection) don't need
+    // per-element class toggling.
+    overlay.setAttribute("data-mode", mode);
+    if (mode === "show-collection") {
+      if (titleEl) titleEl.textContent = "Added to your collection";
+      if (promptEl) promptEl.textContent = "";
+    } else {
+      // library-full — restore the static-template copy in case the
+      // overlay was previously opened in show-collection mode.
+      if (titleEl) titleEl.textContent = ORIGINAL_RETIREMENT_TITLE;
+      if (promptEl) promptEl.textContent = ORIGINAL_RETIREMENT_PROMPT;
     }
 
     // Render the new tile suspended above
@@ -4790,7 +4827,7 @@ function openRetirementOverlay(boundPreview: BoundTilePreview): Promise<"retired
     overlay.classList.add("visible");
 
     let settled = false;
-    const finish = (outcome: "retired" | "cancelled") => {
+    const finish = (outcome: RetirementOutcome) => {
       if (settled) return;
       settled = true;
       cleanup();
@@ -4799,14 +4836,42 @@ function openRetirementOverlay(boundPreview: BoundTilePreview): Promise<"retired
     };
 
     const onBackdrop = (e: MouseEvent) => {
-      if (e.target === overlay) finish("cancelled");
+      if (e.target !== overlay) return;
+      // In show-collection mode, tapping outside means "keep the new tile
+      // and continue" — the more common choice. In library-full mode,
+      // tapping outside cancels (revert bind, retry).
+      finish(mode === "show-collection" ? "kept" : "cancelled");
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") finish("cancelled");
+      if (e.key === "Escape") {
+        finish(mode === "show-collection" ? "kept" : "cancelled");
+      }
+    };
+    const onContinue = () => finish("kept");
+    const onRelease = async () => {
+      if (settled) return;
+      // Dissolve the bound preview the same way commitRetirement dissolves
+      // a library tile, then resolve as released-bound. The caller skips
+      // the persist path so the tile never reaches the library.
+      const dissolve = boundEl.animate(
+        [
+          { opacity: 1, filter: "blur(0px) grayscale(0)", transform: "scale(1)" },
+          { opacity: 0.55, filter: "blur(2.5px) grayscale(0.35)", transform: "scale(0.95)", offset: 0.45 },
+          { opacity: 0, filter: "blur(7px) grayscale(0.7)", transform: "scale(0.85)" },
+        ],
+        { duration: 1100, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" },
+      );
+      await Promise.all([
+        new Promise<void>((r) => { dissolve.onfinish = () => r(); dissolve.oncancel = () => r(); }),
+        playInkPointDispersal({ target: boundEl, count: 9, durationMs: 1400 }),
+      ]);
+      finish("released-bound");
     };
     const cleanup = () => {
       overlay.removeEventListener("click", onBackdrop);
       document.removeEventListener("keydown", onKey);
+      releaseBtn?.removeEventListener("click", onRelease);
+      continueBtn?.removeEventListener("click", onContinue);
       if (retirementHoldHandle) {
         retirementHoldHandle.cancel();
         retirementHoldHandle = null;
@@ -4814,6 +4879,10 @@ function openRetirementOverlay(boundPreview: BoundTilePreview): Promise<"retired
     };
     overlay.addEventListener("click", onBackdrop);
     document.addEventListener("keydown", onKey);
+    if (mode === "show-collection") {
+      releaseBtn?.addEventListener("click", onRelease);
+      continueBtn?.addEventListener("click", onContinue);
+    }
 
     // Fetch the library content, render the grid
     void (async () => {
@@ -5100,29 +5169,43 @@ async function commitBindCeremony() {
   stopBindArrowIdleLoop();
   busy = true;
 
-  // Library full? Route into retirement ceremony before the era summary.
-  // Spec §2.3 / §3.6. The bound tile we just committed is captured here as a
-  // snapshot so the retirement overlay can display it; the snapshot stays in
-  // pendingEraIdeaTile so doEraTransition's existing persist path runs after
-  // the player chooses what to retire.
-  const libraryFull = await isLibraryFullForRetirement();
-  if (libraryFull && pendingEraIdeaTile) {
-    const outcome = await openRetirementOverlay({
-      name: pendingEraIdeaTile.name,
-      tier: pendingEraIdeaTile.tier,
-      emoji: pendingEraIdeaTile.emoji,
-      color: pendingEraIdeaTile.color,
-    });
-    if (outcome === "cancelled") {
-      // Player closed the overlay without retiring — restore game state and
-      // bail. The bind tile stays in slot at idle; chapter doesn't advance.
+  // After every bind, surface the player's growing collection so they can
+  // see what they're adding to. Two modes:
+  //   library-full → spec §3.6 retirement ceremony (existing behavior).
+  //     Player must press-and-hold an old tile to make room. Cancelling
+  //     reverts the bind so they can re-pick a different tile.
+  //   show-collection → grid is visible but tiles are not interactive.
+  //     A "Continue" button keeps the new tile (default — backdrop tap or
+  //     ESC also count as keep). A "Release this tile to the world" button
+  //     dissolves the new tile and skips the persist path so the cube ends
+  //     up bound but with no kept idea-tile inside.
+  if (pendingEraIdeaTile) {
+    const libraryFull = await isLibraryFullForRetirement();
+    const overlayMode: RetirementMode = libraryFull ? "library-full" : "show-collection";
+    const outcome = await openRetirementOverlay(
+      {
+        name: pendingEraIdeaTile.name,
+        tier: pendingEraIdeaTile.tier,
+        emoji: pendingEraIdeaTile.emoji,
+        color: pendingEraIdeaTile.color,
+      },
+      overlayMode,
+    );
+    if (overlayMode === "library-full" && outcome === "cancelled") {
+      // Player closed without retiring — restore game state and bail.
+      // The bind tile stays in slot at idle; chapter doesn't advance.
       busy = false;
       eraAdvancing = false;
-      pendingEraResult = result; // restore so a later commit can re-attempt
-      // Re-show the chart-era affordance + slot wrapper for retry
+      pendingEraResult = result;
       const w = document.getElementById("era-idea-slot-wrapper");
       if (w) w.removeAttribute("hidden");
       return;
+    }
+    if (outcome === "released-bound") {
+      // Skip the persist path entirely — the tile never enters the
+      // library. doEraTransition checks pendingEraIdeaTile to decide
+      // whether to call persistEraIdeaTile + record.ideaTilePick.
+      pendingEraIdeaTile = null;
     }
   }
 

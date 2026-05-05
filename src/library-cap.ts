@@ -8,4 +8,4 @@
 // the retirement-overlay triggers at this lower count instead of the real
 // cap. Flip back to LIBRARY_CAP to restore the full shelf.
 export const LIBRARY_CAP = 24;
-export const LIBRARY_DEMO_ACTIVE_SLOTS = 3;
+export const LIBRARY_DEMO_ACTIVE_SLOTS = 6;

@@ -1904,6 +1904,67 @@ body[data-dragging="true"] #era-progress {
   white-space: nowrap;
 }
 
+/* Mode-conditional layout. data-mode is set by openRetirementOverlay. */
+ #retirement-overlay[data-mode="show-collection"] #retirement-title {
+  /* Title still appears, but the show-collection copy is "Added to your
+   * collection" — keep the vellum strip backdrop from the prior commit. */
+}
+ #retirement-overlay[data-mode="show-collection"] #retirement-prompt {
+  /* Empty in show-collection mode; collapse the backdrop strip too. */
+  display: none;
+}
+ #retirement-overlay[data-mode="library-full"] #retirement-actions {
+  /* The continue/release pair is only meaningful in show-collection mode.
+   * library-full keeps the existing "press-and-hold to retire" gesture
+   * on the grid as the only commit affordance. */
+  display: none;
+}
+ #retirement-overlay[data-mode="show-collection"] .retire-tile {
+  /* Collection view — tiles are display-only, not interactive. */
+  cursor: default;
+  pointer-events: none;
+}
+ #retirement-overlay[data-mode="show-collection"] .retire-tile:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+ #retirement-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+ #retirement-continue-btn,
+ #retirement-release-btn {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+ #retirement-continue-btn {
+  background: var(--accent-secondary);
+  color: var(--ink-black);
+  border: 1px solid var(--accent-secondary);
+}
+ #retirement-continue-btn:hover {
+  background: var(--vellum);
+}
+ #retirement-release-btn {
+  background: transparent;
+  color: var(--vellum);
+  border: 1px solid var(--marble-warm);
+}
+ #retirement-release-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ─────────────────────────────────────────────────────────────────────
    VAULT PAGE — spine-only memorial of retired tiles. Spec §3.7.
    ───────────────────────────────────────────────────────────────────── */
