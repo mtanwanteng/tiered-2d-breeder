@@ -2190,6 +2190,14 @@ if (eraProgressForStrip) {
   eraProgressForStrip.addEventListener("scroll", updateEraStripPagination, { passive: true });
   new MutationObserver(updateEraStripPagination).observe(eraProgressForStrip, { childList: true });
   new ResizeObserver(updateEraStripPagination).observe(eraProgressForStrip);
+  // The objectives card sits above the strip in the grid; when it expands /
+  // collapses or its tier badge re-flows, the strip's vertical bbox shifts
+  // even though the strip itself hasn't resized. Watching #era-goals catches
+  // those reflows so the fixed-position chevrons re-anchor with the strip.
+  const eraGoalsForStrip = document.getElementById("era-goals");
+  if (eraGoalsForStrip) {
+    new ResizeObserver(updateEraStripPagination).observe(eraGoalsForStrip);
+  }
   // Window resize / orientation change: recompute viewport-relative top so
   // the fixed-position buttons stay aligned with the strip's bbox.
   window.addEventListener("resize", updateEraStripPagination);

@@ -1069,15 +1069,17 @@ body {
 }
  .tray-paginate[disabled],
  .era-strip-paginate[disabled] {
-  /* No opacity — the plaque must stay fully opaque so the underlying
-   * idea-tray rubber-band transform / chapter-strip cubes don't bleed
-   * through. The muted marble glyph and softer emboss carry the
-   * "disabled" read on their own. */
+  /* Disabled treatment matches .era-goals-paginate-btn[disabled] so all
+   * three edge paginators read as one chrome family at rest. Flat
+   * --bg-surface (instead of the active gradient + emboss), faint
+   * border, and text-tertiary glyph. No opacity — backgrounds must stay
+   * fully opaque so the rubber-band tile transform / chapter cubes
+   * don't bleed through the plaque. */
   cursor: default;
-  color: var(--marble-warm);
-  box-shadow:
-    inset 0 1px 0 rgba(201, 168, 95, 0.06),
-    0 1px 1px rgba(0, 0, 0, 0.25);
+  background: var(--bg-surface);
+  border-color: var(--border-faint);
+  color: var(--text-tertiary);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
 }
  .tray-paginate[hidden],
  .era-strip-paginate[hidden] {
@@ -1121,6 +1123,13 @@ body {
 }
 [data-theme="curator"] .tray-paginate[disabled],
 [data-theme="curator"] .era-strip-paginate[disabled] {
+  /* Already matches .era-goals-paginate-btn[disabled] via shared tokens —
+   * bg-surface + border-faint + text-tertiary. Background stays explicit
+   * here because the active rule paints var(--bg-surface) and the base
+   * disabled rule above also paints var(--bg-surface), so this is just a
+   * redundant guard against future drift. */
+  background: var(--bg-surface);
+  border-color: var(--border-faint);
   color: var(--text-tertiary);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
 }
@@ -1138,7 +1147,12 @@ body {
 }
 [data-theme="cartographer"] .tray-paginate[disabled],
 [data-theme="cartographer"] .era-strip-paginate[disabled] {
+  /* Cartographer's --bg-surface is dark; pair the flat plaque with the
+   * theme's marble-warm glyph for legible "disabled" feel while still
+   * matching the goals paginator's flat-surface treatment. */
   color: var(--marble-warm);
+  background: var(--bg-surface);
+  border-color: var(--border-faint);
 }
 
 /* The actual horizontal-scroll tile row.
