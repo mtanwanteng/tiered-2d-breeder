@@ -151,7 +151,7 @@ export const cartographer: Theme = {
       title: "Idea Collector",
       tagline: "Every find is a story.\nEvery story builds a territory.",
       chapterLabel: "— Leaf I —",
-      tryPrompt: "sketch.",
+      tryPrompt: "combine.",
       torchNarrative: "Light pushed back at the dark.",
       tapToBegin: "tap to begin",
     },

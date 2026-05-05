@@ -136,7 +136,7 @@ export const bibliophile: Theme = {
       "— a shelf is what we choose to keep here. press one to send it onward.",
     slotPrompts: {
       saveTilePrompt: "Save an idea tile for this era",
-      dropTileHint: "Drop a tile here",
+      dropTileHint: "Place your favorite here",
       holdToBindPrompt: "Press and hold to bind",
       tapToBindPrompt: "Tap to bind",
     },
@@ -144,7 +144,7 @@ export const bibliophile: Theme = {
       title: "Idea Collector",
       tagline: "Every idea is a story.\nEvery story builds a civilization.",
       chapterLabel: "— Chapter I —",
-      tryPrompt: "Try.",
+      tryPrompt: "Combine.",
       torchNarrative: "Light pushed back at the dark.",
       tapToBegin: "tap to begin",
     },

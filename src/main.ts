@@ -991,13 +991,15 @@ app.innerHTML = `
   </div>
   <div id="victory-overlay">
     <div id="victory-panel">
-      <h2>The Age of Plenty</h2>
-      <h3 class="victory-subtitle">Your civilization has transcended the ages</h3>
-      <p id="victory-narrative"></p>
-      <div id="victory-timeline"></div>
-      <div class="victory-actions">
-        <a id="victory-library-link" href="/library">Open the library</a>
-        <button id="victory-continue-btn">Continue</button>
+      <div id="victory-panel-scroll">
+        <h2>The Age of Plenty</h2>
+        <h3 class="victory-subtitle">Your civilization has transcended the ages</h3>
+        <p id="victory-narrative"></p>
+        <div id="victory-timeline"></div>
+        <div class="victory-actions">
+          <a id="victory-library-link" href="/library">Open the library</a>
+          <button id="victory-continue-btn">Continue</button>
+        </div>
       </div>
       <a id="victory-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer" aria-label="Join our Discord">${DISCORD_SVG}</a>
     </div>
@@ -4610,12 +4612,16 @@ function showVictory(narrative?: string) {
     .map((h, i) => renderEraCard(h, `victory-graph-${i}`))
     .join("");
 
-  // Inject auth section before actions
+  // Inject auth section before actions, INSIDE the scroll container
+  // so the auth row scrolls with the content (not a sibling of the
+  // sticky-corner discord button).
+  const victoryScroll = victoryPanel.querySelector("#victory-panel-scroll") as HTMLElement | null;
   const victoryActions = victoryPanel.querySelector(".victory-actions")!;
+  const insertParent = victoryScroll ?? victoryPanel;
   if (!document.getElementById("victory-auth-section")) {
     const authSection = document.createElement("div");
     authSection.id = "victory-auth-section";
-    victoryPanel.insertBefore(authSection, victoryActions);
+    insertParent.insertBefore(authSection, victoryActions);
   }
   updateVictoryAuthSection();
 

@@ -2860,8 +2860,26 @@ body[data-dragging="true"] #era-progress {
  * vocabulary instead of the legacy gilt-fill buttons. The Discord button
  * becomes a corner icon; the save (image-export) button moves into the
  * auth row alongside Sign in / ✓ Saved. */
+ /* Two-layer panel: outer #victory-panel is non-scrolling and serves as
+  * the visual frame + positioning anchor for the discord corner button.
+  * Inner #victory-panel-scroll holds the actual content and owns the
+  * overflow + padding. Without this split, the discord button (a
+  * direct child of the scroll container) anchored "bottom: 14px" via
+  * absolute positioning would sit at the bottom of the SCROLL HEIGHT,
+  * not the visible viewport — invisible until scrolled to. */
  #victory-panel {
-  position: relative; /* anchor for the discord corner button */
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+ #victory-panel-scroll {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0; /* allow flex item to shrink under panel max-height */
+  padding: 32px 40px;
+  text-align: center;
 }
  .victory-actions {
   display: flex;
@@ -2889,11 +2907,11 @@ body[data-dragging="true"] #era-progress {
   background: var(--accent-secondary);
   color: var(--ink-black);
 }
- /* Discord button — bottom-right corner of the popup, icon only. The
-  * panel itself is position: relative (set above) so absolute children
-  * anchor to the panel's padding box. The popup content rarely
-  * overflows on real-world screens so position: absolute is fine
-  * (panel max-height is 90dvh and content typically fits). */
+ /* Discord button — anchored bottom-right of the popup. It's a child
+  * of the OUTER #victory-panel (not inside #victory-panel-scroll), so
+  * absolute positioning here pins to the panel's padding box, which
+  * doesn't scroll. The button stays in the corner regardless of how
+  * far the player has scrolled the inner content. */
  #victory-discord-btn {
   position: absolute;
   bottom: 14px;
