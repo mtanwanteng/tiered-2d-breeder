@@ -155,7 +155,7 @@ export const curator: Theme = {
       title: "Idea Collector",
       tagline: "Every piece is a story.\nEvery story builds a collection.",
       chapterLabel: "— GALLERY I —",
-      tryPrompt: "COMBINE.",
+      tryPrompt: "Combine",
       torchNarrative: "Light pushed back at the dark.",
       tapToBegin: "tap to begin",
     },
