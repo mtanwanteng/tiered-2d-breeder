@@ -45,7 +45,7 @@ export async function POST(
       ph.capture({
         distinctId: userId ?? anonId ?? "anonymous",
         event: "era_idea_tile_retired",
-        properties: { app: "architect", tile_id: id },
+        properties: { app: "curator", tile_id: id },
       });
       await ph.shutdown();
     }

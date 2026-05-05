@@ -27,7 +27,9 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
     // Super-property attached to every event so this project's data is cleanly
     // separable from bari-playground's in the shared PostHog project.
-    posthog.register({ app: 'architect' })
+    // Renamed from 'architect' → 'curator' alongside the theme-default flip;
+    // server-side routes that capture events directly tag the same value.
+    posthog.register({ app: 'curator' })
   }, [])
 
   return <PHProvider client={posthog}>{children}</PHProvider>

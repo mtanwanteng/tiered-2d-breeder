@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       distinctId: userId ?? anonId ?? "anonymous",
       event: "era_idea_tile_picked",
       properties: {
-        app: "architect",
+        app: "curator",
         run_id: runId,
         era_name: eraName,
         tile_name: tileName,

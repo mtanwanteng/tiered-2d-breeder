@@ -100,7 +100,7 @@ Story: ${narrative}`;
         distinctId,
         event: "tapestry_generated",
         properties: {
-          app: "architect",
+          app: "curator",
           run_id: runId,
           era_name: eraName,
           next_era_name: nextEraName,
@@ -124,7 +124,7 @@ Story: ${narrative}`;
         distinctId: anonId ?? "anonymous",
         event: "tapestry_generation_error",
         properties: {
-          app: "architect",
+          app: "curator",
           run_id: runId,
           era_name: eraName,
           next_era_name: nextEraName,
