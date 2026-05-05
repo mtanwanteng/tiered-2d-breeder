@@ -4554,20 +4554,22 @@ function showEraToast(title: string, text: string, completedEra?: { eraName: str
 // compact (icon-only) when the user is a known Discord member; hidden in Activity.
 function setDiscordCta(el: HTMLElement | null) {
   if (!el) return;
+  // Inside the Discord embedded-app activity → hide entirely (no point
+  // linking back to the same place).
   if (isDiscordActivity()) {
     el.style.display = "none";
     return;
   }
   el.style.removeProperty("display");
-  if (authStore.getState().provider === "discord") {
-    el.innerHTML = DISCORD_SVG;
-    el.title = "Join our Discord server";
-    el.setAttribute("data-compact", "");
-  } else {
-    el.innerHTML = `${DISCORD_SVG} Join our Discord`;
-    el.title = "Join our Discord";
-    el.removeAttribute("data-compact");
-  }
+  // Icon-only on every surface — the corner button on the Age of Plenty
+  // popup is sized for a single SVG, no room for trailing text. The
+  // aria-label in the static HTML preserves the "Join our Discord"
+  // semantics for screen readers.
+  el.innerHTML = DISCORD_SVG;
+  el.title = authStore.getState().provider === "discord"
+    ? "Join our Discord server"
+    : "Join our Discord";
+  el.setAttribute("data-compact", "");
 }
 
 function updateVictoryAuthSection() {
