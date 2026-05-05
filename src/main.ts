@@ -999,8 +999,8 @@ app.innerHTML = `
         <a id="victory-library-link" href="/library">Open the library →</a>
         <button id="victory-continue-btn">Continue</button>
       </div>
-      <a id="victory-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer" aria-label="Join our Discord">${DISCORD_SVG}</a>
     </div>
+    <a id="victory-discord-btn" href="${DISCORD_INVITE}" target="_blank" rel="noopener noreferrer" aria-label="Join our Discord">${DISCORD_SVG}</a>
   </div>
   <div id="tapestry-overlay">
     <div id="tapestry-modal">

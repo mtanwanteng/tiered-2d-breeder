@@ -2837,10 +2837,13 @@ body[data-dragging="true"] #era-progress {
   font-family: var(--font-serif);
   font-style: italic;
   font-size: 14px;
-  color: var(--accent-secondary);
+  /* Vellum text instead of gilt — gilt-on-dark-leather was ~3:1 contrast,
+   * borderline. Vellum on dark reads cleanly. Gilt border still anchors
+   * the button visually as a peer of the oxblood-fill Continue. */
+  color: var(--vellum);
   border: 1px solid var(--accent-secondary);
   background: transparent;
-  padding: 8px 18px;
+  padding: 10px 18px;
   border-radius: 2px;
   text-decoration: none;
   letter-spacing: 0.4px;
@@ -2885,32 +2888,37 @@ body[data-dragging="true"] #era-progress {
   color: var(--ink-black);
 }
  #victory-discord-btn {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
+  /* Pinned to the viewport corner (overlay is fixed inset:0), not the
+   * scrolling panel content — otherwise it sits at the bottom of the
+   * scroll height and only appears when the player scrolls all the
+   * way down. */
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-faint);
+  background: rgba(88, 101, 242, 0.18);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 50%;
   padding: 0;
   gap: 0;
   text-decoration: none;
   font-weight: 400;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  z-index: 5;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
 }
  #victory-discord-btn:hover {
   background: #5865F2;
-  color: #fff;
   border-color: #5865F2;
+  transform: translateY(-2px);
 }
  #victory-discord-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
  .victory-auth-row {
