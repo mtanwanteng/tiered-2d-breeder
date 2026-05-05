@@ -4969,7 +4969,7 @@ function openRetirementOverlay(
         const data = (await r.json()) as { tiles?: LibraryEntry[] };
         const tiles = data.tiles ?? [];
         if (tiles.length === 0) {
-          grid.innerHTML = `<p class="retire-loading">Your library is empty — nothing to retire.</p>`;
+          grid.innerHTML = `<p class="retire-loading">Your library is empty</p>`;
           return;
         }
         grid.innerHTML = tiles
