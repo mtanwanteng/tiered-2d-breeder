@@ -842,7 +842,6 @@ app.innerHTML = `
       <p id="retirement-prompt">press and hold a tile to give it back to the world</p>
       <div id="retirement-library-grid"></div>
       <div id="retirement-actions">
-        <button id="retirement-release-btn" type="button">Release this tile to the world</button>
         <button id="retirement-continue-btn" type="button">Continue</button>
       </div>
     </div>
@@ -4794,7 +4793,6 @@ function openRetirementOverlay(
     const boundEl = document.getElementById("retirement-bound-tile");
     const titleEl = document.getElementById("retirement-title");
     const promptEl = document.getElementById("retirement-prompt");
-    const releaseBtn = document.getElementById("retirement-release-btn") as HTMLButtonElement | null;
     const continueBtn = document.getElementById("retirement-continue-btn") as HTMLButtonElement | null;
     if (!overlay || !grid || !boundEl) {
       resolve("cancelled");
@@ -4815,6 +4813,16 @@ function openRetirementOverlay(
       if (titleEl) titleEl.textContent = ORIGINAL_RETIREMENT_TITLE;
       if (promptEl) promptEl.textContent = ORIGINAL_RETIREMENT_PROMPT;
     }
+
+    // Reset any leftover dissolve animation from a prior released-bound
+    // outcome — the animation runs with fill: forwards so the final
+    // state (opacity 0, blur, scale 0.85) was sticking on the element
+    // and the next bind's preview rendered invisible.
+    boundEl.getAnimations().forEach((a) => a.cancel());
+    boundEl.style.opacity = "1";
+    boundEl.style.filter = "none";
+    boundEl.style.transform = "";
+    boundEl.classList.remove("retire-tile--holding");
 
     // Render the new tile suspended above
     boundEl.innerHTML = `
@@ -4848,30 +4856,63 @@ function openRetirementOverlay(
       }
     };
     const onContinue = () => finish("kept");
-    const onRelease = async () => {
-      if (settled) return;
-      // Dissolve the bound preview the same way commitRetirement dissolves
-      // a library tile, then resolve as released-bound. The caller skips
-      // the persist path so the tile never reaches the library.
-      const dissolve = boundEl.animate(
-        [
-          { opacity: 1, filter: "blur(0px) grayscale(0)", transform: "scale(1)" },
-          { opacity: 0.55, filter: "blur(2.5px) grayscale(0.35)", transform: "scale(0.95)", offset: 0.45 },
-          { opacity: 0, filter: "blur(7px) grayscale(0.7)", transform: "scale(0.85)" },
-        ],
-        { duration: 1100, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" },
-      );
-      await Promise.all([
-        new Promise<void>((r) => { dissolve.onfinish = () => r(); dissolve.oncancel = () => r(); }),
-        playInkPointDispersal({ target: boundEl, count: 9, durationMs: 1400 }),
-      ]);
-      finish("released-bound");
+
+    // Press-and-hold on the bound preview itself releases it — same gesture
+    // grammar as press-and-hold on a library tile. Library-full mode only:
+    // below cap there's nothing to opt out of, so the preview is display-
+    // only. Mirrors the .retire-tile listener wired further down.
+    const onBoundPointerDown = (ev: PointerEvent) => {
+      if (settled || retirementHoldHandle) return;
+      ev.preventDefault();
+      boundEl.classList.add("retire-tile--holding");
+      retirementHoldHandle = startHoldArc({
+        target: boundEl,
+        durationMs: 2500,
+        parent: overlay,
+      });
+      const releaseHold = () => {
+        document.removeEventListener("pointerup", releaseHold);
+        document.removeEventListener("pointercancel", releaseHold);
+        if (!retirementHoldHandle) return;
+        const h = retirementHoldHandle;
+        h.cancel();
+        setTimeout(() => h.destroy(), 200);
+      };
+      document.addEventListener("pointerup", releaseHold);
+      document.addEventListener("pointercancel", releaseHold);
+      retirementHoldHandle.promise.then(async (outcome) => {
+        document.removeEventListener("pointerup", releaseHold);
+        document.removeEventListener("pointercancel", releaseHold);
+        const h = retirementHoldHandle;
+        retirementHoldHandle = null;
+        if (outcome !== "complete") {
+          boundEl.classList.remove("retire-tile--holding");
+          return;
+        }
+        h?.destroy();
+        // Dissolve the bound preview + ink-point dispersal (same as
+        // commitRetirement does for library tiles).
+        const dissolve = boundEl.animate(
+          [
+            { opacity: 1, filter: "blur(0px) grayscale(0)", transform: "scale(1)" },
+            { opacity: 0.55, filter: "blur(2.5px) grayscale(0.35)", transform: "scale(0.95)", offset: 0.45 },
+            { opacity: 0, filter: "blur(7px) grayscale(0.7)", transform: "scale(0.85)" },
+          ],
+          { duration: 1100, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" },
+        );
+        await Promise.all([
+          new Promise<void>((r) => { dissolve.onfinish = () => r(); dissolve.oncancel = () => r(); }),
+          playInkPointDispersal({ target: boundEl, count: 9, durationMs: 1400 }),
+        ]);
+        finish("released-bound");
+      });
     };
+
     const cleanup = () => {
       overlay.removeEventListener("click", onBackdrop);
       document.removeEventListener("keydown", onKey);
-      releaseBtn?.removeEventListener("click", onRelease);
       continueBtn?.removeEventListener("click", onContinue);
+      boundEl.removeEventListener("pointerdown", onBoundPointerDown);
       if (retirementHoldHandle) {
         retirementHoldHandle.cancel();
         retirementHoldHandle = null;
@@ -4883,10 +4924,10 @@ function openRetirementOverlay(
       // Below cap — Continue is the only action (default-keep the new tile).
       continueBtn?.addEventListener("click", onContinue);
     } else {
-      // At cap — the player normally press-and-holds an old tile to retire
-      // it, but the Release button is an out: sacrifice the just-bound
-      // tile instead so the existing collection stays intact.
-      releaseBtn?.addEventListener("click", onRelease);
+      // At cap — press-and-hold an old tile to retire it (existing path
+      // wired further down), OR press-and-hold the new bound preview to
+      // release it instead and keep the collection intact.
+      boundEl.addEventListener("pointerdown", onBoundPointerDown);
     }
 
     // Fetch the library content, render the grid

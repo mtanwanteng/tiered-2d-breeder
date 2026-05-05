@@ -1913,15 +1913,21 @@ body[data-dragging="true"] #era-progress {
   /* Empty in show-collection mode; collapse the backdrop strip too. */
   display: none;
 }
- /* Per-mode button visibility. show-collection has Continue (the new
-  * tile is being added; player just acknowledges). library-full has
-  * Release (an opt-out from retiring an old tile — sacrifice the new
-  * bind instead). */
- #retirement-overlay[data-mode="show-collection"] #retirement-release-btn {
+ /* Per-mode action visibility. show-collection has the Continue button
+  * (player acknowledges and advances). library-full has no buttons —
+  * commit affordances are press-and-hold on either an old library tile
+  * (retire it) or the bound preview itself (release the new tile). */
+ #retirement-overlay[data-mode="library-full"] #retirement-actions {
   display: none;
 }
- #retirement-overlay[data-mode="library-full"] #retirement-continue-btn {
-  display: none;
+ /* In library-full mode the bound preview is itself a press-and-hold
+  * release target — match the .retire-tile cursor + selection guards. */
+ #retirement-overlay[data-mode="library-full"] #retirement-bound-tile {
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
  #retirement-overlay[data-mode="show-collection"] .retire-tile {
   /* Collection view — tiles are display-only, not interactive. */
