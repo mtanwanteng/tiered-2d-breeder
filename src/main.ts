@@ -4033,14 +4033,18 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
   // Cancel any animation still applied to the panel (e.g. the page-turn
   // animation from the previous era's continue, which uses fill: "forwards"
   // and would otherwise leave the panel rotated/invisible on this open).
+  // Explicit values (not "") to override the cached animation effect
+  // immediately on browsers (Safari) that don't fully revert on cancel().
+  // A forced reflow flushes the override before content renders.
   const summaryPanel = document.getElementById("era-summary-panel");
   if (summaryPanel) {
     summaryPanel.getAnimations().forEach((a) => a.cancel());
-    summaryPanel.style.transform = "";
-    summaryPanel.style.opacity = "";
-    summaryPanel.style.filter = "";
+    summaryPanel.style.transform = "none";
+    summaryPanel.style.opacity = "1";
+    summaryPanel.style.filter = "none";
     summaryPanel.style.transformOrigin = "";
     summaryPanel.style.willChange = "";
+    void summaryPanel.offsetHeight;
   }
   // Defensively dismiss a pinned goal tooltip — its z-index sits above the
   // overlay, so a leftover pin would mask the spread.
@@ -4067,9 +4071,17 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
     const finish = () => {
       eraSummaryOverlay.classList.remove("visible");
       if (panel) {
+        // Cancel the page-turn animation explicitly so its fill:forwards
+        // effect (rotateY -90°/-180°, translateX -100%, opacity 0) doesn't
+        // linger and leak into the NEXT era's summary. Safari has been
+        // observed keeping the cached effect even after later cancel(),
+        // resulting in the next overlay opening with an invisible panel.
+        panel.getAnimations().forEach((a) => a.cancel());
         panel.style.transform = "";
         panel.style.opacity = "";
         panel.style.filter = "";
+        panel.style.transformOrigin = "";
+        panel.style.willChange = "";
       }
       // Restore the objectives card now that the next chapter begins —
       // showEraIdeaSlot collapsed it on bind to keep the header tidy.
