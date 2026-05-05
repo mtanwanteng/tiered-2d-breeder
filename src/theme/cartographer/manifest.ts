@@ -138,6 +138,7 @@ export const cartographer: Theme = {
     writingDeskHint: "Place two finds here to combine.",
     inventoryCaption: "// pinned discoveries",
     cardCatalogButton: "// discoveries →",
+    viewLibraryMenuItem: "Atlas",
     bariFirstWallFull:
       "— an atlas is what we have charted. press a pin to return its place to the world.",
     slotPrompts: {

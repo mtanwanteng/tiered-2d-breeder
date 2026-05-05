@@ -197,6 +197,9 @@ export interface ThemeCopy {
   inventoryCaption: string;
   /** Button label that opens the full Card Catalog modal */
   cardCatalogButton: string;
+  /** Menu entry label for the standalone /library route. Per-theme so
+   *  Bibliophile reads "Library", Curator "Collection", Cartographer "Atlas". */
+  viewLibraryMenuItem: string;
   /** Bari's single line of speech, fired once at first 24/24 retirement (spec §3.6) */
   bariFirstWallFull: string;
   /** Per-chapter idea-tile slot prompts shown above and inside the bind slot. */

@@ -786,6 +786,7 @@ app.innerHTML = `
     <div id="menu-overlay" hidden>
       <div id="menu-panel" role="menu" aria-label="Main menu">
         <button class="menu-item" role="menuitem" data-menu="scoreboard">Scoreboard</button>
+        <button class="menu-item" role="menuitem" data-menu="library" id="menu-item-library">${getTheme().copy.viewLibraryMenuItem}</button>
         <button class="menu-item" role="menuitem" data-menu="how-to-play">How to Play</button>
         <button class="menu-item" role="menuitem" data-menu="account" id="menu-item-account">Sign in</button>
         <hr class="menu-divider" aria-hidden="true">
@@ -2012,6 +2013,11 @@ menuOverlay.addEventListener("click", (e) => {
     case "scoreboard":
       // Existing #scoreboard-btn carries the open-on-click handler.
       document.getElementById("scoreboard-btn")?.click();
+      break;
+    case "library":
+      // Standalone library route — themed label per manifest
+      // (Library / Collection / Atlas).
+      window.location.href = "/library";
       break;
     case "how-to-play":
       authStore.getState().openHowToPlay?.();

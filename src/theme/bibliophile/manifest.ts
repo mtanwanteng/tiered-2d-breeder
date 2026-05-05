@@ -131,6 +131,7 @@ export const bibliophile: Theme = {
     // Canonical UI string is "Catalog →"; the longer "Card Catalog →" was the
     // initial copy and drifted out of sync with main.ts's DOM template.
     cardCatalogButton: "Catalog →",
+    viewLibraryMenuItem: "Library",
     bariFirstWallFull:
       "— a shelf is what we choose to keep here. press one to send it onward.",
     slotPrompts: {

@@ -142,6 +142,7 @@ export const curator: Theme = {
     writingDeskHint: "Place two pieces here to combine.",
     inventoryCaption: "Collection",
     cardCatalogButton: "Collection →",
+    viewLibraryMenuItem: "Collection",
     bariFirstWallFull:
       "— a collection is what we have chosen to keep. press a piece to send it onward.",
     slotPrompts: {
