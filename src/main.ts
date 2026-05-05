@@ -4110,6 +4110,10 @@ function showEraSummary(record: EraHistory, nextEraName: string, nextNarrative: 
   narrativeEl.textContent = "";
 
   eraSummaryOverlay.classList.add("visible");
+  // Reset scroll position so each new summary opens at the top — the panel
+  // is re-used across eras and otherwise inherits the previous summary's
+  // scrollTop (often near-bottom after the player read the narrative).
+  if (summaryPanel) summaryPanel.scrollTop = 0;
 
   // Paper rustle on the summary spread arriving (spec §7).
   audio.playPaperRustle();

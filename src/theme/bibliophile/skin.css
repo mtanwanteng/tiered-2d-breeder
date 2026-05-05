@@ -817,6 +817,14 @@ body {
   align-items: center;
   justify-content: flex-end;
   padding: 0 6px;
+  /* Match the inner .era-cube-idea touch-action so a touch on the cube
+   * margin (the area outside the absolute-positioned idea) also routes
+   * through JS instead of the browser's native pan-x. Without this,
+   * slightly-off-target taps on the cube edges land on a touch-action:
+   * auto surface, the browser commits to a horizontal scroll, momentum
+   * carries, and rapid drags start reading as scrolls. Strip-level
+   * scrolling still works via gaps + padding. */
+  touch-action: none;
   font-family: var(--font-serif);
   /* subtle leather chrome */
   box-shadow: inset 0 0 0 1px rgba(201, 168, 95, 0.08);
