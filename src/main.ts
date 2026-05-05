@@ -1007,6 +1007,36 @@ app.innerHTML = `
 
 const paletteItems = document.getElementById("palette-items")!;
 const workspace = document.getElementById("workspace")!;
+
+// --- Perf caches for the drag hot path -------------------------------------
+// handlePointerMove fires at 60-120Hz and previously called
+// workspace.getBoundingClientRect() per move (forces layout flush) and read
+// the era-idea-slot bbox per move when the slot was visible. Cache both;
+// invalidate on resize / scroll. Refresh once per drag at most.
+let cachedWorkspaceRect: DOMRect | null = null;
+let cachedSlotRect: DOMRect | null = null;
+function getCachedWorkspaceRect(): DOMRect {
+  if (!cachedWorkspaceRect) cachedWorkspaceRect = workspace.getBoundingClientRect();
+  return cachedWorkspaceRect;
+}
+function getCachedSlotRect(): DOMRect | null {
+  if (cachedSlotRect) return cachedSlotRect;
+  const slotEl = document.getElementById("era-idea-slot");
+  if (!slotEl) return null;
+  cachedSlotRect = slotEl.getBoundingClientRect();
+  return cachedSlotRect;
+}
+function invalidateRectCaches(): void {
+  cachedWorkspaceRect = null;
+  cachedSlotRect = null;
+}
+window.addEventListener("resize", invalidateRectCaches);
+window.addEventListener("scroll", invalidateRectCaches, { passive: true });
+
+// Track which workspace tiles currently carry an overlap-glow class so
+// clearAllGlow doesn't have to iterate the entire items[] array on every
+// pointermove. Set updated at every glow add/remove.
+const glowingItems = new Set<CombineItem>();
 // #chart-era-btn (legacy "Next Age →" / "Release" button) is dormant — kept
 // in the DOM as a disabled stub but no JS handle is taken on it. Hidden by
 // skin.css. The bind ceremony (era-idea-slot-wrapper + press-and-hold) is
@@ -3128,6 +3158,7 @@ if (selectFiveMode) {
     item.el.style.left = `${e.clientX - 36}px`;
     item.el.style.top = `${e.clientY - 36}px`;
     item.el.style.zIndex = "100";
+    document.body.setAttribute("data-dragging", "true");
   });
 }
 
@@ -3136,18 +3167,12 @@ if (selectFiveMode) {
 // sidebar regardless of stacking context. On drop they convert back to absolute.
 const handlePointerMove = (e: PointerEvent) => {
   if (!dragItem) return;
-  // Lock out native horizontal scroll on the inventory + chapter strip while
-  // a tile is in flight. Without this, a sideways finger can yank the strip
-  // out from under the dragged tile, which the browser interprets as
-  // pointercancel — the tile drops at its last position. CSS hooks the
-  // body[data-dragging] attribute to set overflow-x: hidden on those rows.
-  if (document.body.dataset.dragging !== "true") {
-    document.body.dataset.dragging = "true";
-  }
   dragItem.el.style.left = `${e.clientX - dragOffsetX}px`;
   dragItem.el.style.top = `${e.clientY - dragOffsetY}px`;
-  // Keep workspace-relative coords in sync for overlap detection
-  const rect = workspace.getBoundingClientRect();
+  // Keep workspace-relative coords in sync for overlap detection. The
+  // workspace bbox is cached and invalidated on resize/scroll; reading it
+  // per pointermove was forcing a layout flush each frame.
+  const rect = getCachedWorkspaceRect();
   dragItem.x = e.clientX - dragOffsetX - rect.left;
   dragItem.y = e.clientY - dragOffsetY - rect.top;
   updateOverlapGlow(dragItem);
@@ -3186,20 +3211,23 @@ function setWorkspaceCaption(text: string, revertAfterMs: number | null = null):
  *  handlePointerUp) so the gilt highlight predicts the real outcome. */
 function updateEraIdeaSlotHover(_clientX: number, _clientY: number): void {
   const wrapper = document.getElementById("era-idea-slot-wrapper");
-  const slotEl = document.getElementById("era-idea-slot");
-  if (!wrapper || !slotEl || !dragItem) return;
+  if (!wrapper || !dragItem) return;
   if (wrapper.hasAttribute("hidden") || pendingEraIdeaTile) {
-    slotEl.classList.remove("slot-hover");
+    document.getElementById("era-idea-slot")?.classList.remove("slot-hover");
     return;
   }
-  const slotRect = slotEl.getBoundingClientRect();
+  // Slot bbox cached for the duration of the drag — see getCachedSlotRect.
+  // Tile bbox still read live since the dragged tile is moving every frame.
+  const slotRect = getCachedSlotRect();
+  if (!slotRect) return;
   const tileRect = dragItem.el.getBoundingClientRect();
   const overlaps =
     tileRect.right >= slotRect.left &&
     tileRect.left <= slotRect.right &&
     tileRect.bottom >= slotRect.top &&
     tileRect.top <= slotRect.bottom;
-  slotEl.classList.toggle("slot-hover", overlaps);
+  const slotEl = document.getElementById("era-idea-slot");
+  if (slotEl) slotEl.classList.toggle("slot-hover", overlaps);
 }
 
 const handlePointerUp = (e: PointerEvent) => {
@@ -3405,6 +3433,7 @@ function spawnItem(data: ElementData, x: number, y: number): CombineItem {
     el.style.left = `${clientX - dragOffsetX}px`;
     el.style.top = `${clientY - dragOffsetY}px`;
     el.style.zIndex = "100";
+    document.body.setAttribute("data-dragging", "true");
   };
 
   el.addEventListener("pointerdown", (e) => {
@@ -3461,19 +3490,25 @@ function spawnItem(data: ElementData, x: number, y: number): CombineItem {
 
 // --- Overlap glow helpers ---
 function findOverlap(dragged: CombineItem): CombineItem | null {
+  // Squared-distance compare avoids the per-move sqrt; the result is
+  // exactly the same as the prior `< 48` check.
+  const r2 = 48 * 48;
   for (const other of items) {
     if (other.id === dragged.id) continue;
     const dx = dragged.x - other.x;
     const dy = dragged.y - other.y;
-    if (Math.sqrt(dx * dx + dy * dy) < 48) return other;
+    if (dx * dx + dy * dy < r2) return other;
   }
   return null;
 }
 
 function clearAllGlow() {
-  for (const item of items) {
+  // Iterate only the tiles we know are currently glowing instead of the
+  // entire items[] — saves an O(n) DOM walk per pointermove in late game.
+  for (const item of glowingItems) {
     item.el.classList.remove("glow-green", "glow-red", "combo-reject");
   }
+  glowingItems.clear();
 }
 
 function updateOverlapGlow(dragged: CombineItem) {
@@ -3488,6 +3523,8 @@ function updateOverlapGlow(dragged: CombineItem) {
     dragged.el.classList.add("glow-green");
     other.el.classList.add("glow-green");
   }
+  glowingItems.add(dragged);
+  glowingItems.add(other);
 }
 
 // --- Check if the dropped item overlaps another; if so, combine ---
@@ -3682,6 +3719,7 @@ function removeItem(item: CombineItem) {
   item.el.remove();
   const idx = items.indexOf(item);
   if (idx !== -1) items.splice(idx, 1);
+  glowingItems.delete(item);
   updateOnboardingPulses();
 }
 
@@ -3979,6 +4017,13 @@ async function doEraTransition(result: { narrative: string }) {
       showEraSummary(completedRecord!, nextEra.name, choice.narrative, async () => {
         for (const item of [...items]) removeItem(item);
         paletteItems.innerHTML = "";
+        // Reset scroll position so the new era's seeds aren't shifted off
+        // the visible-right edge by the previous era's retained scrollLeft.
+        // iOS Safari especially preserves scrollLeft across innerHTML wipes,
+        // and the resulting clipped-last-tile triggers a hover-flicker loop
+        // (tooltip overflow grows scrollWidth → tile slides → cursor leaves
+        //  → hover ends → repeat).
+        paletteItems.scrollLeft = 0;
         const newSeeds = eraManager.getSeeds();
         log.info("era", `Seeds: ${newSeeds.map((s) => s.name).join(", ")}`);
         for (const seed of newSeeds) addToPalette(seed, true);
@@ -4358,6 +4403,9 @@ function showEraIdeaSlot() {
   if (!wrapper) return;
   wrapper.removeAttribute("hidden");
   pendingEraIdeaTile = null;
+  // Slot bbox is about to change as the wrapper unhides; clear so the
+  // next drag's hover-test reads a fresh rect.
+  cachedSlotRect = null;
   // Collapse the objectives card so the bind slot has the header to itself —
   // the era is already won; the goals are just visual noise at this point.
   // Reopened on era-summary dismissal so the next chapter starts expanded.
@@ -4378,6 +4426,7 @@ function hideEraIdeaSlot() {
   const wrapper = document.getElementById("era-idea-slot-wrapper");
   if (wrapper) wrapper.setAttribute("hidden", "");
   pendingEraIdeaTile = null;
+  cachedSlotRect = null;
   stopBindArrowIdleLoop();
   renderEraIdeaSlot();
   // Restore the objectives card if showEraIdeaSlot collapsed it. The success
@@ -4958,6 +5007,7 @@ document.getElementById("era-idea-slot")?.addEventListener("pointerdown", (e) =>
     item.el.style.left = `${moveEvent.clientX - 36}px`;
     item.el.style.top = `${moveEvent.clientY - 36}px`;
     item.el.style.zIndex = "100";
+    document.body.setAttribute("data-dragging", "true");
 
     posthog.capture("bind_tile_dragged_out", { era_name: eraNameForAnalytics() });
   };
