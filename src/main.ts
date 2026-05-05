@@ -808,11 +808,9 @@ app.innerHTML = `
   <div id="workspace">
     <p id="workspace-caption">${getTheme().copy.workspaceCaption}</p>
     <p id="workspace-hint">${getTheme().copy.writingDeskHint}</p>
-    <div id="era-strip-row">
-      <button id="era-strip-prev" class="era-strip-paginate" hidden type="button" aria-label="Scroll chapter strip left">&#8249;</button>
-      <div id="era-progress"></div>
-      <button id="era-strip-next" class="era-strip-paginate" hidden type="button" aria-label="Scroll chapter strip right">&#8250;</button>
-    </div>
+    <button id="era-strip-prev" class="era-strip-paginate" hidden type="button" aria-label="Scroll chapter strip left">&#8249;</button>
+    <button id="era-strip-next" class="era-strip-paginate" hidden type="button" aria-label="Scroll chapter strip right">&#8250;</button>
+    <div id="era-progress"></div>
   </div>
   <div id="card-catalog-overlay">
     <div id="card-catalog-modal">
@@ -2096,6 +2094,13 @@ function updateEraStripPagination() {
   eraStripPrevBtn.disabled = eraProgressForStrip.scrollLeft <= 0;
   eraStripNextBtn.disabled =
     eraProgressForStrip.scrollLeft + eraProgressForStrip.clientWidth >= eraProgressForStrip.scrollWidth - 1;
+  // Vertically center the floating buttons on the strip's bbox so they
+  // hover at the chapter row regardless of where the workspace sits.
+  const rect = eraProgressForStrip.getBoundingClientRect();
+  const buttonHeight = eraStripPrevBtn.offsetHeight || 30;
+  const top = Math.max(8, rect.top + rect.height / 2 - buttonHeight / 2);
+  eraStripPrevBtn.style.top = `${top}px`;
+  eraStripNextBtn.style.top = `${top}px`;
 }
 
 eraStripPrevBtn?.addEventListener("click", () => {
@@ -2110,6 +2115,9 @@ if (eraProgressForStrip) {
   eraProgressForStrip.addEventListener("scroll", updateEraStripPagination, { passive: true });
   new MutationObserver(updateEraStripPagination).observe(eraProgressForStrip, { childList: true });
   new ResizeObserver(updateEraStripPagination).observe(eraProgressForStrip);
+  // Window resize / orientation change: recompute viewport-relative top so
+  // the fixed-position buttons stay aligned with the strip's bbox.
+  window.addEventListener("resize", updateEraStripPagination);
   requestAnimationFrame(updateEraStripPagination);
 }
 

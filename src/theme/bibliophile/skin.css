@@ -789,20 +789,8 @@ body {
    STRIP (kept tiles row) — 4 states with binding stripes + Roman numerals
    ───────────────────────────────────────────────────────────────────── */
 
-/* Wrapper that hosts the chapter strip + its prev/next paginate buttons.
- * Mirror of #idea-tray-row from the inventory: 3-column grid (auto 1fr auto)
- * so the buttons take their natural width and the scroll surface fills the
- * middle. The buttons sit OUTSIDE the scrollable container so they don't
- * scroll with the content. */
- #era-strip-row {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: stretch;
-  position: relative;
-  z-index: 5;
-}
-
  #era-progress {
+  grid-area: strip;
   position: static;
   background: transparent;
   padding: 6px 18px;
@@ -813,7 +801,7 @@ body {
   overflow-y: hidden;
   scrollbar-width: none;
   pointer-events: auto;
-  min-width: 0;
+  z-index: 5;
 }
  #era-progress::-webkit-scrollbar { display: none; }
 
@@ -1085,6 +1073,21 @@ body {
  .era-strip-paginate[hidden] {
   display: none;
 }
+
+/* Era-strip pagination buttons float at the viewport edges (not in-flow
+ * with the strip), so they don't take horizontal space inside the
+ * workspace. JS sets `top` per render to vertically center on the strip's
+ * bbox, mirroring the goals-paginator pattern. */
+ .era-strip-paginate {
+  position: fixed;
+  top: 0; /* JS overrides */
+  width: 22px;
+  height: 30px;
+  align-self: auto;
+  z-index: 6;
+}
+ #era-strip-prev { left: 0; }
+ #era-strip-next { right: 0; }
 
 /* Curator: invert the leather-plaque chrome — oxblood-on-dark-grey was
  * unreadable (~2:1). Curator's vocabulary is light card + dark ink, so the
