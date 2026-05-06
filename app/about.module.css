@@ -1,0 +1,88 @@
+/* Always Hungry Games — About page.
+   Dark background to match the privacy/terms pages; less constrained
+   than the legal-page card so future sections can be added top-down. */
+
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #080d14;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 80px;
+  box-sizing: border-box;
+}
+
+.backLink {
+  display: block;
+  margin-bottom: 16px;
+  color: #5bc4e5;
+  text-decoration: none;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+  align-self: flex-start;
+  max-width: 760px;
+  width: 100%;
+}
+.backLink:hover { opacity: 1; }
+
+.content {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 24px;
+}
+
+.hero {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0 16px;
+}
+
+.logo {
+  width: clamp(min(360px, 100%), 60vw, 720px);
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.section {
+  background: #0d1b2e;
+  border: 1px solid #1d3550;
+  border-radius: 12px;
+  box-shadow: 0 12px 60px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  padding: 32px 40px;
+}
+
+.sectionTitle {
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a0bcd4;
+  margin: 0 0 16px;
+}
+
+.lead {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  line-height: 1.6;
+  color: #e8e8e8;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding: 24px 24px;
+  }
+  .lead {
+    font-size: 18px;
+  }
+}
