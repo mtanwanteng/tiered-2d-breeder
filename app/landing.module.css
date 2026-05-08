@@ -5,8 +5,13 @@
    a non-interactive sibling. */
 
 .page {
-  min-height: 100vh;
-  min-height: 100dvh;
+  /* The global body has `overflow: hidden` to lock the game viewport; the
+     landing page opts out by becoming its own fixed full-viewport scroll
+     container. Routes that re-import this module get their own scroll. */
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: #080d14;
   display: flex;
   flex-direction: column;
@@ -44,6 +49,14 @@
 }
 
 .card {
+  /* Cap each card at the same upper bound as the hero logo (720px). In the
+     3-column grid each cell is ~347px so the cap rarely kicks in there;
+     when the grid collapses to one column at narrow viewports it stops
+     stacked cards from sprawling beyond the logo's footprint. justify-self
+     centers the card inside its grid cell when narrower than the cell. */
+  width: 100%;
+  max-width: 720px;
+  justify-self: center;
   display: flex;
   flex-direction: column;
   background: #0d1b2e;
@@ -157,5 +170,13 @@ a.card:focus-visible {
 @media (max-width: 900px) {
   .prototypes {
     grid-template-columns: 1fr;
+  }
+
+  /* Below 900px the cards stack — collapse the logo's clamp to the same
+     fill-the-column rule the cards use so the logo and stacked cards
+     share a width. Both end up at min(content-width, 720px). */
+  .logo {
+    width: 100%;
+    max-width: 720px;
   }
 }
