@@ -15,6 +15,8 @@ interface Prototype {
   image?: string;
   caption: string;
   external?: boolean;
+  /** Optional platform / compatibility hint shown as a pill on the image. */
+  badge?: string;
 }
 
 const PROTOTYPES: Prototype[] = [
@@ -24,6 +26,7 @@ const PROTOTYPES: Prototype[] = [
     image: "/landing/playground.png",
     caption: "All things are possible",
     external: true,
+    badge: "Tablet / PC",
   },
   {
     name: "Bari the Architect",
@@ -68,7 +71,7 @@ export default function LandingPage() {
 }
 
 function PrototypeCard({ prototype }: { prototype: Prototype }) {
-  const { name, href, image, caption, external } = prototype;
+  const { name, href, image, caption, external, badge } = prototype;
   const isPlaceholder = href === "#";
 
   const inner = (
@@ -86,6 +89,11 @@ function PrototypeCard({ prototype }: { prototype: Prototype }) {
           <div className={styles.cardPlaceholder} aria-hidden="true">
             <span className={styles.cardPlaceholderText}>{name}</span>
           </div>
+        )}
+        {badge && (
+          <span className={styles.cardBadge} aria-label={`${badge} optimized`}>
+            {badge}
+          </span>
         )}
       </div>
       <div className={styles.cardBody}>
