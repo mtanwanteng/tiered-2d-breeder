@@ -1,0 +1,141 @@
+/* Always Hungry Games — Landing page.
+   Logo above a row of prototype cards (3 across on wide screens, stacking
+   to single column on narrow). Cards are anchor elements wrapping a
+   screenshot + name + caption; the disabled "Coming Soon" tile renders as
+   a non-interactive sibling. */
+
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #080d14;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 80px;
+  box-sizing: border-box;
+}
+
+.content {
+  width: 100%;
+  max-width: 1080px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 32px;
+}
+
+.hero {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0 8px;
+}
+
+.logo {
+  width: clamp(min(360px, 100%), 60vw, 720px);
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.prototypes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: #0d1b2e;
+  border: 1px solid #1d3550;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition:
+    transform 0.18s ease-out,
+    border-color 0.18s ease-out,
+    box-shadow 0.18s ease-out;
+}
+
+a.card:hover {
+  transform: translateY(-2px);
+  border-color: #2a5078;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+a.card:focus-visible {
+  outline: 2px solid #5bc4e5;
+  outline-offset: 2px;
+}
+
+.cardDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cardImageWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: #050a12;
+  overflow: hidden;
+}
+
+.cardImage {
+  object-fit: cover;
+}
+
+.cardPlaceholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(91, 196, 229, 0.08), transparent 60%),
+    linear-gradient(135deg, #0f2238 0%, #0a1726 100%);
+}
+
+.cardPlaceholderText {
+  font-family: system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5a7a99;
+}
+
+.cardBody {
+  padding: 18px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.cardTitle {
+  font-family: system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #e8e8e8;
+  margin: 0;
+}
+
+.cardCaption {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #a0bcd4;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .prototypes {
+    grid-template-columns: 1fr;
+  }
+}
