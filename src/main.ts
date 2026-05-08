@@ -2112,8 +2112,17 @@ menuOverlay.addEventListener("click", (e) => {
       break;
     case "account": {
       const s = authStore.getState();
-      if (s.isLoggedIn) void s.signOut?.();
-      else s.openLogin?.();
+      if (s.isLoggedIn) {
+        // Sign-out is destructive: the auth layer reloads the page, which
+        // discards in-memory game state and reverts to the saved slot for
+        // the now-anonymous identity (i.e. the run-in-progress for this
+        // browser is lost). Mirror handleRestart's confirm() pattern so
+        // the player has a chance to back out.
+        if (!confirm("Sign out? This will restart the game and current run progress will be lost.")) break;
+        void s.signOut?.();
+      } else {
+        s.openLogin?.();
+      }
       break;
     }
     case "restart":
