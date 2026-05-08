@@ -26,7 +26,7 @@ const PROTOTYPES: Prototype[] = [
     external: true,
   },
   {
-    name: "Bari",
+    name: "Bari the Architect",
     href: "https://bari.alwayshungrygames.com/",
     image: "/landing/architect.png",
     caption: "Guide your Civilization to the Age of Plenty",
@@ -34,8 +34,10 @@ const PROTOTYPES: Prototype[] = [
   },
   {
     name: "Curator",
-    href: "#",
+    href: "https://ideacollector.alwayshungrygames.com",
+    image: "/landing/ideacollector.png",
     caption: "Play, Create, Curate",
+    external: true,
   },
 ];
 
