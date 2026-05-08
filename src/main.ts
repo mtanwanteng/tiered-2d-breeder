@@ -2045,10 +2045,29 @@ const menuItemAccount = document.getElementById("menu-item-account") as HTMLButt
 const menuItemDebug = document.getElementById("menu-item-debug") as HTMLButtonElement | null;
 if (menuItemDebug && isLocalBuild) menuItemDebug.hidden = false;
 
+// Up to two leading characters from up to two whitespace-split words.
+// "Matt Tanwanteng" → "MT", "matt" → "M", "Mary Anne Smith" → "MA".
+function initialsFor(name: string | null | undefined): string {
+  if (!name) return "";
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 function syncMenuAccountLabel() {
   if (!menuItemAccount) return;
   const s = authStore.getState();
-  menuItemAccount.textContent = s.isLoggedIn ? "Sign out" : "Sign in";
+  if (s.isLoggedIn) {
+    const initials = initialsFor(s.name);
+    menuItemAccount.innerHTML = initials
+      ? `Sign out <span class="menu-account-initials" aria-label="${esc(s.name ?? "")}" title="${esc(s.name ?? "")}">${esc(initials)}</span>`
+      : "Sign out";
+  } else {
+    menuItemAccount.textContent = "Sign in";
+  }
 }
 syncMenuAccountLabel();
 authStore.subscribe(syncMenuAccountLabel);

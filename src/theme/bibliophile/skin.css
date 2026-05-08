@@ -178,6 +178,29 @@ body {
   letter-spacing: 1px;
   text-transform: uppercase;
 }
+/* Initials chip rendered next to "Sign out" so the player sees which
+ * account they're signed in under without expanding to the full name.
+ * Small oxblood-bordered pill, accent-secondary text, sans-serif so it
+ * reads as a chip not part of the italic menu copy. */
+ .menu-account-initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  margin-left: 8px;
+  padding: 0 5px;
+  border: 1px solid var(--accent);
+  border-radius: 9px;
+  background: rgba(122, 62, 42, 0.08);
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  vertical-align: middle;
+}
  .menu-divider {
   border: none;
   border-top: 1px solid var(--leather-deep);
