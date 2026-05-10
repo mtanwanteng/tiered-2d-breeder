@@ -14,6 +14,9 @@ interface Prototype {
    *  styled placeholder so the page works before final art lands. */
   image?: string;
   caption: string;
+  /** Longer explanatory blurb rendered below the caption — what the
+   *  prototype is and what we're trying to learn from it. */
+  instructions?: string;
   external?: boolean;
   /** Optional platform / compatibility hint shown as a pill on the image. */
   badge?: string;
@@ -25,6 +28,8 @@ const PROTOTYPES: Prototype[] = [
     href: "https://playground.alwayshungrygames.com",
     image: "/landing/playground.png",
     caption: "All things are possible",
+    instructions:
+      "Lay out / combine tiles in the map area to create a diorama. We're looking to capture the feeling of building with LEGOs in this experience!",
     external: true,
     badge: "Tablet / PC",
   },
@@ -33,6 +38,8 @@ const PROTOTYPES: Prototype[] = [
     href: "https://bari.alwayshungrygames.com/",
     image: "/landing/architect.png",
     caption: "Guide your Civilization to the Age of Plenty",
+    instructions:
+      "Our earliest prototype, capturing the fun and exploration of Infinite Craft-style idea combination to progress!",
     external: true,
   },
   {
@@ -40,6 +47,8 @@ const PROTOTYPES: Prototype[] = [
     href: "https://ideacollector.alwayshungrygames.com",
     image: "/landing/ideacollector.png",
     caption: "Play, Create, Curate",
+    instructions:
+      "A themed recreation of Bari emphasizing thoughtfulness, collection, and curation of your idea tiles. Suitable for mobile play!",
     external: true,
   },
 ];
@@ -60,6 +69,11 @@ export default function LandingPage() {
           />
         </header>
 
+        <p className={styles.intro}>
+          We&apos;re in the process of making various prototypes to prove
+          out our ideas, feel free to try them out!
+        </p>
+
         <section className={styles.prototypes} aria-label="Prototypes">
           {PROTOTYPES.map((p) => (
             <PrototypeCard key={p.name} prototype={p} />
@@ -71,7 +85,7 @@ export default function LandingPage() {
 }
 
 function PrototypeCard({ prototype }: { prototype: Prototype }) {
-  const { name, href, image, caption, external, badge } = prototype;
+  const { name, href, image, caption, instructions, external, badge } = prototype;
   const isPlaceholder = href === "#";
 
   const inner = (
@@ -99,6 +113,9 @@ function PrototypeCard({ prototype }: { prototype: Prototype }) {
       <div className={styles.cardBody}>
         <h2 className={styles.cardTitle}>{name}</h2>
         <p className={styles.cardCaption}>{caption}</p>
+        {instructions && (
+          <p className={styles.cardInstructions}>{instructions}</p>
+        )}
       </div>
     </>
   );
