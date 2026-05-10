@@ -29,7 +29,7 @@ const PROTOTYPES: Prototype[] = [
     image: "/landing/playground.png",
     caption: "All things are possible",
     instructions:
-      "Lay out / combine tiles in the map area to create a diorama. We're looking to capture the feeling of building with LEGOs in this experience!",
+      "Lay out map area to create a map that takes spatial arrangements into account. You can combine tiles as well!",
     external: true,
     badge: "Tablet / PC",
   },
@@ -70,8 +70,8 @@ export default function LandingPage() {
         </header>
 
         <p className={styles.intro}>
-          We&apos;re in the process of making various prototypes to prove
-          out our ideas, feel free to try them out!
+          Ozmos to the Cosmos is our project to capture the Essence of building with LEGOs. We&apos;re in the process of making various prototypes to prove
+          out our ideas, feel free to try them out! 
         </p>
 
         <section className={styles.prototypes} aria-label="Prototypes">
