@@ -32,6 +32,7 @@
 // URL (acceptable degradation).
 
 import { useEffect, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import posthog from "posthog-js";
@@ -91,13 +92,30 @@ export function TrackedPrototypeCard({ prototype }: { prototype: Prototype }) {
   // Rewrite the href to include the visitor's PostHog distinct_id once the
   // SDK has initialised. Initial render uses the bare href so SSR output
   // matches the client's first paint (no hydration mismatch); useEffect
-  // upgrades it after mount. Middle-click / cmd-click then carry the param
-  // even though onClick wouldn't have a chance to mutate the URL.
+  // upgrades it after mount.
   const [navHref, setNavHref] = useState(href);
   useEffect(() => {
     if (isPlaceholder) return;
     setNavHref(withDistinctId(href));
   }, [href, isPlaceholder]);
+
+  // Just-in-time refresh on activation. The state-managed navHref above
+  // catches the common case (PostHog initialised before the user clicks),
+  // but for a logged-in player who clicks within the brief window between
+  // page load and AuthProvider's posthog.identify(userId) call, the
+  // distinct_id may be PostHog's auto-UUID instead of their stable userId.
+  // Refreshing the anchor's href synchronously on pointerdown / Enter
+  // captures the freshest distinct_id at the moment of navigation —
+  // covers left, middle, cmd-click, right-click-open-in-new-tab, and
+  // keyboard activation alike.
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const refreshHref = () => {
+    if (isPlaceholder || !linkRef.current) return;
+    linkRef.current.href = withDistinctId(href);
+  };
+  const handleKeyDown = (e: ReactKeyboardEvent<HTMLAnchorElement>) => {
+    if (e.key === "Enter" || e.key === " ") refreshHref();
+  };
 
   const handleClick = () => {
     if (isPlaceholder) return;
@@ -151,8 +169,11 @@ export function TrackedPrototypeCard({ prototype }: { prototype: Prototype }) {
 
   return (
     <a
+      ref={linkRef}
       className={styles.card}
       href={navHref}
+      onPointerDown={refreshHref}
+      onKeyDown={handleKeyDown}
       onClick={handleClick}
       {...(external
         ? { target: "_blank", rel: "noopener noreferrer" }
