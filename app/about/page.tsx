@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className={styles.page}>
-      <Link href="/" className={styles.backLink}>← back to home</Link>
+      <Link href="/landing" className={styles.backLink}>← back to home</Link>
 
       <main className={styles.content}>
         <header className={styles.hero}>
