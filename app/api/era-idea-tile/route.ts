@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
         app: "curator",
         run_id: runId,
         era_name: eraName,
+        tile_id: id,
         tile_name: tileName,
         tile_tier: tileTier,
       },

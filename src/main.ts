@@ -5304,6 +5304,20 @@ async function commitBindCeremony() {
       return;
     }
     if (outcome === "released-bound") {
+      // The tile never enters the library, so there's no /api/era-idea-tile
+      // POST and no server-side `era_idea_tile_picked`. Capture client-side
+      // so PostHog can list these alongside picked / retired and so the
+      // sacrificed-at-bind path is visible in the funnel. `overlay_mode`
+      // distinguishes the at-cap library-full path from the show-collection
+      // voluntary release (currently library-full only, but kept explicit
+      // for future-proofing).
+      posthog.capture("era_idea_tile_retired_at_bind", {
+        era_name: eraNameForAnalytics(),
+        run_id: runId,
+        tile_name: pendingEraIdeaTile.name,
+        tile_tier: pendingEraIdeaTile.tier,
+        overlay_mode: overlayMode,
+      });
       // Skip the persist path entirely — the tile never enters the
       // library. doEraTransition checks pendingEraIdeaTile to decide
       // whether to call persistEraIdeaTile + record.ideaTilePick.

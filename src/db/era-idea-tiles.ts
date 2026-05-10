@@ -132,22 +132,36 @@ export async function getVaultForOwner(input: {
   }));
 }
 
-/** Retire a bound tile. Owner-checked: returns false if the row doesn't exist
- *  or doesn't belong to this owner. Idempotent — retiring an already-retired
- *  tile is a no-op (the WHERE clause requires retired_at IS NULL). */
+/** Retire a bound tile. Owner-checked: returns null if the row doesn't
+ *  exist or doesn't belong to this owner. Idempotent — retiring an
+ *  already-retired tile is a no-op (the WHERE clause requires retired_at
+ *  IS NULL). On success returns the retired row's identifying fields so
+ *  callers (e.g. the API route's PostHog capture) can tag the event with
+ *  tile_name / era_name / run_id without a second SELECT. */
+export interface RetiredEraIdeaTile {
+  id: string;
+  tileName: string;
+  eraName: string;
+  runId: string | null;
+}
 export async function retireEraIdeaTile(input: {
   id: string;
   userId: string | null;
   anonId: string | null;
-}): Promise<boolean> {
+}): Promise<RetiredEraIdeaTile | null> {
   const filter = ownerFilter(input);
-  if (!filter) return false;
+  if (!filter) return null;
   const result = await db
     .update(eraIdeaTile)
     .set({ retiredAt: sql`NOW()` })
     .where(and(filter, eq(eraIdeaTile.id, input.id), isNull(eraIdeaTile.retiredAt)))
-    .returning({ id: eraIdeaTile.id });
-  return result.length > 0;
+    .returning({
+      id: eraIdeaTile.id,
+      tileName: eraIdeaTile.tileName,
+      eraName: eraIdeaTile.eraName,
+      runId: eraIdeaTile.runId,
+    });
+  return result[0] ?? null;
 }
 
 /** True when the player has already accumulated >= 24 non-retired bound tiles —

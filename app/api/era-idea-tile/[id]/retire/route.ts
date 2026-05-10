@@ -33,8 +33,8 @@ export async function POST(
   }
 
   try {
-    const ok = await retireEraIdeaTile({ id, userId, anonId });
-    if (!ok) {
+    const retired = await retireEraIdeaTile({ id, userId, anonId });
+    if (!retired) {
       // Either the row doesn't exist, doesn't belong to this owner, or was
       // already retired. We don't differentiate (don't leak existence).
       return NextResponse.json({ ok: true, retired: false });
@@ -45,7 +45,13 @@ export async function POST(
       ph.capture({
         distinctId: userId ?? anonId ?? "anonymous",
         event: "era_idea_tile_retired",
-        properties: { app: "curator", tile_id: id },
+        properties: {
+          app: "curator",
+          tile_id: retired.id,
+          tile_name: retired.tileName,
+          era_name: retired.eraName,
+          run_id: retired.runId,
+        },
       });
       await ph.shutdown();
     }
