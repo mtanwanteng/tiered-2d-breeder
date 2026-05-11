@@ -20,7 +20,7 @@ const PROTOTYPES: Prototype[] = [
     image: "/landing/playground.png",
     caption: "All things are possible",
     instructions:
-      "Lay out map area to create a map that takes spatial arrangements into account. You can combine tiles as well!",
+      "Lay out tiles in the map area to create a map that takes spatial arrangements into account. You can combine tiles as well!",
     external: true,
     badge: "Tablet / PC",
   },
