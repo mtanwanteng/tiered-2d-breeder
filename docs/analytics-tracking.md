@@ -62,7 +62,7 @@
 | Which palette items do players ignore? | `tile_spawned` by `item` — items with low spawn rate | Available |
 | How many combinations per era? | `combination_created` count grouped by `era_name` | Available |
 | What's the discovery rate? | `item_discovered` / `combination_created` ratio | Available |
-| How often do players repeat known combos? | `is_cache_hit` on `combination_created` | Available |
+| How often do players repeat known combos? | `cache_hit` on `combination_created` | Available |
 | What tier are most combinations? | `result_tier` on `combination_created` | Available |
 
 ### Timing / Attention
@@ -129,7 +129,7 @@
 | Model usage split | `model` on `ai_combination_requested` | Available |
 | **Cost per combination** | `input_tokens` + `output_tokens` on `ai_combination_requested` × per-model rate | Available |
 | **Cost per user per day** | Token cost × `ai_combination_requested` per user per day | Available |
-| Cache hit savings | `is_cache_hit` rate on `combination_created` × avoided API calls | Available — indirect |
+| Cache hit savings | `cache_hit` rate on `combination_created` × avoided API calls | Available — indirect |
 
 > **Token tracking**: `input_tokens` and `output_tokens` are captured on `ai_combination_requested`. The multiplier per 1K tokens varies by model and is available in Vertex pricing docs.
 
@@ -143,11 +143,11 @@
 |-------|------------|
 | `game_started` | `era_name` |
 | `game_resumed` | `era_name`, `combinations_so_far`, `items_discovered` |
-| `game_restarted` | `current_era`, `combinations_so_far` |
+| `game_restarted` | `era_name`, `combinations_so_far` |
 | `game_completed` | `total_eras`, `total_combinations`, `total_items_discovered` |
-| `combination_created` | `item_a`, `item_b`, `result`, `result_tier`, `is_cache_hit`, `model`, `era_name` |
+| `combination_created` | `parent_a`, `parent_b`, `result`, `result_tier`, `cache_hit`, `model`, `era_name` |
 | `item_discovered` | `item`, `tier`, `era_name` |
-| `era_advanced` | `from_era`, `to_era`, `era_number`, `combinations_in_era`, `items_discovered_in_era` |
+| `era_advanced` | `from_era_name`, `to_era_name`, `era_number`, `combinations_in_era`, `items_discovered_in_era` |
 | `model_changed` | `model` |
 | `scoreboard_opened` | — |
 | `tile_spawned` | `item`, `tier`, `era_name` |
@@ -166,7 +166,7 @@
 | Event | Distinct ID | Properties |
 |-------|-------------|------------|
 | `ai_combination_requested` | userId or anonId | `model`, `tier`, `era_name`, `run_id`, `input_tokens`, `output_tokens` |
-| `ai_combination_error` | `'anonymous'` | `model`, `error_type` |
+| `ai_combination_error` | `'anonymous'` | `model`, `tier`, `era_name`, `run_id`, `error_type` |
 | `ai_era_check_requested` | userId or anonId | `model`, `era_name`, `run_id`, `input_tokens`, `output_tokens` |
 | `ai_era_choose_requested` | userId or anonId | `model`, `era_name`, `run_id`, `input_tokens`, `output_tokens` |
 | `session_started` | real user ID | — |

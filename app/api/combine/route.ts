@@ -64,7 +64,18 @@ export async function POST(request: Request) {
 
     const ph = getPostHogClient();
     if (ph) {
-      ph.capture({ distinctId: 'anonymous', event: 'ai_combination_error', properties: { app: 'architect', model, error_type: String(error) } });
+      ph.capture({
+        distinctId: 'anonymous',
+        event: 'ai_combination_error',
+        properties: {
+          app: 'architect',
+          model,
+          tier,
+          era_name: eraName,
+          run_id: runId,
+          error_type: String(error),
+        },
+      });
       await ph.shutdown();
     }
 
