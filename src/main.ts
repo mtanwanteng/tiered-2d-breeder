@@ -660,7 +660,7 @@ function closeHeatmap() {
 const handleRestart = () => {
   if (!confirm("Start a new game? All progress will be lost.")) return;
   posthog.capture('game_restarted', {
-    current_era: eraManager.current.name,
+    era_name: eraManager.current.name,
     combinations_so_far: actionLog.length,
   });
   restarting = true;
@@ -1828,11 +1828,11 @@ async function combine(a: CombineItem, b: CombineItem) {
   const isFirstDiscovery = !paletteItems.querySelector(`[data-name="${elementData.name}"]`);
   addToPaletteIfNew(elementData);
   posthog.capture('combination_created', {
-    item_a: a.name,
-    item_b: b.name,
+    parent_a: a.name,
+    parent_b: b.name,
     result: elementData.name,
     result_tier: elementData.tier,
-    is_cache_hit: isCacheHit,
+    cache_hit: isCacheHit,
     model: selectedModel,
     era_name: eraNameForAnalytics(),
   });
@@ -2081,8 +2081,8 @@ async function doEraTransition(result: { narrative: string }) {
     if (nextEra) {
       log.info("era", `Era advanced to: ${nextEra.name}`);
       posthog.capture('era_advanced', {
-        from_era: fromEra,
-        to_era: nextEra.name,
+        from_era_name: fromEra,
+        to_era_name: nextEra.name,
         era_number: eraNumber,
         combinations_in_era: combinationsInEra,
         items_discovered_in_era: itemsDiscoveredInEra,
