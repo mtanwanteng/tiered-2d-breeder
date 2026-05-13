@@ -12,6 +12,9 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified")
     .$defaultFn(() => false)
     .notNull(),
+  isAnonymous: boolean("is_anonymous")
+    .$defaultFn(() => false)
+    .notNull(),
   image: text("image"),
   // Pre-auth anonymous ID from localStorage — used for PostHog merge debugging
   // and conversion funnel queries. Set on first OAuth sign-in if available.
