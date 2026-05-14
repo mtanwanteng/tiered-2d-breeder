@@ -12,6 +12,13 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified")
     .$defaultFn(() => false)
     .notNull(),
+  // Better Auth anonymous-plugin flag — set true for users who sign in
+  // anonymously, false for authed users. Present on the live DB and on
+  // master; restored here so drizzle-kit push on this branch doesn't
+  // prompt to drop the column.
+  isAnonymous: boolean("is_anonymous")
+    .$defaultFn(() => false)
+    .notNull(),
   image: text("image"),
   // Pre-auth anonymous ID from localStorage — used for PostHog merge debugging
   // and conversion funnel queries. Set on first OAuth sign-in if available.
