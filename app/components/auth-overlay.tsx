@@ -170,7 +170,6 @@ export function AuthOverlay() {
             {accountOpen && !isDiscordActivity() && (
               <div className="account-dropdown">
                 <div className="account-dropdown-tail" />
-                <div className="account-dropdown-name">{name}</div>
                 {confirmingSignOut ? (
                   <>
                     <p className="account-signout-warning">Progress will be lost</p>

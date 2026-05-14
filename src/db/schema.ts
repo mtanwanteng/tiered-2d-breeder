@@ -13,10 +13,14 @@ export const user = pgTable("user", {
     .$defaultFn(() => false)
     .notNull(),
   // Better Auth anonymous-plugin flag — set true for users who sign in
-  // anonymously, false for authed users. Present on the live DB and on
-  // master; restored here so drizzle-kit push on this branch doesn't
-  // prompt to drop the column.
+  // anonymously, false for authed users. .default(false) is required at
+  // the DB level so social-sign-in INSERTs from Better Auth's drizzle
+  // adapter (which doesn't know about this column unless the anonymous
+  // plugin is enabled) don't trip the NOT NULL constraint. $defaultFn
+  // handles ORM-driven inserts; .default() handles raw Better Auth
+  // inserts. Run drizzle-kit push after editing to ALTER the live DB.
   isAnonymous: boolean("is_anonymous")
+    .default(false)
     .$defaultFn(() => false)
     .notNull(),
   image: text("image"),
