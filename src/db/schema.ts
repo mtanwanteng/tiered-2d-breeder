@@ -31,20 +31,28 @@ export const user = pgTable("user", {
   lastActiveAt: timestamp("last_active_at"),
   // Bibliophile settings (Phase 7). Anonymous players store the same flags
   // in localStorage; on first sign-in the auth claim flow merges them onto
-  // the user row.
+  // the user row. DB-level .default() is required so drizzle-kit push can
+  // ALTER the column onto a populated table without data-loss prompts —
+  // existing rows get backfilled with the same defaults the app uses.
+  // The $defaultFn handles ORM-driven inserts; .default() handles raw SQL.
   seenFirstRetirementSpeech: boolean("seen_first_retirement_speech")
+    .default(false)
     .$defaultFn(() => false)
     .notNull(),
   prefersReducedMotion: boolean("prefers_reduced_motion")
+    .default(false)
     .$defaultFn(() => false)
     .notNull(),
   prefersTapToCommit: boolean("prefers_tap_to_commit")
+    .default(false)
     .$defaultFn(() => false)
     .notNull(),
   prefersHighContrast: boolean("prefers_high_contrast")
+    .default(false)
     .$defaultFn(() => false)
     .notNull(),
   roomToneEnabled: boolean("room_tone_enabled")
+    .default(true)
     .$defaultFn(() => true)
     .notNull(),
   // Phase F theme switcher. Values are theme manifest names registered in
