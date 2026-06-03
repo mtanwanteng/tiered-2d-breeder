@@ -4,6 +4,7 @@ const PROJECT_ID = process.env.GCP_PROJECT_ID || "sc-ai-innovation-lab-2-dev";
 const REGION = process.env.GCP_REGION || "us-central1";
 const VERTEX_BASE = `https://${REGION}-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${REGION}/publishers`;
 const SA_KEY_ENV = "GOOGLE_APPLICATION_CREDENTIALS_JSON";
+const API_KEY_ENV = "GOOGLE_API_KEY";
 
 export const COMBINE_SCHEMA = {
   type: "object" as const,
@@ -88,7 +89,26 @@ export const MODELS: Record<string, ModelConfig> = {
   "claude-haiku-4.5": { publisher: "anthropic", vertexModel: "claude-haiku-4-5-20251001" },
 };
 
+function vertexHeaders(token: string): Record<string, string> {
+  const apiKey = process.env[API_KEY_ENV];
+  if (apiKey) {
+    return {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey,
+    };
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+}
+
 export async function getAccessToken(): Promise<string> {
+  if (process.env[API_KEY_ENV]) {
+    return "";
+  }
+
   try {
     const auth = process.env[SA_KEY_ENV]
       ? new GoogleAuth({
@@ -126,10 +146,7 @@ export async function callGeminiImage(
   const url = `${VERTEX_BASE}/google/models/gemini-2.5-flash-image:generateContent`;
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
+    headers: vertexHeaders(token),
     body: JSON.stringify({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generation_config: {
@@ -159,10 +176,7 @@ export async function callGemini(
   const url = `${VERTEX_BASE}/google/models/${model}:generateContent`;
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
+    headers: vertexHeaders(token),
     body: JSON.stringify({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: {
@@ -200,10 +214,7 @@ export async function callClaude(
   const fieldList = fieldNames.map((field) => `"${field}"`).join(", ");
   const response = await fetch(url, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
+    headers: vertexHeaders(token),
     body: JSON.stringify({
       anthropic_version: "vertex-2023-10-16",
       max_tokens: 512,
