@@ -1,0 +1,258 @@
+/* Always Hungry Games — Prototypes page.
+   One entry per prototype: video → why / hypothesis / learnings.
+   Same dark palette as landing/about. */
+
+.page {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #080d14;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 80px;
+  box-sizing: border-box;
+}
+
+.backLink {
+  display: block;
+  margin-bottom: 16px;
+  color: #5bc4e5;
+  text-decoration: none;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+  align-self: flex-start;
+  max-width: 900px;
+  width: 100%;
+}
+.backLink:hover { opacity: 1; }
+
+.content {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 40px;
+}
+
+.hero {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0 8px;
+}
+
+.logo {
+  width: clamp(min(280px, 100%), 45vw, 560px);
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.intro {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 1.55;
+  text-align: center;
+  color: #c8d4df;
+}
+
+/* ── Prototype entry ─────────────────────────────────────── */
+
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.entry {
+  background: #0d1b2e;
+  border: 1px solid #1d3550;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ── Video slot ──────────────────────────────────────────── */
+
+.videoWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: #050a12;
+  overflow: hidden;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.videoPlaceholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(91, 196, 229, 0.06), transparent 60%),
+    linear-gradient(135deg, #0f2238 0%, #0a1726 100%);
+  color: #3a5a78;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ── Entry body ──────────────────────────────────────────── */
+
+.entryBody {
+  padding: 28px 36px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.entryHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.entryTitle {
+  font-family: system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #e8e8e8;
+  margin: 0 0 4px;
+}
+
+.entryCaption {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #a0bcd4;
+  margin: 0;
+}
+
+.visitLink {
+  flex-shrink: 0;
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid #2a5078;
+  color: #5bc4e5;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.visitLink:hover {
+  background: rgba(91, 196, 229, 0.1);
+  border-color: #5bc4e5;
+  color: #93d9ef;
+}
+
+/* ── Why / Hypothesis / Learnings ───────────────────────── */
+
+.details {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(29, 53, 80, 0.65);
+}
+
+.detailBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailLabel {
+  font-family: system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5bc4e5;
+  opacity: 0.7;
+}
+
+.detailText {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #9ab6cc;
+  margin: 0;
+}
+
+.detailTextMuted {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4a6a84;
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.footerLink {
+  color: #5bc4e5;
+  text-decoration: none;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.footerLink:hover { opacity: 1; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 720px) {
+  .details {
+    grid-template-columns: 1fr;
+  }
+
+  .entryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .entryBody {
+    padding: 22px 22px 26px;
+  }
+}
+
+@media (max-width: 480px) {
+  .entryTitle {
+    font-size: 19px;
+  }
+}
