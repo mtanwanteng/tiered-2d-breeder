@@ -75,8 +75,9 @@ export default function PrototypesPage() {
 
         <p className={styles.intro}>
           How do we recreate the feeling of building with LEGOs - creative,
-          tactile, imaginative - and add something only possible with AI? Here 
-          are our experiments in finding where AI-generated content can power that kind of play.
+          tactile, boundless - and add something only possible with AI?
+          These are our experiments in finding where AI-generated content
+          lets you create beyond the limits of your imagination
         </p>
 
         <section className={styles.entries} aria-label="Prototype research">
