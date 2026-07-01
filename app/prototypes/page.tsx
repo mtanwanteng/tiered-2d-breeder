@@ -74,9 +74,9 @@ export default function PrototypesPage() {
         </header>
 
         <p className={styles.intro}>
-          We&apos;re chasing a specific feeling: building with LEGOs — open-ended,
-          tactile, personal. These are our experiments in finding where
-          AI-generated content can power that kind of play.
+          How do we recreate the feeling of building with LEGOs - creative,
+          tactile, imaginative - and add something only possible with AI? Here 
+          are our experiments in finding where AI-generated content can power that kind of play.
         </p>
 
         <section className={styles.entries} aria-label="Prototype research">
