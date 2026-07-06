@@ -33,6 +33,16 @@ export default function AboutPage() {
             Iterating through ideas, looking for where AI
             innovation actually creates value in games.
           </p>
+          <p className={styles.lead}>
+            <Link href="/prototypes" className={styles.prototypeLink}>
+              See our prototype research →
+            </Link>
+          </p>
+          <p className={styles.lead}>
+            <Link href="/landing" className={styles.prototypeLink}>
+              Play our prototypes →
+            </Link>
+          </p>
         </section>
       </main>
     </div>

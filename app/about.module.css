@@ -78,6 +78,13 @@
   margin: 0;
 }
 
+.prototypeLink {
+  color: #5bc4e5;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.prototypeLink:hover { opacity: 0.8; }
+
 @media (max-width: 600px) {
   .section {
     padding: 24px 24px;
