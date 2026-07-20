@@ -65,6 +65,80 @@
   color: #c8d4df;
 }
 
+/* ── Timeline ────────────────────────────────────────────── */
+
+.timeline {
+  display: flex;
+  align-items: flex-start;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 4px 0 8px;
+}
+
+.timelineRow {
+  display: flex;
+  align-items: flex-start;
+}
+
+.timelineStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.timelineStep:hover .timelineDot {
+  border-color: #5bc4e5;
+  color: #93d9ef;
+}
+
+.timelineStep:hover .timelineLabel {
+  color: #c8d4df;
+}
+
+.timelineRow:last-child .timelineLabel {
+  font-weight: 700;
+  color: #c8d4df;
+}
+
+.timelineDot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #0d1b2e;
+  border: 3px solid #3a6a94;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #5bc4e5;
+  transition: border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.timelineLabel {
+  font-family: system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #7a9db8;
+  text-align: center;
+  transition: color 0.15s;
+  max-width: 80px;
+}
+
+.timelineConnector {
+  width: 80px;
+  height: 2px;
+  background: #1d3550;
+  margin-top: 17px;
+}
+
 /* ── Prototype entry ─────────────────────────────────────── */
 
 .entries {
@@ -74,6 +148,8 @@
 }
 
 .entry {
+  display: flex;
+  flex-direction: column;
   background: #0d1b2e;
   border: 1px solid #1d3550;
   border-radius: 12px;
@@ -99,19 +175,35 @@
   display: block;
 }
 
-.videoPlaceholder {
+.videoIframe {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* Short placeholder for entries with no video yet — avoids a large empty gap */
+.videoWrapPlaceholder {
+  width: 100%;
+  flex-shrink: 0;
+  background: #050a12;
+  overflow: hidden;
+}
+
+.videoPlaceholder {
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 72px;
   background:
-    radial-gradient(ellipse at 30% 20%, rgba(91, 196, 229, 0.06), transparent 60%),
+    radial-gradient(ellipse at 30% 20%, rgba(91, 196, 229, 0.04), transparent 60%),
     linear-gradient(135deg, #0f2238 0%, #0a1726 100%);
-  color: #3a5a78;
+  color: #2a4a62;
   font-family: system-ui, sans-serif;
-  font-size: 13px;
-  letter-spacing: 0.05em;
+  font-size: 11px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -249,10 +341,23 @@
   .entryBody {
     padding: 22px 22px 26px;
   }
+
+  .timelineLabel {
+    font-size: 10px;
+    max-width: 64px;
+  }
 }
 
 @media (max-width: 480px) {
   .entryTitle {
     font-size: 19px;
+  }
+
+  .timelineRow {
+    max-width: 180px;
+  }
+
+  .timelineConnector {
+    min-width: 12px;
   }
 }

@@ -24,6 +24,8 @@ terraform/*.tfplan
 terraform/service-account-key.json
 .terraform.lock.hcl
 
+temp_images/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

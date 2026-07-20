@@ -10,11 +10,14 @@ export const metadata: Metadata = {
 };
 
 interface PrototypeEntry {
+  id: string;
   name: string;
   href: string;
   caption: string;
-  /** Path under /public to a self-hosted video. Leave unset until a recording is ready. */
+  /** Path under /public to a self-hosted video. */
   video?: string;
+  /** YouTube video ID — renders an embed iframe when set. */
+  youtubeId?: string;
   why: string;
   hypothesis: string;
   learnings: string | null;
@@ -22,36 +25,58 @@ interface PrototypeEntry {
 
 const ENTRIES: PrototypeEntry[] = [
   {
+    id: "bari",
     name: "Bari the Architect",
     href: "https://bari.alwayshungrygames.com/",
     caption: "Guide your Civilization to the Age of Plenty",
-    why: "We wanted to test whether Infinite Craft-style combination — drag two concepts together, AI names the result — could sustain a full progression loop. Is 'combine things' enough of a verb to make a game?",
+    why: "We wanted to test whether Infinite Craft-style combination (drag two concepts together, AI determines a meaningful result) could sustain a full progression loop. Is 'combine things' enough of a verb to make a game?",
     hypothesis:
       "Discovery would be intrinsically motivating. The two sides of correctly guessing and being surprised by AI-generated results would be the core reward. Civilization-progression gates would give structure without killing freeform exploration.",
     learnings:
-      "The combination verb is genuinely compelling and understandable after a first completion — players want to know what happens when they put two things together. But without friction, the output space is arbitrary to highly goal-oriented players.",
+      "The combination verb is genuinely compelling and understandable after a first completion. Players want to know what happens when they put two things together and can be delighted by both being right and being surprised. But without friction, the output space is arbitrary to highly goal-oriented players.",
   },
   {
+    id: "curator",
     name: "Curator",
     href: "https://ideacollector.alwayshungrygames.com",
     caption: "Play, Create, Curate",
-    why: "Bari the Achitect's open-ended AI space felt arbitrary without framing. We wanted to test whether a strong thematic lens — a book collector's library — and deliberate curation mechanics could make each combination feel intentional rather than random. Additionally we wanted to support mobile players and improve FTUE to reduce feedback noise",
+    why: "Bari the Achitect's open-ended AI space felt arbitrary without framing. We wanted to test whether a strong thematic lens, such as a curated art gallery, along with deliberate curation mechanics could make each combination feel more intentional. Additionally we wanted to support mobile players and improve FTUE to reduce feedback noise",
     hypothesis:
-      "Slowing down the pace and focusing on a collector's sensibility would make each discovery feel earned and mnanual curation would increase the connection and authorship between the player and the ideas they hand selected.",
+      "Slowing down the pace and focusing on a collector's sensibility would make each discovery feel earned and manual curation would increase the connection and authorship between the player and the ideas they hand selected.",
     learnings:
-      "A UI/UX overhaul to reinforce the theme and add mobile support didn't move the needle on player enjoyment or understanding of the core loop — players were already finding the fun. The original mechanics hold up. Players also did not respond to the curation mechanic strongly, further testing required. Personally, we also found that the specific theming constraint took away from the feel of the infinite possibility space of the game",
+      "A UI/UX overhaul to reinforce the theme and add mobile support didn't move the needle on player enjoyment or understanding of the core loop. Players were already finding the fun; the original mechanics hold up. Players also did not respond to the curation mechanic strongly, further testing required. Personally, we also found that the specific theming constraint took away from the feel of the infinite possibility space of the game",
   },
   {
+    id: "playground",
     name: "Playground",
     href: "https://playground.alwayshungrygames.com",
     caption: "All things are possible!",
-    why: "What if the tile's position mattered? To reach the playful feeling of LEGO, we suspected the combination mechanic needed a second axis — not just 'what do these make?' but 'where does this go?'.",
+    youtubeId: "OhqrIFVopyA",
+    why: "To reach the playful feeling of LEGO, we suspected the combination mechanic needed a second axis - 'where does this go?'. Spatial relationships are inherent to our physical existence.",
     hypothesis:
       "Physical placement would create the space to imagine personal narratives and make the board feel like something you built, not just a list of discoveries.",
     learnings:
       "Spatial arrangement genuinely changes the feeling of authorship, and intentional players strongly connect to the feeling of creation. What remains is to recreate a creative loop that sustains retention like LEGO and Minecraft, as well as direction for goal oriented players",
   },
 ];
+
+function PrototypeTimeline() {
+  return (
+    <nav className={styles.timeline} aria-label="Prototype timeline">
+      {ENTRIES.map((entry, i) => (
+        <div key={entry.id} className={styles.timelineRow}>
+          <a href={`#${entry.id}`} className={styles.timelineStep}>
+            <span className={styles.timelineDot}>{i + 1}</span>
+            <span className={styles.timelineLabel}>{entry.name}</span>
+          </a>
+          {i < ENTRIES.length - 1 && (
+            <div className={styles.timelineConnector} aria-hidden="true" />
+          )}
+        </div>
+      ))}
+    </nav>
+  );
+}
 
 export default function PrototypesPage() {
   return (
@@ -80,11 +105,23 @@ export default function PrototypesPage() {
           lets you create beyond the limits of your imagination
         </p>
 
+        <PrototypeTimeline />
+
         <section className={styles.entries} aria-label="Prototype research">
           {ENTRIES.map((entry) => (
-            <article key={entry.name} className={styles.entry}>
-              <div className={styles.videoWrap}>
-                {entry.video ? (
+            <article key={entry.id} id={entry.id} className={styles.entry}>
+              {entry.youtubeId ? (
+                <div className={styles.videoWrap}>
+                  <iframe
+                    className={styles.videoIframe}
+                    src={`https://www.youtube.com/embed/${entry.youtubeId}`}
+                    title={`${entry.name} gameplay video`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              ) : entry.video ? (
+                <div className={styles.videoWrap}>
                   <video
                     className={styles.video}
                     src={entry.video}
@@ -93,12 +130,14 @@ export default function PrototypesPage() {
                     muted
                     playsInline
                   />
-                ) : (
+                </div>
+              ) : (
+                <div className={styles.videoWrapPlaceholder}>
                   <div className={styles.videoPlaceholder} aria-hidden="true">
                     video coming soon
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               <div className={styles.entryBody}>
                 <div className={styles.entryHeader}>
